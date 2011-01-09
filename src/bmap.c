@@ -34,6 +34,11 @@ void bmap_destroy(bitmap_t* bmap) {
 
 uint8_t bmap_get(bitmap_t* bmap, size_t bit) {
     register size_t idx, off;
+
+    /* Attention: may be false positive...! */
+    if(bmap == NULL || bit > bmap->bits)
+        return 0;
+
     BMAP_BITLOC(bit, idx, off);
 
     return ((bmap->storage[idx] >> off) & 1);
@@ -41,6 +46,10 @@ uint8_t bmap_get(bitmap_t* bmap, size_t bit) {
 
 void bmap_set(bitmap_t* bmap, size_t bit, uint8_t value) {
     register size_t idx, off;
+
+    if(bmap == NULL || bit > bmap->bits)
+        return;
+
     BMAP_BITLOC(bit, idx, off);
 
     if(value) {
@@ -51,10 +60,16 @@ void bmap_set(bitmap_t* bmap, size_t bit, uint8_t value) {
 }
 
 void bmap_clear(bitmap_t* bmap, uint8_t value) {
+    if(bmap == NULL)
+        return;
+
     bmap_fill(bmap, value, 0, bmap->bits - 1);
 }
 
 void bmap_fill(bitmap_t* bmap, uint8_t value, size_t start, size_t end) {
+    if(start >= bmap->bits || end >= bmap->bits || bmap == NULL)
+        return;
+
     while(start < end) {
         /* TODO: optimize by setting blocks of size uintptr_t at once,
          *       if possible */
@@ -62,38 +77,59 @@ void bmap_fill(bitmap_t* bmap, uint8_t value, size_t start, size_t end) {
     }
 }
 
-uint8_t bmap_search(bitmap_t* bmap, size_t* index, uint8_t value, uint32_t flags) {
-    size_t start;
+uint8_t bmap_search(bitmap_t* bmap, size_t* index, uint8_t value, size_t cnt, uint32_t flags) {
+    register size_t start;
+    register size_t con = 0;
+
+    if(bmap == NULL || index == NULL || cnt == 0)
+        return FALSE;
     
     /* normalize value */
     value = (value ? 1 : 0);
 
     if(flags & BMAP_SRCH_BACKWARD) {
-        start = (flags & BMAP_SRCH_HINTED ? bmap->hint - 1 : bmap->bits - 1);
+        start = (flags & BMAP_SRCH_HINTED ? bmap->hint : bmap->bits - 1);
         
         /* unsigned index, so if it reaches zero, it underflows */
         while(start <= bmap->bits) {
             if(bmap_get(bmap, start) == value) {
-                break;
+                ++con;
+
+                if(con == cnt)
+                    break;
+            } else {
+                con = 0;
             }
             --start;
         }
-    } else {
-        start = (flags & BMAP_SRCH_HINTED ? bmap->hint + 1 : 0);
 
-        while(start < bmap->bits) {
+        /* start now is the beginning of the contigous bit block of
+         * size cnt (at least). no need for further adjustment */
+    } else {
+        start = (flags & BMAP_SRCH_HINTED ? bmap->hint : 0);
+
+        while(start < bmap->bits && con < cnt) {
             if(bmap_get(bmap, start) == value) {
-                break;
+                ++con;
+
+                if(con == cnt)
+                    break;
+            } else {
+                con = 0;
             }
             ++start;
         }
+
+        /* start now is one off the end of the contigous bit block. need
+         * to adjust it, to be the beginning. */
+        start -= (con - 1);
     }
 
     /* start underflows in backward searching when under zero,
      * so check for upper bounds only... */
     if(start >= bmap->bits) {
         if(flags & BMAP_SRCH_HINTED) {
-            if(!bmap_search(bmap, index, value, flags & ~(BMAP_SRCH_HINTED)))
+            if(!bmap_search(bmap, index, value, cnt, flags & ~(BMAP_SRCH_HINTED)))
                 return FALSE;
         } else {
             return FALSE;
@@ -102,6 +138,6 @@ uint8_t bmap_search(bitmap_t* bmap, size_t* index, uint8_t value, uint32_t flags
         *index = start;
     }
 
-    bmap->hint = *index;
+    bmap->hint = *index + cnt;
     return TRUE;
 }

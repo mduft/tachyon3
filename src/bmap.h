@@ -14,7 +14,7 @@ typedef struct {
     uintptr_t* storage; /**< The storage used by the bitmap. */
     size_t bits;        /**< The number of bits in the bmap */
     size_t hint;        /**< A hint for bmap_next_bit() */
-    uint8_t allocated;  /**< Whether this is allocated or init()'ed */
+    bool allocated;  /**< Whether this is allocated or init()'ed */
 } bitmap_t;
 
 /** 
@@ -23,7 +23,7 @@ typedef struct {
  * @param bitcnt    the count of bits that should be addressable.
  * @return          the pointer to the new bitmap.
  */
-bitmap_t*   bmap_new(size_t bitcnt);
+bitmap_t* bmap_new(size_t bitcnt);
 
 /**
  * Initializes the given memory reagions to contain a bitmap.
@@ -35,9 +35,9 @@ bitmap_t*   bmap_new(size_t bitcnt);
  * @param storage           memory location of size (bitcnt/sizeof(uintptr_t))
  * @param bitcnt            the number of bits in the bitmap (storage needs
  *                          to be large enough to contain this number of bits!)
- * @return                  1 on success, 0 on failure.
+ * @return                  TRUE on success, FALSE on failure.
  */
-uint8_t     bmap_init(bitmap_t* handle_storage, void* storage, size_t bitcnt);
+bool bmap_init(bitmap_t* handle_storage, void* storage, size_t bitcnt);
 
 /**
  * Deallocates a previously allocated bitmap. Does nothing,
@@ -46,7 +46,7 @@ uint8_t     bmap_init(bitmap_t* handle_storage, void* storage, size_t bitcnt);
  *
  * @param bmap  the bitmap to destruct.
  */
-void        bmap_delete(bitmap_t* bmap);
+void bmap_delete(bitmap_t* bmap);
 
 /**
  * Returns the value of the given bit in the bitmap.
@@ -55,7 +55,7 @@ void        bmap_delete(bitmap_t* bmap);
  * @param bit   the index of the bit to return.
  * @return      the value of the given bit.
  */
-uint8_t     bmap_get(bitmap_t* bmap, size_t bit);
+uint8_t bmap_get(bitmap_t* bmap, size_t bit);
 
 /**
  * Sets the given bit to the given value.
@@ -64,7 +64,7 @@ uint8_t     bmap_get(bitmap_t* bmap, size_t bit);
  * @param bit   the index of the bit to set.
  * @param value the value (0 or 1 (actually !0)) to set.
  */
-void        bmap_set(bitmap_t* bmap, size_t bit, uint8_t value);
+void bmap_set(bitmap_t* bmap, size_t bit, uint8_t value);
 
 /**
  * Clears all bits of a bitmap to a given value.
@@ -72,7 +72,7 @@ void        bmap_set(bitmap_t* bmap, size_t bit, uint8_t value);
  * @param bmap  the bitmap to use.
  * @param value the target value for all bits in the bitmap
  */
-void        bmap_clear(bitmap_t* bmap, uint8_t value);
+void bmap_clear(bitmap_t* bmap, uint8_t value);
 
 /**
  * Sets all bits withing a given region in a bitmap.
@@ -82,7 +82,7 @@ void        bmap_clear(bitmap_t* bmap, uint8_t value);
  * @param start the index of the first bit to set.
  * @param end   the index of the last bit to set.
  */
-void        bmap_fill(bitmap_t* bmap, uint8_t value, size_t start, size_t end);
+void bmap_fill(bitmap_t* bmap, uint8_t value, size_t start, size_t end);
 
 /**
  * Finds the index of the next bit with a given value. The
@@ -92,8 +92,9 @@ void        bmap_fill(bitmap_t* bmap, uint8_t value, size_t start, size_t end);
  * @param bmap      the bitmap to use.
  * @param index     location where the index will be written on success.
  * @param desired   the desired value of the bit to find.
+ * @param cnt       number of consecutive bits that shall have the desired value.
  * @param flags     controlling flags for the search (see BMAP_SRCH_*)
- * @return          1 on success, 0 on failure (nothing found).
+ * @return          TRUE on success, FALSE on failure (nothing found).
  */
-uint8_t     bmap_search(bitmap_t* bmap, size_t* index, uint8_t desired, uint32_t flags);
+bool bmap_search(bitmap_t* bmap, size_t* index, uint8_t desired, size_t cnt, uint32_t flags);
 

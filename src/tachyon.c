@@ -21,20 +21,20 @@ void boot(void* mbd, uint32_t mbm) {
 
         bmap_clear(&bm, 1);
 
-        if(bmap_search(&bm, &idx, 0, 0))
+        if(bmap_search(&bm, &idx, 0, 1, 0))
             cga_write("error: result unexpected (ok)!\n");
 
 
-        if(bmap_search(&bm, &idx, 0, BMAP_SRCH_BACKWARD))
+        if(bmap_search(&bm, &idx, 0, 1, BMAP_SRCH_BACKWARD))
             cga_write("error: back result unexpected (ok)!\n");
 
-        if(!bmap_search(&bm, &idx, 1, BMAP_SRCH_HINTED))
+        if(!bmap_search(&bm, &idx, 1, 2, BMAP_SRCH_HINTED))
             cga_write("error: result unexpected (!ok)\n");
 
-        if(!bmap_search(&bm, &idx, 1, BMAP_SRCH_HINTED))
+        if(!bmap_search(&bm, &idx, 1, 3, BMAP_SRCH_HINTED))
             cga_write("error: result unexpected (!ok)\n");
 
-        if(bm.hint != 2)
+        if(bm.hint != 5)
             cga_write("error: hint has wrong value\n");
     }
 }

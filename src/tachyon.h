@@ -45,6 +45,8 @@ typedef pid_t       tid_t;
 typedef uintptr_t   phys_addr_t;
 typedef phys_addr_t vspace_t;
 
+typedef uint8_t     bool;
+
 typedef struct {
     uintptr_t   num;
     uintptr_t   code;
