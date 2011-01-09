@@ -13,6 +13,10 @@
 # error "unknown architecture!"
 #endif
 
+#define NULL    (void*)0
+#define TRUE    1
+#define FALSE   0
+
 /* 
  * .----------------------------------.
  * | common types for x86 and x86_64  |

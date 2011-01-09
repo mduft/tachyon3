@@ -9,3 +9,6 @@
 #define CGA_VR_LOCATION   0xB8000
 #define CGA_VR_SIZE       (CGA_WIDTH*CGA_HEIGHT*2)
 
+void cga_init();
+void cga_write(char* str);
+
