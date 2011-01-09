@@ -17,6 +17,9 @@
 #define TRUE    1
 #define FALSE   0
 
+#define ALIGN_DN(x, a)  ((x) & ~((a) - 1))
+#define ALIGN_UP(x, a)  ALIGN_DN(x + a, a)
+
 /* 
  * .----------------------------------.
  * | common types for x86 and x86_64  |
