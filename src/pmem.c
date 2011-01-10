@@ -4,6 +4,7 @@
 #include "pmem.h"
 #include "bmap.h"
 #include "list.h"
+#include "log.h"
 
 #define PMEM_PAGESIZE   4096
 #define PMEM_FDEG       80
@@ -83,16 +84,17 @@ void pmem_add(phys_addr_t start, size_t length) {
  *                  account to speed up free region search.
  * @return          the allocate address, or 0 on failure.
  */
-static phys_addr_t pmem_alloc_helper(size_t length, off_t align, bool use_fdeg) {
+static bool pmem_alloc_helper(phys_addr_t* addr, size_t length, off_t align, bool use_fdeg) {
     listnode_t* current = reg_list.head;
 
     while(current) {
         pmem_region_t* reg = (pmem_region_t*)current->payload;
+        size_t fdeg = (use_fdeg ? bmap_fdeg(reg->bmap) : 0);
 
         /* make sure there is enough free room in the region to
          * fit the block to be allocated. */
-        if(((use_fdeg && bmap_fdeg(reg->bmap) < PMEM_FDEG) || !use_fdeg)
-                && ((reg->length * bmap_fdeg(reg->bmap))) > (length * 100)) {
+        
+        if(fdeg == 0 || ((reg->length * (100-fdeg))) > (length * 100)) {
             size_t idx;
 
             /* TODO: lock this allocation. permormance consideration:
@@ -101,7 +103,8 @@ static phys_addr_t pmem_alloc_helper(size_t length, off_t align, bool use_fdeg) 
 
             if(bmap_search(reg->bmap, &idx, 0, PMEM_PAGES(length), (align / PMEM_PAGESIZE), BMAP_SRCH_HINTED)) {
                 if(bmap_fill(reg->bmap, 1, idx, idx + PMEM_PAGES(length))) {
-                    return PMEM_FROM_REGBIT(reg, idx);
+                    *addr = PMEM_FROM_REGBIT(reg, idx);
+                    return TRUE;
                 }
             }
 
@@ -111,16 +114,19 @@ static phys_addr_t pmem_alloc_helper(size_t length, off_t align, bool use_fdeg) 
         current = current->next;
     }
 
-    return 0;
+    return FALSE;
 }
 
 phys_addr_t pmem_alloc(size_t length, off_t align) {
-    phys_addr_t addr = pmem_alloc_helper(length, align, TRUE);
-
-    if(addr != 0)
+    phys_addr_t addr;
+    
+    if(pmem_alloc_helper(&addr, length, align, TRUE))
         return addr;
 
-    return pmem_alloc_helper(length, align, FALSE);
+    if(pmem_alloc_helper(&addr, length, align, FALSE))
+        return addr;
+
+    fatal("out of physical memory\n");
 }
 
 void pmem_free(phys_addr_t addr, size_t length) {

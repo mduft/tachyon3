@@ -20,6 +20,16 @@
 #define ALIGN_DN(x, a)  ((x) & ~((a) - 1))
 #define ALIGN_UP(x, a)  ALIGN_DN(x + a, a)
 
+typedef __builtin_va_list va_list;
+#define va_start(v, l)      __builtin_va_start(v,l)
+#define va_end(v)           __builtin_va_end(v)
+#define va_arg(v, l)        __builtin_va_arg(v,l)
+
+#define PACKED              __attribute__((__packed__))
+#define SECTION(x)          __attribute__((section(x)))
+#define UNUSED              __attribute__((unused))
+#define NORETURN            __attribute__((noreturn))
+
 /* 
  * .----------------------------------.
  * | common types for x86 and x86_64  |
@@ -61,4 +71,12 @@ typedef struct {
     uintptr_t   sp;
     uintptr_t   ss;
 } interrupt_t;
+
+/* 
+ * .----------------------------------.
+ * | common basic functions           |
+ * '----------------------------------' 
+ */
+
+void abort() NORETURN;
 

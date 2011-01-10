@@ -7,23 +7,23 @@
 
 /* 
  * .----------------------------------.
- * | section based extension points   |
+ * | predefined extension points      |
  * '----------------------------------' 
  */
 
+#define EXTP_LOG_WRITER     "log.writer"
+
 typedef void (*extp_func_t)(void);
-typedef void (*extp_iterator_func_t)(char const*, extp_func_t);
+typedef void (*extp_iterator_func_t)(char const*, extp_func_t, char const*);
 
 typedef struct {
     char const* const ext_tag;
     extp_func_t ext_func;
+    char const* const ext_descr;
 } extension_point_t;
 
-#define SECTION(x)  __attribute__((section(x)))
-#define UNUSED      __attribute__((unused))
-
-#define INSTALL_EXTENSION(t, e) \
-    static extension_point_t __extp_##t##e UNUSED SECTION(".extp") = { #t, (extp_func_t)e } ;
+#define INSTALL_EXTENSION(t, e, d) \
+    static extension_point_t __extp_##e UNUSED SECTION(".extp") = { t, (extp_func_t)e, d } ;
 
 void extp_iterate(char const* tag, extp_iterator_func_t callback);
 

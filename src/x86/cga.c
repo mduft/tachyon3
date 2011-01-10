@@ -1,11 +1,10 @@
 /* Copyright (c) 2010 by Markus Duft <mduft@gentoo.org>
  * This file is part of the 'tachyon' operating system. */
 
-#include "tachyon.h"
 #include "cga.h"
-#include "extp.h"
+#include <extp.h>
 
-INSTALL_EXTENSION(log_output, cga_write);
+INSTALL_EXTENSION(EXTP_LOG_WRITER, cga_write, "screen");
 
 static uint16_t __cga_x = 0;
 static uint16_t __cga_y = 0;

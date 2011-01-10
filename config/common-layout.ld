@@ -19,7 +19,8 @@ SECTIONS {
         . = ALIGN(0x8);
         *(.rodata*)
 
-        . = ALIGN(0x8);
+        /* those need to be aligned at least to 16 byte boundaries */
+        . = ALIGN(0x10);
         _core_vma_sextp = .;
         *(.extp)
         _core_vma_eextp = .;
