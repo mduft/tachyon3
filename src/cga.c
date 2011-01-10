@@ -3,6 +3,9 @@
 
 #include "tachyon.h"
 #include "cga.h"
+#include "extp.h"
+
+INSTALL_EXTENSION(log_output, cga_write);
 
 static uint16_t __cga_x = 0;
 static uint16_t __cga_y = 0;

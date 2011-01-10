@@ -2,14 +2,23 @@
  * This file is part of the 'tachyon' operating system. */
 
 #include "tachyon.h"
+#include "pmem.h"
+
+/* testing */
+#if 1
 #include "bmap.h"
 #include "cga.h"
+#endif
 
-void boot(void* mbd, uint32_t mbm) {
-    (void)mbd; (void)mbm;
+void boot(/*void* mbd, uint32_t mbm*/) {
 
+    pmem_init();
+
+    /* from here on are tests only */
     cga_write("testing...\n");
+
     /* test bitmap */
+    #if 0
     {
         bitmap_t bm;
         uintptr_t store[4];
@@ -37,4 +46,9 @@ void boot(void* mbd, uint32_t mbm) {
         if(bm.hint != 6)
             cga_write("error: hint has wrong value\n");
     }
+    #endif
+
+    /* physical memory testing */
+    #if 1
+    #endif
 }

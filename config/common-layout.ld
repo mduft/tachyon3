@@ -18,6 +18,11 @@ SECTIONS {
 
         . = ALIGN(0x8);
         *(.rodata*)
+
+        . = ALIGN(0x8);
+        _core_vma_sextp = .;
+        *(.extp)
+        _core_vma_eextp = .;
     }
 
     .data ALIGN(0x1000) : AT(ADDR(.data) - CORE_VMA_OFF) {
