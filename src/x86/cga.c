@@ -4,7 +4,7 @@
 #include "cga.h"
 #include <extp.h>
 
-INSTALL_EXTENSION(EXTP_LOG_WRITER, cga_write, "screen");
+INSTALL_EXTENSION(EXTP_LOG_WRITER, cga_write, "screen")
 
 static uint16_t __cga_x = 0;
 static uint16_t __cga_y = 0;

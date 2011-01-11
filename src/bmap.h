@@ -104,7 +104,7 @@ bool bmap_search(bitmap_t* bmap, size_t* index, uint8_t desired, size_t cnt, siz
 /**
  * Returns the filling degree of the bitmap in percent.
  *
- * @parmam bmap the bitmap to inspect.
+ * @param bmap  the bitmap to inspect.
  * @return      the filling degree in percent.
  */
 size_t bmap_fdeg(bitmap_t* bmap);
