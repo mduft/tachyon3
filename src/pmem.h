@@ -38,6 +38,25 @@ void pmem_add(phys_addr_t start, size_t length);
 phys_addr_t pmem_alloc(size_t length, off_t align);
 
 /**
+ * Reserves the physical memory at the given location.
+ * @attention Success does not mean, that the memory
+ *            is actually physically available, but
+ *            only means, that no pmem_alloc() call
+ *            will ever return a block within the
+ *            given range, regardless of how physical
+ *            memory looks like. This is useful for
+ *            reserving regions for memory mapped
+ *            devices like the APIC, IOAPIC, etc.
+ *
+ * @param addr      the start of the region. if this is
+ *                  not on a page boundary, it is aligned
+ *                  down to the next lower page.
+ * @param length    the length to reserve in bytes.
+ * @return          TRUE on success, FALSE otherwise.
+ */
+bool pmem_reserve(phys_addr_t addr, size_t length);
+
+/**
  * Frees a previously allocated block of physical memory.
  * Since the physical memory management does not track
  * allocations, the length needs to match the length given

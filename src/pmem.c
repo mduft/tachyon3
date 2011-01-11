@@ -5,6 +5,7 @@
 #include "bmap.h"
 #include "list.h"
 #include "log.h"
+#include "ldsym.h"
 
 #define PMEM_PAGESIZE   4096
 #define PMEM_FDEG       80
@@ -67,6 +68,13 @@ void pmem_init() {
     first_region.bmap = &first_bmap;
     first_region.start = 0;
     first_region.length = first_bmap.bits * PMEM_PAGESIZE;
+
+    /* now, we need to reserve a some of the lower regions
+     * of RAM, to protect the kernel itself. The rest of the
+     * important regions is reserved in pmem_init2() */
+    if(!pmem_reserve(0xA0000, (((size_t)&_core_lma_end) - 0xA0000))) {
+        error("failed to protect physical lower and kernel memory\n");
+    }
 }
 
 void pmem_add(phys_addr_t start, size_t length) {
@@ -129,6 +137,11 @@ phys_addr_t pmem_alloc(size_t length, off_t align) {
     fatal("out of physical memory\n");
 }
 
+bool pmem_reserve(phys_addr_t addr, size_t length) {
+    /* TODO! */
+    return FALSE;
+}
+
 void pmem_free(phys_addr_t addr, size_t length) {
     listnode_t* current = reg_list.head;
 
@@ -145,6 +158,6 @@ void pmem_free(phys_addr_t addr, size_t length) {
         current = current->next;
     }
 
-    /* TODO: warning? */
+    warn("cannot find physical region to free %p\n", addr);
 }
 

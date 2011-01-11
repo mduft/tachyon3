@@ -2,7 +2,6 @@
  * This file is part of the 'tachyon' operating system. */
 
 #include "tachyon.h"
-#include <x86/idt.h>
 
 /**
  * C Level0 iterrupt handler. All interrupts are routed here

@@ -56,20 +56,22 @@ typedef uintmax_t   pid_t;
 typedef pid_t       tid_t;
 
 typedef uintptr_t   phys_addr_t;
-typedef phys_addr_t vspace_t;
+typedef phys_addr_t aspace_t;
 
 typedef uint8_t     bool;
 
+/**
+ * describes the available information when an interrupt happens.
+ */
 typedef struct {
-    uintptr_t   num;
-    uintptr_t   code;
-    uintptr_t   ip;
-    uintptr_t   cs;
-    uintptr_t   flags;
+    uintptr_t   num;    /**< the interrupt number */
+    uintptr_t   code;   /**< the error code, or zero if none */
+    uintptr_t   ip;     /**< the interrupted location */
+    uintptr_t   cs;     /**< the code segment of the interrupted location. */
+    uintptr_t   flags;  /**< the eflags/rflags of the interrupted thread. */
 
-    /* on x86 only on ring change */
-    uintptr_t   sp;
-    uintptr_t   ss;
+    uintptr_t   sp;     /**< (only on ring change). the original stack pointer */
+    uintptr_t   ss;     /**< (only on ring change). the original stack segment */
 } interrupt_t;
 
 /* 

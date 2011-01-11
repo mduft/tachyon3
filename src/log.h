@@ -23,14 +23,14 @@ typedef enum {
  * with just a format string, and without parameters, would result
  * in a compile error.
  */
-#define LOG0(lvl, ...) log_write(lvl, __VA_ARGS__, NULL);
+#define LOG0(lvl, str, ...) log_write(lvl, str __VA_ARGS__, NULL);
 
-#define fatal(...)  { LOG0(Fatal, __VA_ARGS__); abort(); }
-#define error(...)  { LOG0(Error, __VA_ARGS__); }
-#define warn(...)   { LOG0(Warning, __VA_ARGS__); }
-#define info(...)   { LOG0(Info, __VA_ARGS__); }
-#define debug(...)  { LOG0(Debug, __VA_ARGS__); }
-#define trace(...)  { LOG0(Trace, __VA_ARGS__); }
+#define fatal(...)  { LOG0(Fatal,   "fatal: ", __VA_ARGS__); abort(); }
+#define error(...)  { LOG0(Error,   "error: ", __VA_ARGS__); }
+#define warn(...)   { LOG0(Warning, "warn:  ", __VA_ARGS__); }
+#define info(...)   { LOG0(Info,    "info:  ", __VA_ARGS__); }
+#define debug(...)  { LOG0(Debug,   "debug: ", __VA_ARGS__); }
+#define trace(...)  { LOG0(Trace,   "trace: ", __VA_ARGS__); }
 
 /**
  * Initializes the logging subsystem. This gathers log writers from

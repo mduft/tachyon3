@@ -3,9 +3,7 @@
 
 #include "extp.h"
 #include "string.h"
-
-extern extension_point_t _core_vma_sextp;
-extern extension_point_t _core_vma_eextp;
+#include "ldsym.h"
 
 void extp_iterate(char const* tag, extp_iterator_func_t callback) {
     extension_point_t* cur = &_core_vma_sextp;
