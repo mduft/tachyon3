@@ -78,5 +78,10 @@ typedef struct {
  * '----------------------------------' 
  */
 
+/**
+ * Aborts execution of the kernel, and shows a dump of some CPU
+ * state information, which can be helpfull. This function never
+ * returns to the caller.
+ */
 void abort() NORETURN;
 

@@ -9,15 +9,43 @@
 #define MAX_LOG_WRITE_BUFFER     4096
 #define LOG_DEFAULT_LEVEL        Warning
 
+/**
+ * The actual type for the extension point callback.
+ *
+ * @param msg   the formatted message to write.
+ */
 typedef void (*log_writer_t)(char const* msg);
+
+/**
+ * The structure holding each log destination. This holds the
+ * writer itself and associated information.
+ *
+ * Note: the name field is derived from the extension point
+ *       description field. The text is freely assignable, and
+ *       may appear more than once (CGA uses "screen" for example).
+ */
 typedef struct {
-    log_writer_t writer;
-    log_level_t  level;
-    char const*  name;
+    log_writer_t writer;    /**< the target function to write a message */
+    log_level_t  level;     /**< the maximum acceptable level for this writer */
+    char const*  name;      /**< the name for this destination. */
 } log_destination_t;
 
+/**
+ * Holds all log destinations. Initially, none of the destinations
+ * is set, but log_init() gathers all the extension points, and
+ * fills this array
+ */
 static log_destination_t destinations[MAX_LOG_DESTINATIONS];
 
+/**
+ * This is a callback for the extp_iterate() function, which is used
+ * to iterate all log writer extensions. So this is called once for
+ * each log writer extension available.
+ *
+ * @param tag       must be EXPT_LOG_WRITER in this case.
+ * @param writer    the extension callback, must be of actual type log_writer_t.
+ * @param descr     the extension description, used as name for the writer.
+ */
 static void log_add_writer(char const* tag, extp_func_t writer, char const* descr) {
     register size_t idx;
 
@@ -33,21 +61,17 @@ static void log_add_writer(char const* tag, extp_func_t writer, char const* desc
     warn("maximum writer count exceeded, cannot add %p\n", writer);
 }
 
-void log_init() {
-    extp_iterate(EXTP_LOG_WRITER, log_add_writer);
-}
-
-void log_set_level(char const* dest, log_level_t lvl) {
-    register size_t idx;
-
-    for(idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
-        if((destinations[idx].writer) &&
-                (!dest || strcmp(dest, destinations[idx].name) == 0)) {
-            destinations[idx].level = lvl;
-        }
-    }
-}
-
+/**
+ * This function is used to format an unsigned number with the
+ * specified base into a string buffer.
+ *
+ * @param buf       the buffer to write the formatted number to.
+ * @param number    the number to format.
+ * @param base      the base to use.
+ * @param fill      the fill character, of width > actual length.
+ * @param width     the field width. the buffer is filled with 
+ *                  fill characters, if the number is not this long.
+ */
 static void log_format_u(char* buf, uintmax_t number, uint8_t base, char fill, size_t width) {
     register char* p = buf;
 
@@ -75,6 +99,18 @@ static void log_format_u(char* buf, uintmax_t number, uint8_t base, char fill, s
     }
 }
 
+/**
+ * This function is used to format a signed number with the
+ * specified base into a string buffer. It calles log_format_u
+ * to do so.
+ *
+ * @param buf       the buffer to write the formatted number to.
+ * @param number    the number to format.
+ * @param base      the base to use.
+ * @param fill      the fill character, of width > actual length.
+ * @param width     the field width. the buffer is filled with 
+ *                  fill characters, if the number is not this long.
+ */
 static void log_format_s(char* buf, intmax_t number, uint8_t base, char fill, size_t width) {
     if(number < 0) {
         buf[0] = '-';
@@ -84,6 +120,13 @@ static void log_format_s(char* buf, intmax_t number, uint8_t base, char fill, si
     }
 }
 
+/**
+ * Parses a string, and extracts a number from it, stopping
+ * extraction at the first non-number character.
+ *
+ * @param str   the string to parse.
+ * @return      the extracted number.
+ */
 static uintmax_t log_parse_number(char const* str) {
     uintmax_t val = 0;
 
@@ -96,6 +139,15 @@ static uintmax_t log_parse_number(char const* str) {
     return val;
 }
 
+/**
+ * Formats a log message into a specified buffer.
+ *
+ * @param buf   the buffer to write to.
+ * @param len   the length of the buffer. if the message grows longer
+ *              it is cut off.
+ * @param fmt   the format string.
+ * @param args  the variable argument list used for the format parameters.
+ */
 static void log_format_message(char* buf, size_t len, char const* fmt, va_list args) {
     char c;
     char* p = buf;
@@ -182,6 +234,21 @@ static void log_format_message(char* buf, size_t len, char const* fmt, va_list a
     #undef DO_NUMBER
     #undef CHECKED_APPEND
 
+}
+
+void log_init() {
+    extp_iterate(EXTP_LOG_WRITER, log_add_writer);
+}
+
+void log_set_level(char const* dest, log_level_t lvl) {
+    register size_t idx;
+
+    for(idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
+        if((destinations[idx].writer) &&
+                (!dest || strcmp(dest, destinations[idx].name) == 0)) {
+            destinations[idx].level = lvl;
+        }
+    }
 }
 
 void log_write(log_level_t lvl, char const* fmt, ...) {
