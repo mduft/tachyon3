@@ -5,7 +5,7 @@
 #include <log.h>
 
 void abort(void) {
-    fatal("out of luck - aborted.");
+    error("out of luck - aborted.");
 
     stop:
         asm("cli; hlt;");
