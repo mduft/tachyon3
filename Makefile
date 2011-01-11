@@ -36,9 +36,6 @@ GRUB2_CFG		:= $(BUILDDIR)/boot/grub/grub.cfg
 GRUB2_PXE		 = $(BUILDDIR)/boot/grub/i386-pc/core.0
 GRUB2_ISO		 = $(BUILDDIR)/$(notdir $(KERNEL))-grub2.iso
 
-# TODO: make this more dynamic by using gcc dependency generation
-HDR_DEPEND		:= $(wildcard $(SOURCEDIR)/src/*.h) $(wildcard $(SOURCEDIR)/src/*/*.h)
-
 #.----------------------------------.
 #| The all target, keep it first!   |
 #'----------------------------------'
@@ -58,9 +55,13 @@ KERNEL_SOURCES	:= \
 	$(wildcard $(SOURCEDIR)/src/$(ARCH)/*.S) \
 	$(KERNEL_ADD)
 
-KERNEL_OBJECTS	:= $(KERNEL_SOURCES:.c=.o)
-KERNEL_OBJECTS	:= $(KERNEL_OBJECTS:.S=.o)
-KERNEL_OBJECTS	:= $(subst $(SOURCEDIR),$(BUILDDIR),$(KERNEL_OBJECTS))
+KERNEL_CSOURCES := $(filter %.c,$(KERNEL_SOURCES))
+KERNEL_SSOURCES := $(filter %.S,$(KERNEL_SOURCES))
+
+KERNEL_COBJECTS := $(subst $(SOURCEDIR),$(BUILDDIR),$(KERNEL_CSOURCES:.c=.o))
+KERNEL_SOBJECTS := $(subst $(SOURCEDIR),$(BUILDDIR),$(KERNEL_SSOURCES:.S=.o))
+
+KERNEL_OBJECTS  := $(KERNEL_COBJECTS) $(KERNEL_SOBJECTS)
 
 KCPPFLAGS	:= $(BASE_CPPFLAGS) $(CPPFLAGS) $(KERNEL_CPPFLAGS)
 KCFLAGS		:= $(BASE_CFLAGS) $(CFLAGS) $(KERNEL_CFLAGS)
@@ -101,23 +102,25 @@ clean:
 #| General Template Rules           |
 #'----------------------------------'
 
-$(BUILDDIR)/%.o: $(SOURCEDIR)/%.c $(HDR_DEPEND)
+include $(foreach mf,$(subst .o,.Po,$(KERNEL_OBJECTS)),$(wildcard $(mf)))
+
+$(KERNEL_COBJECTS): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.c
 	@-$(MAKE_BDIR)
 	@if test $(VERBOSE) = 0; then \
 		echo "[CC  ] $(subst $(SOURCEDIR)/,,$<)"; \
 	 else \
 	 	echo "$(CC) $(KCFLAGS) -c -o \"$@\" \"$<\""; \
 	 fi
-	@$(CC) $(KCFLAGS) -c -o "$@" "$<"
+	@$(CC) -MMD -MF "$(subst .o,.Po,$@)" $(KCFLAGS) -c -o "$@" "$<"
 
-$(BUILDDIR)/%.o: $(SOURCEDIR)/%.S $(HDR_DEPEND)
+$(KERNEL_SOBJECTS): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.S
 	@-$(MAKE_BDIR)
 	@if test $(VERBOSE) = 0; then \
 		echo "[AS  ] $(subst $(SOURCEDIR)/,,$<)"; \
 	 else \
 	 	echo "$(CC) $(KCFLAGS) -D__ASM__ -c -o \"$@\" \"$<\""; \
 	 fi
-	@$(CC) $(KCFLAGS) -D__ASM__ -c -o "$@" "$<"
+	@$(CC) -MMD -MF "$(subst .o,.Po,$@)" $(KCFLAGS) -D__ASM__ -c -o "$@" "$<"
 
 #.----------------------------------.
 #| Helper rules                     |
