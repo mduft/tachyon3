@@ -12,6 +12,7 @@
  */
 
 #define EXTP_LOG_WRITER     "log.writer"
+#define EXTP_PMEM_REGION    "pmem.region"
 
 /**
  * Dummy extension point callback type. The real type depends

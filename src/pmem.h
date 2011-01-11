@@ -6,9 +6,13 @@
 #include "tachyon.h"
 
 /**
- * Initializes the physical memory management. This
- * initializes manegement structures for at least 4MB of
- * physical RAM. More can be added later, @see pmem_add.
+ * Initializes the memory management. Since the three
+ * memory management units in the kernel (pmem, vmem
+ * and kheap) are tightly coupled, and initialization
+ * if them relies on each other, this also calls
+ * kheap_init() to bring up the whole memory subsystem.
+ * (there is no vmem_init(), otherwise it would be called
+ * from here or kheap_init() too).
  */
 void pmem_init();
 

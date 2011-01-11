@@ -5,7 +5,8 @@
 #include "bmap.h"
 #include "list.h"
 #include "log.h"
-#include "ldsym.h"
+#include "extp.h"
+#include "kheap.h"
 
 #define PMEM_PAGESIZE   4096
 #define PMEM_FDEG       80
@@ -54,8 +55,22 @@ static uint32_t first_storage[32];
  * @param reg   the region to check.
  * @param addr  the address to check.
  */
-static inline bool reg_contains(pmem_region_t* reg, phys_addr_t addr) {
+static inline bool pmem_reg_contains(pmem_region_t* reg, phys_addr_t addr) {
     return (addr >= reg->start && addr <= (reg->start + reg->length));
+}
+
+/**
+ * Used to iterate over all extension points for the
+ * physical memory regions. Each of those callbacks
+ * can the in turn call pmem_add() to add more physical
+ * memory regions.
+ *
+ * @param tag   always "pmem.region"
+ * @param cb    the callback
+ * @param desc  ignored
+ */
+static void pmem_iterate_extp(char const* tag, extp_func_t cb, char const* desc) {
+    if(cb) cb();
 }
 
 void pmem_init() {
@@ -69,12 +84,20 @@ void pmem_init() {
     first_region.start = 0;
     first_region.length = first_bmap.bits * PMEM_PAGESIZE;
 
-    /* now, we need to reserve a some of the lower regions
-     * of RAM, to protect the kernel itself. The rest of the
-     * important regions is reserved in pmem_init2() */
-    if(!pmem_reserve(0xA0000, (((size_t)&_core_lma_end) - 0xA0000))) {
-        error("failed to protect physical lower and kernel memory\n");
+    /* immediately reserve the first physical page (real
+     * mode IVT). */
+    if(!pmem_reserve(0x0, 0x1000)) {
+        warn("failed protecting real mode IVT.\n");
     }
+
+    /* here we are sufficiently initialized, so virtual memory
+     * can allocate physical memory for the initial mappings,
+     * required to get the kernel heap working. this in turn
+     * enables us, to allocate more memory to add additional
+     * regions to the physical memory. */
+    kheap_init();
+
+    extp_iterate(EXTP_PMEM_REGION, pmem_iterate_extp);
 }
 
 void pmem_add(phys_addr_t start, size_t length) {
@@ -148,7 +171,7 @@ void pmem_free(phys_addr_t addr, size_t length) {
     while(current) {
         pmem_region_t* reg = (pmem_region_t*)current->payload;
 
-        if(reg_contains(reg, addr)) {
+        if(pmem_reg_contains(reg, addr)) {
             /* free relative to the current region. */
             addr = PMEM_TO_REGBIT(reg, addr);
             bmap_fill(reg->bmap, 0, addr, addr + PMEM_PAGES(length));
