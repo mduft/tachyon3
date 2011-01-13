@@ -25,6 +25,13 @@ void kheap_init();
 void* kheap_alloc(size_t bytes);
 
 /**
+ * Deallocates a previously allocated block of memory.
+ *
+ * @param mem   the block to deallocate.
+ */
+void kheap_free(void* mem);
+
+/**
  * Resizes a given memory chunk by either really extending
  * the block if room is there, or otherwise allocating a
  * large enough block, moving the contents there, and freeing
@@ -35,11 +42,4 @@ void* kheap_alloc(size_t bytes);
  * @return      pointer to the resized block.
  */
 void* kheap_realloc(void* mem, size_t bytes);
-
-/**
- * Deallocates a previously allocated block of memory.
- *
- * @param mem   the block to deallocate.
- */
-void kheap_free(void* mem);
 
