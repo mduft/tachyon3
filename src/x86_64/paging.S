@@ -8,8 +8,8 @@
 SECTION_BOOT_DATA
 
 .global x86_64_pg_pml4
-.global x86_64_temp_mapspace
-.global x86_64_pg_pdpt_high
+.global x86_64_pg_tmap
+.global x86_64_pg_kernel_pdpt
 
 #define PG_BASE_KFLAGS (PG_PRESENT | PG_WRITABLE | PG_GLOBAL)
 
@@ -57,7 +57,7 @@ x86_64_pg_pd_high:
 .align 0x1000
 x86_64_pg_pd_temp:
     .fill 0x1F6, 0x8, 0x0     # -1GB - (-0GB - 2MB) unm.
-    x86_64_temp_mapspace:
+    x86_64_pg_tmap:
     .fill 0xa, 0x8, 0x0       # -20MB- -0MB reserved for temporary mappings
 
 # .----------------------------------------.
@@ -70,7 +70,7 @@ x86_64_pg_pdpt_low:
     .fill 0x1FF, 0x8, 0x0                             # 1GB - 512GB unmap.
 
 .align 0x1000
-x86_64_pg_pdpt_high:
+x86_64_pg_kernel_pdpt:
     .fill 0x1FE, 0x8, 0x0                             # -512GB - -2GB unmap.
     .quad x86_64_pg_pd_high + ( PG_BASE_KFLAGS )      # -2GB - -1GB
     .quad x86_64_pg_pd_temp + ( PG_BASE_KFLAGS )      # -1GB - -0GB
@@ -84,4 +84,4 @@ x86_64_pg_pdpt_high:
 x86_64_pg_pml4:
     .quad x86_64_pg_pdpt_low + ( PG_BASE_KFLAGS )     # 0 - 512GB
     .fill 0x1FE, 0x8, 0x0                             # 509 zero entries.
-    .quad x86_64_pg_pdpt_high + ( PG_BASE_KFLAGS )    # -512GB - -0GB
+    .quad x86_64_pg_kernel_pdpt + ( PG_BASE_KFLAGS )  # -512GB - -0GB

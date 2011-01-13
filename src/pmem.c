@@ -44,10 +44,10 @@ static bitmap_t first_bmap;
 
 /**
  * This represents the real storage for the bitmap above.
- * it can hold bits for up to 4MB of physical RAM, which
+ * it can hold bits for up to 640KB of physical memory, which
  * is the bare minimum that must be available at boot.
  */
-static uint32_t first_storage[32];
+static uint32_t first_storage[5];
 
 /**
  * Checks whether a given adress lies within a region.
@@ -56,7 +56,7 @@ static uint32_t first_storage[32];
  * @param addr  the address to check.
  */
 static inline bool pmem_reg_contains(pmem_region_t* reg, phys_addr_t addr) {
-    return (addr >= reg->start && addr <= (reg->start + reg->length));
+    return (addr >= reg->start && addr < (reg->start + reg->length));
 }
 
 /**
@@ -161,8 +161,56 @@ phys_addr_t pmem_alloc(size_t length, off_t align) {
 }
 
 bool pmem_reserve(phys_addr_t addr, size_t length) {
-    /* TODO! */
-    return FALSE;
+    register phys_addr_t top, cur;
+    register bool checkPass = TRUE;
+
+    if(ALIGN_RST(addr, PMEM_PAGESIZE) != 0) {
+        fatal("misaligned physical address!\n");
+    }
+
+    /* TODO: lock this. this should be used during initialization only,
+     * so it is not so important for this code to be ultra-performant. */
+
+next_pass:
+    top = (addr + length);
+    cur = addr;
+
+    while(top > cur) {
+        listnode_t* current = reg_list.head;
+
+        while(current) {
+            pmem_region_t* reg = (pmem_region_t*)current->payload;
+
+            while(pmem_reg_contains(reg, cur)) {
+                register size_t idx = PMEM_TO_REGBIT(reg, cur);
+
+                if(checkPass) {
+                    if(bmap_get(reg->bmap, idx)) {
+                        return FALSE;
+                    }
+                } else {
+                    bmap_set(reg->bmap, idx, 1);
+                }
+                
+                cur += PMEM_PAGESIZE;
+
+                if(top <= cur)
+                    goto pass_ok;
+            }
+
+            current = current->next;
+        }
+
+        cur += PMEM_PAGESIZE;
+    }
+
+pass_ok:
+    if(checkPass) {
+        checkPass = FALSE;
+        goto next_pass;
+    }
+
+    return TRUE;
 }
 
 void pmem_free(phys_addr_t addr, size_t length) {

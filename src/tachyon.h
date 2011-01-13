@@ -19,6 +19,7 @@
 
 #define ALIGN_DN(x, a)  ((x) & ~((a) - 1))
 #define ALIGN_UP(x, a)  ALIGN_DN(x + a, a)
+#define ALIGN_RST(x, a) ((x) & ((a) - 1))
 
 typedef __builtin_va_list va_list;
 #define va_start(v, l)      __builtin_va_start(v,l)

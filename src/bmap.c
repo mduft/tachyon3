@@ -2,6 +2,7 @@
  * This file is part of the 'tachyon' operating system. */
 
 #include "bmap.h"
+#include "log.h"
 
 #define BMAP_BITLOC(bit, idx, off) \
     asm volatile("div %4" : "=a"(idx), "=d"(off) : "d"(0), "a"(bit), "r"(sizeof(uintptr_t) * 8));
@@ -14,14 +15,14 @@ bitmap_t* bmap_new(size_t bitcnt) {
     return NULL;
 }
 
-uint8_t bmap_init(bitmap_t* handle_storage, void* storage, size_t bytes) {
+uint8_t bmap_init(bitmap_t* handle_storage, void* storage, size_t bitcnt) {
     if(!handle_storage || !storage) {
         return FALSE;
     }
 
     handle_storage->storage = (uintptr_t*)storage;
     handle_storage->hint = 0;
-    handle_storage->bits = (bytes * 8);
+    handle_storage->bits = bitcnt;
     handle_storage->allocated = 0;
 
     bmap_clear(handle_storage, 0);
@@ -136,7 +137,7 @@ uint8_t bmap_search(bitmap_t* bmap, size_t* index, uint8_t value, size_t cnt, si
     }
 
     if((start % mul)) {
-        /* TODO: PANIC! */
+        fatal("internal implementation error!\n");
     }
 
     /* start underflows in backward searching when under zero,

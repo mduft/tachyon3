@@ -43,6 +43,9 @@ phys_addr_t pmem_alloc(size_t length, off_t align);
 
 /**
  * Reserves the physical memory at the given location.
+ * Fails if any of the pages in the given range have already
+ * been allocated by somebody else.
+ *
  * @attention Success does not mean, that the memory
  *            is actually physically available, but
  *            only means, that no pmem_alloc() call
