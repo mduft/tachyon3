@@ -8,7 +8,7 @@
 SECTION_BOOT_DATA
 
 .global x86_pg_pd
-.global x86_temp_mapspace
+.global x86_pg_tmap
 
 #define PG_BASE_KFLAGS  ( PG_PRESENT | PG_WRITABLE | PG_GLOBAL )
 
@@ -43,7 +43,7 @@ x86_pg_pt:
 
 x86_pg_pt_temp:
     .fill 0x3F6, 0x4, 0x0
-    x86_temp_mapspace:
+    x86_pg_tmap:
     .fill 0xa, 0x4, 0x0                  # reserved -> temp mapping
 
 # .----------------------------------------.

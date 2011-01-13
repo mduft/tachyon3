@@ -22,6 +22,12 @@
 #define VM_OFFSET(a, s) ((a) & ((s) - 1))
 
 /**
+ * Used to mask off all paging attributes from a paging structure
+ * entry, to get a physical address.
+ */
+#define VM_ENTRY_FLAG_MASK  (~0xFFF)
+
+/**
  * Maps a specified physical address to a virtual one.
  *
  * @param aspace    the address space to use.
@@ -38,7 +44,7 @@
  *                      - PG_EXECUTE_DISABLE
  * @return          true on success, false otherwise.
  */
-bool vmem_map(aspace_t aspace, phys_addr_t phys, uintptr_t virt, uint32_t flags);
+bool vmem_map(aspace_t aspace, phys_addr_t phys, void* virt, uint32_t flags);
 
 /**
  * Assures that a given virtual address is not mapped.
@@ -47,8 +53,9 @@ bool vmem_map(aspace_t aspace, phys_addr_t phys, uintptr_t virt, uint32_t flags)
  *
  * @param aspace    the address space to use.
  * @param virt      the virtual address to unmap.
+ * @return          the physical address the page was mapped to.
  */
-void vmem_unmap(aspace_t aspace, uintptr_t virt);
+phys_addr_t vmem_unmap(aspace_t aspace, void* virt);
 
 /**
  * Tries to find the physical address for a virtual one.
@@ -59,5 +66,5 @@ void vmem_unmap(aspace_t aspace, uintptr_t virt);
  * @param  virt   the virtual address to resolve.
  * @return        the physical address, or 0 on failure.
  */
-bool vmem_resolve(aspace_t aspace, uintptr_t virt, phys_addr_t* target);
+phys_addr_t vmem_resolve(aspace_t aspace, void* virt);
 

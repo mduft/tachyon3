@@ -50,7 +50,7 @@ x86_64_pg_pt_temp:
 .align 0x1000
 x86_64_pg_pd_low:
     .quad x86_64_pg_pt_low + ( PG_BASE_KFLAGS )               # 0 - 2MB
-    .quad 0x200000        + ( PG_BASE_KFLAGS | PG_LARGE )   # 2 - 4MB
+    .quad 0x200000         + ( PG_BASE_KFLAGS | PG_LARGE )   # 2 - 4MB
     .fill 0x1FE, 0x8, 0x0 # 510 not present entries.          # 4MB - 1GB unmap.
 
 .align 0x1000

@@ -8,11 +8,13 @@
 
 /* testing */
 #if 1
-#include "bmap.h"
+#include "vmem.h"
+#include "aspace.h"
+#include "mem.h"
+#include <x86/paging.h>
 #endif
 
 void boot(/*void* mbd, uint32_t mbm*/) {
-
     log_init();
     log_set_level("screen", Trace);
 
@@ -23,5 +25,4 @@ void boot(/*void* mbd, uint32_t mbm*/) {
     if(!pmem_reserve(0xA0000, (((size_t)&_core_lma_end) - 0xA0000))) {
         error("failed to protect physical lower and kernel memory\n");
     }
-
 }
