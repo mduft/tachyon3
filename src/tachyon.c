@@ -8,10 +8,7 @@
 
 /* testing */
 #if 1
-#include "vmem.h"
-#include "aspace.h"
-#include "mem.h"
-#include <x86/paging.h>
+#include "kheap.h"
 #endif
 
 void boot(/*void* mbd, uint32_t mbm*/) {
@@ -25,4 +22,12 @@ void boot(/*void* mbd, uint32_t mbm*/) {
     if(!pmem_reserve(0xA0000, (((size_t)&_core_lma_end) - 0xA0000))) {
         error("failed to protect physical lower and kernel memory\n");
     }
+
+    void* p1 = kheap_alloc(0x10);
+    void* p2 = kheap_alloc(0x20);
+    void* p3 = kheap_alloc(0x3);
+
+    kheap_free(p1);
+    kheap_free(p2);
+    kheap_free(p3);
 }

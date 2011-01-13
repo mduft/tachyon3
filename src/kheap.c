@@ -25,7 +25,23 @@
  *
  * @param b kheap_block_t, either a header, or a footer.
  */
-#define KHEAP_BL_DATASZ(b)  ((b) & KHEAP_FLMASK)
+#define KHEAP_BL_B2DATASZ(b)    ((b) & ~KHEAP_FLMASK)
+
+/**
+ * Calculate the user data's memory block size from the management
+ * block size (including header + footer)
+ *
+ * @parma b the size of the management block.
+ */
+#define KHEAP_BL_SZ2DATASZ(b)   ((b) - (sizeof(kheap_block_t) * 2))
+
+/**
+ * Calculate the management block size from the user data's block
+ * size (excluding the header + footer)
+ *
+ * @param b the size of the user data block.
+ */
+#define KHEAP_BL_DATASZ2SZ(b)   ((b) + (sizeof(kheap_block_t) * 2))
 
 /**
  * Retrieve the block header from a pointer to the block data itself.
@@ -39,14 +55,14 @@
  *
  * @param h pointer to the header
  */
-#define KHEAP_BL_H2F(h) ((kheap_block_t*)((uintptr_t)(h) + sizeof(kheap_block_t) + (KHEAP_BL_DATASZ((*h)))))
+#define KHEAP_BL_H2F(h) ((kheap_block_t*)((uintptr_t)(h) + sizeof(kheap_block_t) + (KHEAP_BL_B2DATASZ((*h)))))
 
 /**
  * Retrieve the block header from the block footer.
  *
  * @param f pointer to the footer
  */
-#define KHEAP_BL_F2H(f) ((kheap_block_t*)((uintptr_t)(f) - sizeof(kheap_block_t) - (KHEAP_BL_DATASZ((*f)))))
+#define KHEAP_BL_F2H(f) ((kheap_block_t*)((uintptr_t)(f) - sizeof(kheap_block_t) - (KHEAP_BL_B2DATASZ((*f)))))
 
 /**
  * Retrieve a pointer to the actual user data from a block header
@@ -54,6 +70,20 @@
  * @param h pointer to the header.
  */
 #define KHEAP_BL_H2M(h) ((void*)((uintptr_t)(h) + sizeof(kheap_block_t)))
+
+#define KHEAP_BL_NEXT(h)    (KHEAP_BL_H2F(h) + 1)
+
+#define KHEAP_BL_HAS_NEXT(h)    (!(((uintptr_t)KHEAP_BL_NEXT(h)) >= kheap_state.vmem_mark))
+
+/**
+ * Updates a block with the specified values.
+ *
+ * @param h pointer to the header.
+ * @param s new size of the block.
+ * @parma f flags (KHEAP_PRESENT).
+ */
+#define KHEAP_BL_SET(h, s, f) \
+    { *h = s | f; register kheap_block_t* ft = KHEAP_BL_H2F(h); *ft = s | f | KHEAP_FOOTER; }
 
 /**
  * The header of a heap memory block. If bit 0 is set, the block
@@ -104,7 +134,7 @@ static inline bool kheap_validate(void* m) {
     }
 
     /* header and footer must agree on size */
-    if(KHEAP_BL_DATASZ(*hdr) != KHEAP_BL_DATASZ(*ftr)) {
+    if(KHEAP_BL_B2DATASZ(*hdr) != KHEAP_BL_B2DATASZ(*ftr)) {
         return false;
     }
 
@@ -125,10 +155,42 @@ void kheap_init() {
         fatal("error in kernel heap: cannot map virtual memory!\n");
     }
 
-    /* TODO: mark the entire first page as free block */
+    KHEAP_BL_SET((kheap_block_t*)KHEAP_START, KHEAP_BL_SZ2DATASZ(PAGE_SIZE_4K), 0);
 }
 
 void* kheap_alloc(size_t bytes) {
+    bytes = ALIGN_UP(bytes, sizeof(kheap_block_t));
+
+    register kheap_block_t* block = (kheap_block_t*)KHEAP_START;
+
+    while((uintptr_t)block >= KHEAP_START 
+            && (uintptr_t)block < kheap_state.vmem_mark) {
+
+        if(!((*block) & KHEAP_PRESENT) && 
+                KHEAP_BL_B2DATASZ(*block) >= KHEAP_BL_DATASZ2SZ(bytes)) {
+            /* block is free and large enough, let's split it. */
+            register size_t freesz = KHEAP_BL_B2DATASZ(*block) - KHEAP_BL_DATASZ2SZ(bytes);
+            KHEAP_BL_SET(block, bytes, KHEAP_PRESENT);
+            KHEAP_BL_SET(KHEAP_BL_NEXT(block), freesz, 0);
+
+            kheap_state.used_bytes += bytes;
+            return KHEAP_BL_H2M(block);
+        }
+
+        if(!KHEAP_BL_HAS_NEXT(block)) {
+            /* no more room, allocate another page, and try again */
+            vmem_map(aspace_current(), 
+                pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K), 
+                (void*)kheap_state.vmem_mark, KHEAP_PG_FLAGS);
+
+            kheap_state.vmem_mark += PAGE_SIZE_4K;
+
+            continue;
+        }
+
+        block = KHEAP_BL_NEXT(block);
+    }
+
     return NULL;
 }
 
@@ -150,7 +212,7 @@ void* kheap_realloc(void* mem, size_t bytes) {
     }
 
     void* new = kheap_alloc(bytes);
-    memmove(new, mem, KHEAP_BL_DATASZ(*KHEAP_BL_M2H(mem)));
+    memmove(new, mem, KHEAP_BL_B2DATASZ(*KHEAP_BL_M2H(mem)));
     kheap_free(mem);
     return new;
 }
