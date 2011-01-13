@@ -14,8 +14,8 @@
 #endif
 
 #define NULL    (void*)0
-#define TRUE    1
-#define FALSE   0
+#define true    1
+#define false   0
 
 #define ALIGN_DN(x, a)  ((x) & ~((a) - 1))
 #define ALIGN_UP(x, a)  ALIGN_DN(x + a, a)

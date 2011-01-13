@@ -6,6 +6,22 @@
 #include "tachyon.h"
 
 /**
+ * Calculate the page on which a given address lies.
+ *
+ * @param a the address to inspect.
+ * @param s the page size to assume.
+ */
+#define VM_PAGE(a, s)   ((a) & ~((s) - 1))
+
+/**
+ * Calculate the offset of a given address within it's page.
+ *
+ * @param a the address to inspect.
+ * @param s the page size to assume.
+ */
+#define VM_OFFSET(a, s) ((a) & ((s) - 1))
+
+/**
  * Maps a specified physical address to a virtual one.
  *
  * @param aspace    the address space to use.
@@ -20,7 +36,7 @@
  *                      - PG_LARGE
  *                      - PG_GLOBAL
  *                      - PG_EXECUTE_DISABLE
- * @return          TRUE on success, FALSE otherwise.
+ * @return          true on success, false otherwise.
  */
 bool vmem_map(aspace_t aspace, phys_addr_t phys, uintptr_t virt, uint32_t flags);
 

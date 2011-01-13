@@ -135,7 +135,7 @@ static bool pmem_alloc_helper(phys_addr_t* addr, size_t length, off_t align, boo
             if(bmap_search(reg->bmap, &idx, 0, PMEM_PAGES(length), (align / PMEM_PAGESIZE), BMAP_SRCH_HINTED)) {
                 if(bmap_fill(reg->bmap, 1, idx, idx + PMEM_PAGES(length))) {
                     *addr = PMEM_FROM_REGBIT(reg, idx);
-                    return TRUE;
+                    return true;
                 }
             }
 
@@ -145,16 +145,16 @@ static bool pmem_alloc_helper(phys_addr_t* addr, size_t length, off_t align, boo
         current = current->next;
     }
 
-    return FALSE;
+    return false;
 }
 
 phys_addr_t pmem_alloc(size_t length, off_t align) {
     phys_addr_t addr;
     
-    if(pmem_alloc_helper(&addr, length, align, TRUE))
+    if(pmem_alloc_helper(&addr, length, align, true))
         return addr;
 
-    if(pmem_alloc_helper(&addr, length, align, FALSE))
+    if(pmem_alloc_helper(&addr, length, align, false))
         return addr;
 
     fatal("out of physical memory\n");
@@ -162,7 +162,7 @@ phys_addr_t pmem_alloc(size_t length, off_t align) {
 
 bool pmem_reserve(phys_addr_t addr, size_t length) {
     register phys_addr_t top, cur;
-    register bool checkPass = TRUE;
+    register bool checkPass = true;
 
     if(ALIGN_RST(addr, PMEM_PAGESIZE) != 0) {
         fatal("misaligned physical address!\n");
@@ -186,7 +186,7 @@ next_pass:
 
                 if(checkPass) {
                     if(bmap_get(reg->bmap, idx)) {
-                        return FALSE;
+                        return false;
                     }
                 } else {
                     bmap_set(reg->bmap, idx, 1);
@@ -206,11 +206,11 @@ next_pass:
 
 pass_ok:
     if(checkPass) {
-        checkPass = FALSE;
+        checkPass = false;
         goto next_pass;
     }
 
-    return TRUE;
+    return true;
 }
 
 void pmem_free(phys_addr_t addr, size_t length) {

@@ -36,7 +36,7 @@ bitmap_t* bmap_new(size_t bitcnt);
  * @param storage           memory location of size (bitcnt/sizeof(uintptr_t))
  * @param bitcnt            the number of bits in the bitmap (storage needs
  *                          to be large enough to contain this number of bits!)
- * @return                  TRUE on success, FALSE on failure.
+ * @return                  true on success, false on failure.
  */
 bool bmap_init(bitmap_t* handle_storage, void* storage, size_t bitcnt);
 
@@ -82,7 +82,7 @@ void bmap_clear(bitmap_t* bmap, uint8_t value);
  * @param value the value to set each bit to.
  * @param start the index of the first bit to set.
  * @param end   the index of the last bit to set.
- * @return      TRUE on success, FALSE otherwise.
+ * @return      true on success, false otherwise.
  */
 bool bmap_fill(bitmap_t* bmap, uint8_t value, size_t start, size_t end);
 
@@ -97,7 +97,7 @@ bool bmap_fill(bitmap_t* bmap, uint8_t value, size_t start, size_t end);
  * @param cnt       number of consecutive bits that shall have the desired value.
  * @param mul       the found index must be a multiple of this.
  * @param flags     controlling flags for the search (see BMAP_SRCH_*)
- * @return          TRUE on success, FALSE on failure (nothing found).
+ * @return          true on success, false on failure (nothing found).
  */
 bool bmap_search(bitmap_t* bmap, size_t* index, uint8_t desired, size_t cnt, size_t mul, uint32_t flags);
 

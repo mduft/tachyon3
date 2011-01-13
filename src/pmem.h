@@ -59,7 +59,7 @@ phys_addr_t pmem_alloc(size_t length, off_t align);
  *                  not on a page boundary, it is aligned
  *                  down to the next lower page.
  * @param length    the length to reserve in bytes.
- * @return          TRUE on success, FALSE otherwise.
+ * @return          true on success, false otherwise.
  */
 bool pmem_reserve(phys_addr_t addr, size_t length);
 

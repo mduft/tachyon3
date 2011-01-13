@@ -17,7 +17,7 @@ bitmap_t* bmap_new(size_t bitcnt) {
 
 uint8_t bmap_init(bitmap_t* handle_storage, void* storage, size_t bitcnt) {
     if(!handle_storage || !storage) {
-        return FALSE;
+        return false;
     }
 
     handle_storage->storage = (uintptr_t*)storage;
@@ -27,7 +27,7 @@ uint8_t bmap_init(bitmap_t* handle_storage, void* storage, size_t bitcnt) {
 
     bmap_clear(handle_storage, 0);
 
-    return TRUE;
+    return true;
 }
 
 void bmap_destroy(bitmap_t* bmap) {
@@ -72,7 +72,7 @@ void bmap_clear(bitmap_t* bmap, uint8_t value) {
 
 bool bmap_fill(bitmap_t* bmap, uint8_t value, size_t start, size_t end) {
     if(start >= bmap->bits || end >= bmap->bits || bmap == NULL)
-        return FALSE;
+        return false;
 
     while(start < end) {
         /* TODO: optimize by setting blocks of size uintptr_t at once,
@@ -80,7 +80,7 @@ bool bmap_fill(bitmap_t* bmap, uint8_t value, size_t start, size_t end) {
         bmap_set(bmap, start++, value);
     }
 
-    return TRUE;
+    return true;
 }
 
 uint8_t bmap_search(bitmap_t* bmap, size_t* index, uint8_t value, size_t cnt, size_t mul, uint32_t flags) {
@@ -88,7 +88,7 @@ uint8_t bmap_search(bitmap_t* bmap, size_t* index, uint8_t value, size_t cnt, si
     register size_t con = 0;
 
     if(bmap == NULL || index == NULL || cnt == 0)
-        return FALSE;
+        return false;
 
     /* sanitize values. */
     value = (value ? 1 : 0);
@@ -145,16 +145,16 @@ uint8_t bmap_search(bitmap_t* bmap, size_t* index, uint8_t value, size_t cnt, si
     if(start >= bmap->bits) {
         if(flags & BMAP_SRCH_HINTED) {
             if(!bmap_search(bmap, index, value, cnt, mul, flags & ~(BMAP_SRCH_HINTED)))
-                return FALSE;
+                return false;
         } else {
-            return FALSE;
+            return false;
         }
     } else {
         *index = start;
     }
 
     bmap->hint = *index + cnt;
-    return TRUE;
+    return true;
 }
 
 size_t bmap_fdeg(bitmap_t* bmap) {

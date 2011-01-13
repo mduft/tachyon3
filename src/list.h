@@ -41,7 +41,7 @@ void list_delete(list_t* list);
  *
  * @param list  the list to add the item to.
  * @param item  the actual data to insert into the list.
- * @return      TRUE on success, FALSE on error.
+ * @return      true on success, false on error.
  */
 bool list_add(list_t* list, uintptr_t item);
 

@@ -47,9 +47,7 @@ static log_destination_t destinations[MAX_LOG_DESTINATIONS];
  * @param descr     the extension description, used as name for the writer.
  */
 static void log_add_writer(char const* tag, extp_func_t writer, char const* descr) {
-    register size_t idx;
-
-    for(idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
+    for(register size_t idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
         if(!destinations[idx].writer) {
             destinations[idx].writer = (log_writer_t)writer;
             destinations[idx].level  = LOG_DEFAULT_LEVEL;
@@ -161,7 +159,7 @@ static void log_format_message(char* buf, size_t len, char const* fmt, va_list a
             char  temp[32];
             char * ptemp = temp;
             char const* append = 0;
-            bool lng = FALSE;
+            bool lng = false;
             uint32_t width = 0;
             c = *fmt++;
 
@@ -176,7 +174,7 @@ static void log_format_message(char* buf, size_t len, char const* fmt, va_list a
 
             /* "long" switch */
             if(c == 'l') {
-                lng = TRUE;
+                lng = true;
                 c = *fmt++;
             }
 
@@ -241,9 +239,7 @@ void log_init() {
 }
 
 void log_set_level(char const* dest, log_level_t lvl) {
-    register size_t idx;
-
-    for(idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
+    for(register size_t idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
         if((destinations[idx].writer) &&
                 (!dest || strcmp(dest, destinations[idx].name) == 0)) {
             destinations[idx].level = lvl;
@@ -253,7 +249,6 @@ void log_set_level(char const* dest, log_level_t lvl) {
 
 void log_write(log_level_t lvl, char const* fmt, ...) {
     /* TODO: lock this ... */
-    register size_t idx;
     char buf[MAX_LOG_WRITE_BUFFER];
     va_list lst;
 
@@ -261,7 +256,7 @@ void log_write(log_level_t lvl, char const* fmt, ...) {
     log_format_message(buf, sizeof(buf), fmt, lst);
     va_end(lst);
 
-    for(idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
+    for(register size_t idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
         if(destinations[idx].writer && destinations[idx].level >= lvl) {
             destinations[idx].writer(buf);
         }

@@ -23,7 +23,7 @@ include $(ARCH_MAKEFILE)
 GDB				:= x86_64-pc-linux-gnu-gdb
 
 BASE_CPPFLAGS   := -Wall -Wextra -I$(SOURCEDIR)/src
-BASE_CFLAGS		:= $(BASE_CPPFLAGS) -Werror -ffreestanding -nostartfiles -nostdlib -Wno-unused-parameter
+BASE_CFLAGS		:= $(BASE_CPPFLAGS) -Werror -ffreestanding -nostartfiles -nostdlib -Wno-unused-parameter -std=gnu99
 BASE_CXXFLAGS	:= $(BASE_CFLAGS) -fno-rtti -fno-exceptions -Wold-style-cast
 BASE_LDFLAGS	 = -T $(ARCH_PPLSCRIPT) -Map=$(KERNEL).map
 

@@ -36,6 +36,11 @@ x86_64_pg_pt_low:
     x86_64_pte 0x64, 0x00191000
     x86_64_pte 0x0B, 0x001F5000
 
+x86_64_pg_pt_temp:
+    .fill 0x1F6, 0x8, 0x0   # -2MB - -40KB
+    x86_64_pg_tmap:
+    .fill 0xa, 0x8, 0x0     # -40KB - -0KB
+
 # .----------------------------------------.
 # | PD's, mapping 2MB pages, except low1,  |
 # | which needs to make sure that the low  |
@@ -56,9 +61,8 @@ x86_64_pg_pd_high:
 
 .align 0x1000
 x86_64_pg_pd_temp:
-    .fill 0x1F6, 0x8, 0x0     # -1GB - (-0GB - 2MB) unm.
-    x86_64_pg_tmap:
-    .fill 0xa, 0x8, 0x0       # -20MB- -0MB reserved for temporary mappings
+    .fill 0x1FF, 0x8, 0x0                            # -1GB - -2MB
+    .quad x86_64_pg_pt_temp + ( PG_BASE_KFLAGS )     # -2MB - -0MB
 
 # .----------------------------------------.
 # | PDPT's, pointing to PD's               |
