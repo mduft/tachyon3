@@ -38,7 +38,7 @@ _x86_64_isr\num:
     .else
     push $\num
     mov %rsp, %rdi
-    callq interrupt_l0
+    callq intr_dispatch
     .if !\has_err
     addq $0x10, %rsp
     .else

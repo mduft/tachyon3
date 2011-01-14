@@ -38,7 +38,7 @@ _x86_isr\num:
     .else
     push $\num
     push %esp
-    call interrupt_l0
+    call intr_dispatch
     .if !\has_err
     add $0xc, %esp
     .else

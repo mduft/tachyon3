@@ -4,12 +4,12 @@
 #include "tachyon.h"
 
 /**
- * C Level0 iterrupt handler. All interrupts are routed here
+ * C lowest-level iterrupt handler. All interrupts are routed here
  * from the assembly stubs/trampolines.
  *
  * @param state state information for the interrupt.
  */
-void interrupt_l0(interrupt_t* state) {
+void intr_dispatch(interrupt_t* state) {
 
 }
 
