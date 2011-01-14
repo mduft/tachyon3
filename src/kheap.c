@@ -71,9 +71,35 @@
  */
 #define KHEAP_BL_H2M(h) ((void*)((uintptr_t)(h) + sizeof(kheap_block_t)))
 
+/**
+ * Get the address of the next block header. Whether a next block
+ * actually exists has to be checked first!
+ *
+ * @param h pointer to the current header.
+ */
 #define KHEAP_BL_NEXT(h)    (KHEAP_BL_H2F(h) + 1)
 
+/**
+ * Get the address of the previous block header. Whether a previous
+ * block actually exists has to be checked first!
+ *
+ * @param h pointer to the current header.
+ */
+#define KHEAP_BL_PREV(h)    (KHEAP_BL_F2H((h - 1)))
+
+/**
+ * Verify that a given block has a successor.
+ *
+ * @param h pointer to the header
+ */
 #define KHEAP_BL_HAS_NEXT(h)    (!(((uintptr_t)KHEAP_BL_NEXT(h)) >= kheap_state.vmem_mark))
+
+/**
+ * Verify that a given block has a predecessor.
+ *
+ * @param h pointer to the header
+ */
+#define KHEAP_BL_HAS_PREV(h)    (((uintptr_t)h) > KHEAP_START)
 
 /**
  * Updates a block with the specified values.
@@ -179,15 +205,19 @@ void* kheap_alloc(size_t bytes) {
 
         if(!KHEAP_BL_HAS_NEXT(block)) {
             /* no more room, allocate another page, and try again */
+            /* TODO: optimize: allocate as many pages at once 
+             *       as required to hold the region */
             vmem_map(aspace_current(), 
                 pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K), 
                 (void*)kheap_state.vmem_mark, KHEAP_PG_FLAGS);
 
             kheap_state.vmem_mark += PAGE_SIZE_4K;
 
+            /* re-check the current block (which has just been resized)  */
             continue;
         }
 
+        /* no matching block, and still blocks to search left over */
         block = KHEAP_BL_NEXT(block);
     }
 
@@ -198,7 +228,29 @@ void kheap_free(void* mem) {
     if(!kheap_validate(mem)) {
         error("kernel heap block validation failed for %p!\n", mem);
     } else {
+        register kheap_block_t* block = KHEAP_BL_M2H(mem); 
+        register size_t actual_sz = KHEAP_BL_B2DATASZ(*block);
 
+        if(KHEAP_BL_HAS_NEXT(block)) {
+            register kheap_block_t* next = KHEAP_BL_NEXT(block);
+
+            if(!((*next) & KHEAP_PRESENT)) {
+                /* extend block over the next one (free) */
+                actual_sz += KHEAP_BL_DATASZ2SZ(KHEAP_BL_B2DATASZ(*next));
+            }
+        }
+
+        if(KHEAP_BL_HAS_PREV(block)) {
+            register kheap_block_t* prev = KHEAP_BL_PREV(block);
+
+            if(!((*prev) & KHEAP_PRESENT)) {
+                /* extend block over the previous one (free) */
+                actual_sz += KHEAP_BL_DATASZ2SZ(KHEAP_BL_B2DATASZ(*prev));
+                block = prev;
+            }
+        }
+
+        KHEAP_BL_SET(block, actual_sz, 0);
     }
 }
 
