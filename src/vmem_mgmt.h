@@ -73,6 +73,6 @@ void vmem_mgmt_free(phys_addr_t addr);
  *                      - VM_SPLIT_LARGE: the virtual address should
  *                          be treated as a large page.
  */
-bool vmem_mgmt_split(aspace_t space, uintptr_t virt, 
+bool vmem_mgmt_split(spc_t space, uintptr_t virt, 
         uintptr_t** pd, uintptr_t** pt, size_t* ipd, size_t* ipt, uint32_t flags);
 

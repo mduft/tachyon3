@@ -30,7 +30,7 @@
 /**
  * Maps a specified physical address to a virtual one.
  *
- * @param aspace    the address space to use.
+ * @param spc    the address space to use.
  * @param phys      the physical address to map.
  * @param virt      the virtual address to map to.
  * @param flags     flags controlling the kind of mapping.
@@ -44,27 +44,27 @@
  *                      - PG_EXECUTE_DISABLE
  * @return          true on success, false otherwise.
  */
-bool vmem_map(aspace_t aspace, phys_addr_t phys, void* virt, uint32_t flags);
+bool vmem_map(spc_t spc, phys_addr_t phys, void* virt, uint32_t flags);
 
 /**
  * Assures that a given virtual address is not mapped.
  * Does nothing (except writing a warning), if the given
  * virtual address does not match a mapping exactly.
  *
- * @param aspace    the address space to use.
+ * @param spc    the address space to use.
  * @param virt      the virtual address to unmap.
  * @return          the physical address the page was mapped to.
  */
-phys_addr_t vmem_unmap(aspace_t aspace, void* virt);
+phys_addr_t vmem_unmap(spc_t spc, void* virt);
 
 /**
  * Tries to find the physical address for a virtual one.
  * If the virtual address is not mapped to a physical one,
  * the function fails.
  *
- * @param  aspace the target address space.
+ * @param  spc the target address space.
  * @param  virt   the virtual address to resolve.
  * @return        the physical address, or 0 on failure.
  */
-phys_addr_t vmem_resolve(aspace_t aspace, void* virt);
+phys_addr_t vmem_resolve(spc_t spc, void* virt);
 

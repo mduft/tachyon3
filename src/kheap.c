@@ -4,7 +4,7 @@
 #include "kheap.h"
 #include "vmem.h"
 #include "pmem.h"
-#include "aspace.h"
+#include "spc.h"
 #include "mem.h"
 #include "log.h"
 
@@ -177,7 +177,7 @@ void kheap_init() {
         fatal("error in kernel heap: cannot allocate physical memory!\n");
     }
 
-    if(!vmem_map(aspace_current(), phys, (void*)KHEAP_START, KHEAP_PG_FLAGS)) {
+    if(!vmem_map(spc_current(), phys, (void*)KHEAP_START, KHEAP_PG_FLAGS)) {
         fatal("error in kernel heap: cannot map virtual memory!\n");
     }
 
@@ -207,7 +207,7 @@ void* kheap_alloc(size_t bytes) {
             /* no more room, allocate another page, and try again */
             /* TODO: optimize: allocate as many pages at once 
              *       as required to hold the region */
-            vmem_map(aspace_current(), 
+            vmem_map(spc_current(), 
                 pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K), 
                 (void*)kheap_state.vmem_mark, KHEAP_PG_FLAGS);
 

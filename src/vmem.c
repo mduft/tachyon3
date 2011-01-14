@@ -17,12 +17,12 @@
             result = false;                                 \
         } else { x[i] = phys | PG_PRESENT | flags; }
 
-static inline phys_addr_t vmem_find_unmap(aspace_t aspace, void* virt, bool unmap) {
+static inline phys_addr_t vmem_find_unmap(spc_t spc, void* virt, bool unmap) {
     size_t ipd, ipt;
     uintptr_t* pd;
     uintptr_t* pt;
 
-    if(!vmem_mgmt_split(aspace, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, 0)) {
+    if(!vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, 0)) {
         return 0; /* not mapped, it seems */
     }
 
@@ -46,13 +46,13 @@ static inline phys_addr_t vmem_find_unmap(aspace_t aspace, void* virt, bool unma
     return result;
 }
 
-bool vmem_map(aspace_t aspace, phys_addr_t phys, void* virt, uint32_t flags) {
+bool vmem_map(spc_t spc, phys_addr_t phys, void* virt, uint32_t flags) {
     size_t ipd, ipt;
     uintptr_t* pd;
     uintptr_t* pt;
     bool result = true;
 
-    if(!vmem_mgmt_split(aspace, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, 
+    if(!vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, 
             VM_SPLIT_ALLOC | (flags & PG_LARGE ? VM_SPLIT_LARGE : 0))) {
         return false;
     }
@@ -73,11 +73,11 @@ bool vmem_map(aspace_t aspace, phys_addr_t phys, void* virt, uint32_t flags) {
     return result;
 }
 
-phys_addr_t vmem_unmap(aspace_t aspace, void* virt) {
-    return vmem_find_unmap(aspace, virt, true);
+phys_addr_t vmem_unmap(spc_t spc, void* virt) {
+    return vmem_find_unmap(spc, virt, true);
 }
 
-phys_addr_t vmem_resolve(aspace_t aspace, void* virt) {
-    return vmem_find_unmap(aspace, virt, false);
+phys_addr_t vmem_resolve(spc_t spc, void* virt) {
+    return vmem_find_unmap(spc, virt, false);
 }
 

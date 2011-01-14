@@ -24,7 +24,7 @@ phys_addr_t* ps_mapspace = &x86_64_pg_tmap;
         }                                                           \
     }
 
-bool vmem_mgmt_split(aspace_t space, uintptr_t virt, uintptr_t** pd, 
+bool vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd, 
                     uintptr_t** pt, size_t* ipd, size_t* ipt, uint32_t flags) {
     if(!pd || !pt) {
         return false;

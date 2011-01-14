@@ -57,7 +57,7 @@ typedef uintmax_t   pid_t;
 typedef pid_t       tid_t;
 
 typedef uintptr_t   phys_addr_t;
-typedef phys_addr_t aspace_t;
+typedef phys_addr_t spc_t;
 
 typedef uint8_t     bool;
 

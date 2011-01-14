@@ -11,7 +11,7 @@
  *
  * @return a new address space.
  */
-aspace_t aspace_new();
+spc_t spc_new();
 
 /**
  * Deletes an address space, freeing all associated
@@ -20,14 +20,14 @@ aspace_t aspace_new();
  * 
  * @param target the address space to destroy.
  */
-void aspace_delete(aspace_t target);
+void spc_delete(spc_t target);
 
 /**
  * Retrieves the currently active address space.
  *
  * @return the active address space.
  */
-aspace_t aspace_current();
+spc_t spc_current();
 
 /**
  * Switches to another address space, making target
@@ -35,5 +35,5 @@ aspace_t aspace_current();
  *
  * @param target the address space to activate.
  */
-void aspace_switch(aspace_t target);
+void spc_switch(spc_t target);
 
