@@ -5,15 +5,20 @@
 #include "pmem.h"
 #include "log.h"
 #include "ldsym.h"
+#include "mboot.h"
 
 /* testing */
 #if 1
 #include "kheap.h"
 #endif
 
-void boot(/*void* mbd, uint32_t mbm*/) {
+init_state_t const boot_state;
+
+void boot() {
     log_init();
     log_set_level("screen", Trace);
+
+    mboot_init();
 
     pmem_init();
 

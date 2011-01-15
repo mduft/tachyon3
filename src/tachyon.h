@@ -75,6 +75,20 @@ typedef struct {
     uintptr_t   ss;     /**< (only on ring change). the original stack segment */
 } interrupt_t;
 
+/**
+ * Describes the initial state when tachyon takes control. At the
+ * moment this stores the multiboot informations, if available.
+ */
+typedef struct {
+    uint32_t ax;
+    uint32_t bx;
+} init_state_t;
+
+/**
+ * The initial boot state. Accessible to all.
+ */
+extern init_state_t const boot_state;
+
 /* 
  * .----------------------------------.
  * | common basic functions           |

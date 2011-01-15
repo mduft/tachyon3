@@ -95,15 +95,22 @@ bootstrap_x86:
 
     mov   %esp, %ebp
 
-    # push parameters to the entry point (grub parameters)
-    push  %eax
-    push  %ebx
-
     # .------------------------------------.
     # | Main kernel entry (C/C++)          |
     # '------------------------------------'
 
+    push %eax
+    push %ebx
+
     call bss_init
+
+    pop %eax
+    pop %ebx
+
+    # store the initial boot state
+    mov   %eax, (boot_state + 4)
+    mov   %ebx, (boot_state)
+
     call cga_init
     call x86_idt_init
 

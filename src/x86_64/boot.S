@@ -111,8 +111,10 @@ bootstrap_x86_64_x64:
     call x86_64_idt_init
 
     # restore the multiboot-loader information to the correct register
-    mov (bootstrap_x86_64_boot_ebx), %rdi
-    mov (bootstrap_x86_64_boot_eax), %rsi
+    movl (bootstrap_x86_64_boot_eax), %eax
+    mov  %eax, (boot_state)
+    movl (bootstrap_x86_64_boot_ebx), %ebx
+    mov  %ebx, (boot_state + 4)
 
     # TODO: assure that the multiboot information is mapped!
 

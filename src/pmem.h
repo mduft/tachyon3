@@ -17,7 +17,7 @@ typedef struct {
      * be retrieved. The callback will be called reg_cnt
      * times with increasing index. 
      */
-    bool (*reg_cb)(size_t index, uintptr_t* start, size_t* len);
+    bool (*reg_cb)(size_t index, uint64_t* start, uint64_t* len);
 } pmem_ext_t;
 
 /** extension point function type */

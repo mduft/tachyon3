@@ -4,21 +4,88 @@
 #include "mboot.h"
 #include "extp.h"
 
+#define MAX_MBOOT_MEM_REGIONS   16
+#define MBOOT_MAGIC             0x2BADB002
+
+#define MBOOT_FL_MEM            0x001
+#define MBOOT_FL_BOOTDEV        0x002
+#define MBOOT_FL_CMDLINE        0x004
+#define MBOOT_FL_MODS           0x008
+#define MBOOT_FL_ELFSYM         0x020
+#define MBOOT_FL_MEMMAP         0x040
+#define MBOOT_FL_DRIVES         0x080
+#define MBOOT_FL_CONFIG_TABLE   0x100
+#define MBOOT_FL_LOADER_NAME    0x200
+#define MBOOT_FL_APM_TABLE      0x400
+#define MBOOT_FL_VIDEO_INFO     0x800
+
 INSTALL_EXTENSION(EXTP_PMEM_REGION, mboot_pmem_extp, "multiboot")
+
+typedef struct {
+    uint32_t    flags;
+    uint32_t    mem_lower;
+    uint32_t    mem_upper;
+    uint32_t    boot_dev;
+    uint32_t    cmdline;
+    uint32_t    mods_cnt;
+    uint32_t    mods_addr;
+    uint32_t    elf_sh_num;
+    uint32_t    elf_sh_size;
+    uint32_t    elf_sh_addr;
+    uint32_t    elf_sh_shndx;
+    uint32_t    mmap_len;
+    uint32_t    mmap_addr;
+    uint32_t    drives_len;
+    uint32_t    drives_addr;
+    uint32_t    config_table;
+    uint32_t    loader_name;
+    uint32_t    apm_tab;
+    uint32_t    vbe_control_info;
+    uint32_t    vbe_mode_info;
+    uint32_t    vbe_mode;
+    uint32_t    vbe_iface_seg;
+    uint32_t    vbe_iface_off;
+    uint32_t    vbe_iface_len;
+} PACKED mboot_info_t;
+
+typedef struct {
+    uint32_t    size;
+    uint64_t    addr;
+    uint64_t    len;
+    uint32_t    type;
+} PACKED mboot_mmap_t;
 
 static bool mboot_pmem_ext_cb(size_t idx, uintptr_t* start, size_t* len) {
     return false;
 }
 
-pmem_ext_t mboot_pmem_extp() {
-    static pmem_ext_t ext = { 0, mboot_pmem_ext_cb };
+static struct {
+    uintptr_t start;
+    size_t len;
+} mboot_mem_regions[MAX_MBOOT_MEM_REGIONS] UNUSED;
 
-    if(ext.reg_cnt == 0) {
-        /* find regions */
-        /* TODO: boot code must save initial context globally 
-         * somewhere for us to access */
+static pmem_ext_t mboot_pmem_ext = { 0, mboot_pmem_ext_cb };
+
+void mboot_init() {
+    if(boot_state.ax != MBOOT_MAGIC) {
+        return;
     }
 
-    return ext;
+    register mboot_info_t* mbi = (mboot_info_t*)(uintptr_t)boot_state.bx;
+
+    if(mbi->flags & MBOOT_FL_MEMMAP) {
+        for(mboot_mmap_t* mmap = (mboot_mmap_t*)(uintptr_t)mbi->mmap_addr;
+            (uintptr_t)mmap < (mbi->mmap_addr + mbi->mmap_len);
+            mmap = (mboot_mmap_t*)((uintptr_t)mmap + 
+                mmap->size + sizeof(mmap->size))) 
+        {
+            mboot_mem_regions[mboot_pmem_ext.reg_cnt].start = mmap->addr;
+            mboot_mem_regions[mboot_pmem_ext.reg_cnt++].len = mmap->len;
+        }
+    }
+}
+
+pmem_ext_t mboot_pmem_extp() {
+    return mboot_pmem_ext;
 }
 
