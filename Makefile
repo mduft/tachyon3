@@ -91,8 +91,22 @@ $(KERNEL): $(KERNEL_OBJECTS) $(ARCH_PPLSCRIPT)
 	 fi
 	@$(LD) $(KLDFLAGS) -o "$@" $(KERNEL_OBJECTS)
 
-all-kernel: $(KERNEL)
-	@printf "kernel ready: "
+$(KERNEL).dbg: $(KERNEL)
+	@if test $(VERBOSE) = 0; then \
+		echo "[SPLT] $(notdir $@)"; \
+	 else \
+		echo "$(OBJCOPY) --only-keep-debug \"$<\" \"$@\""; \
+		echo "$(OBJCOPY) --strip-debug \"$<\""; \
+		echo "$(OBJCOPY) --add-gnu-debuglink=\"$@\" \"$<\""; \
+		echo "touch \"$@\""; \
+	 fi
+	@$(OBJCOPY) --only-keep-debug "$<" "$@"
+	@$(OBJCOPY) --strip-debug "$<"
+	@$(OBJCOPY) --add-gnu-debuglink="$@" "$<"
+	@touch "$@"
+
+all-kernel: $(KERNEL) $(KERNEL).dbg
+	@printf "kernel ready: " 
 	@(cd $(dir $(KERNEL)) && ls -hs $(notdir $(KERNEL)))
 
 clean:

@@ -5,6 +5,7 @@ CC				:= x86_64-pc-elf-gcc
 CXX				:= x86_64-pc-elf-g++
 LD				:= x86_64-pc-elf-ld
 CPP				:= x86_64-pc-elf-cpp
+OBJCOPY         := x86_64-pc-elf-objcopy
 
 KERNEL_CPPFLAGS	:= -D__X86__ 
 KERNEL_CFLAGS	:= -O0 -g -m32 $(KERNEL_CPPFLAGS)
