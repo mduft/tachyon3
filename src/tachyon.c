@@ -18,8 +18,6 @@ void boot() {
     log_init();
     log_set_level("screen", Trace);
 
-    mboot_init();
-
     pmem_init();
 
     /* reserve the kernel's physical memory, so nobody

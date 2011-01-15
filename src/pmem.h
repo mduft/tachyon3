@@ -6,24 +6,6 @@
 #include "tachyon.h"
 
 /**
- * Defines a physical memory extension point.
- */
-typedef struct {
-    /** The count of regions defined by this extension point */
-    size_t reg_cnt;
-
-    /** 
-     * The callback from which the region information can
-     * be retrieved. The callback will be called reg_cnt
-     * times with increasing index. 
-     */
-    bool (*reg_cb)(size_t index, uint64_t* start, uint64_t* len);
-} pmem_ext_t;
-
-/** extension point function type */
-typedef pmem_ext_t (*pmem_ext_func_t)();
-
-/**
  * Initializes the memory management. Since the three
  * memory management units in the kernel (pmem, vmem
  * and kheap) are tightly coupled, and initialization

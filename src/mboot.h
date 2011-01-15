@@ -6,6 +6,5 @@
 #include "tachyon.h"
 #include "pmem.h"
 
-void mboot_init();
-pmem_ext_t mboot_pmem_extp();
+void mboot_pmem_init();
 

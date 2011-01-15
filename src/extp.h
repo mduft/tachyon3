@@ -40,14 +40,15 @@ typedef struct {
     char const* const ext_tag;      /**< the identifier of the extension point */
     extp_func_t ext_func;           /**< the callback function to register. */
     char const* const ext_descr;    /**< an optional string, interpreted by the extension */
-} extension_point_t;
+} PACKED extension_point_t;
 
 /**
  * Installs a specified extension point to the .extp section
  * in the kernel.
  */
 #define INSTALL_EXTENSION(t, e, d) \
-    static extension_point_t __extp_##e UNUSED SECTION(".extp") = { t, (extp_func_t)e, d } ;
+    static extension_point_t __extp_##e = { t, (extp_func_t)e, d } ; \
+    static extension_point_t* __extpp_##e UNUSED SECTION(".extp") = &__extp_##e;
 
 /**
  * Iterate over all extension points. The callback is called

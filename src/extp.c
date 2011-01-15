@@ -6,11 +6,11 @@
 #include "ldsym.h"
 
 void extp_iterate(char const* tag, extp_iterator_func_t callback) {
-    extension_point_t* cur = &_core_vma_sextp;
+    extension_point_t** cur = &_core_vma_sextp;
 
-    while(cur != &_core_vma_eextp) {
-        if(!tag || strcmp(cur->ext_tag, tag) == 0)
-            callback(cur->ext_tag, cur->ext_func, cur->ext_descr);
+    while(cur != &_core_vma_eextp && *cur) {
+        if(!tag || strcmp((*cur)->ext_tag, tag) == 0)
+            callback((*cur)->ext_tag, (*cur)->ext_func, (*cur)->ext_descr);
 
         ++cur;
     }

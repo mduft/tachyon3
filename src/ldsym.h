@@ -15,5 +15,5 @@ extern uintptr_t _core_lma_ebss;
 extern uintptr_t _core_vma_end;
 extern uintptr_t _core_lma_end;
 
-extern extension_point_t _core_vma_sextp;
-extern extension_point_t _core_vma_eextp;
+extern extension_point_t* _core_vma_sextp;
+extern extension_point_t* _core_vma_eextp;

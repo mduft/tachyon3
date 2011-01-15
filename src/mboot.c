@@ -19,7 +19,10 @@
 #define MBOOT_FL_APM_TABLE      0x400
 #define MBOOT_FL_VIDEO_INFO     0x800
 
-INSTALL_EXTENSION(EXTP_PMEM_REGION, mboot_pmem_extp, "multiboot")
+#define MBOOT_MM_AVAILABLE      1
+#define MBOOT_MM_RESERVED       2
+
+INSTALL_EXTENSION(EXTP_PMEM_REGION, mboot_pmem_init, "multiboot")
 
 typedef struct {
     uint32_t    flags;
@@ -55,18 +58,7 @@ typedef struct {
     uint32_t    type;
 } PACKED mboot_mmap_t;
 
-static bool mboot_pmem_ext_cb(size_t idx, uintptr_t* start, size_t* len) {
-    return false;
-}
-
-static struct {
-    uintptr_t start;
-    size_t len;
-} mboot_mem_regions[MAX_MBOOT_MEM_REGIONS] UNUSED;
-
-static pmem_ext_t mboot_pmem_ext = { 0, mboot_pmem_ext_cb };
-
-void mboot_init() {
+void mboot_pmem_init() {
     if(boot_state.ax != MBOOT_MAGIC) {
         return;
     }
@@ -79,13 +71,10 @@ void mboot_init() {
             mmap = (mboot_mmap_t*)((uintptr_t)mmap + 
                 mmap->size + sizeof(mmap->size))) 
         {
-            mboot_mem_regions[mboot_pmem_ext.reg_cnt].start = mmap->addr;
-            mboot_mem_regions[mboot_pmem_ext.reg_cnt++].len = mmap->len;
+            if(mmap->type == MBOOT_MM_AVAILABLE) {
+                pmem_add(mmap->addr, mmap->len);
+            }
         }
     }
-}
-
-pmem_ext_t mboot_pmem_extp() {
-    return mboot_pmem_ext;
 }
 
