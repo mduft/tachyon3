@@ -82,7 +82,7 @@ void pmem_init() {
 
     first_region.bmap = &first_bmap;
     first_region.start = 0;
-    first_region.length = first_bmap.bits * PMEM_PAGESIZE;
+    first_region.length = ((first_bmap.bits - (1 /* savety zone */)) * PMEM_PAGESIZE);
 
     /* immediately reserve the first physical page (real
      * mode IVT). */
@@ -98,11 +98,76 @@ void pmem_init() {
     kheap_init();
 
     extp_iterate(EXTP_PMEM_REGION, pmem_iterate_extp);
+
+    /* some debugging information */
+    listnode_t* current = reg_list.head;
+    while(current) {
+        pmem_region_t* reg = (pmem_region_t*)current->payload;
+        trace("pmem: %p - %p (%dKB)\n", reg->start, 
+            reg->start + reg->length, reg->length / 1024);
+        current = current->next;
+    }
 }
 
 void pmem_add(phys_addr_t start, size_t length) {
-    /* TODO: this needs to be able to allocate from the
-     * kernel heap, so we need virtual memory first! */
+    listnode_t* current;
+    
+recheck:
+
+    current = reg_list.head;
+    while(current) {
+        pmem_region_t* reg = (pmem_region_t*)current->payload;
+
+        if(start >= reg->start && start < (reg->start + reg->length)) {
+            /* start within this region */
+            if((start + length) <= (reg->start + reg->length)) {
+                /* end withing this section, so completely with us already */
+                return;
+            }
+
+            start = reg->start + reg->length;
+            goto recheck;
+        }
+
+        if((start + length) > reg->start && 
+            (start + length) < (reg->start + reg->length)) 
+        {
+            /* end within this region */
+            if(start >= reg->start) {
+                /* start too, so no more left over. */
+                return;
+            }
+
+            length = (reg->start - start);
+            goto recheck;
+        }
+
+        current = current->next;
+    }
+
+    /* we have a checked region here, with correct start and end.
+     * now allocate the required management structures, etc. */
+    pmem_region_t* region = (pmem_region_t*)kheap_alloc(sizeof(pmem_region_t));
+    listnode_t* node = (listnode_t*)kheap_alloc(sizeof(listnode_t));
+    bitmap_t* bmap = bmap_new(PMEM_PAGES(length));
+
+    if(!region || !node || !bmap) {
+        error("not enough memory to allocate memory management structures!\n");
+
+        if(region)  kheap_free(region);
+        if(node)    kheap_free(node);
+        if(bmap)    kheap_free(bmap);
+
+        return;
+    }
+
+    region->start = start;
+    region->length = length;
+    region->bmap = bmap;
+
+    node->payload = (uintptr_t)region;
+    node->next = reg_list.head;
+    reg_list.head = node;
 }
 
 /**

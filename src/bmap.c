@@ -3,6 +3,7 @@
 
 #include "bmap.h"
 #include "log.h"
+#include "kheap.h"
 
 #define BMAP_BITLOC(bit, idx, off) \
     asm volatile("div %4" : "=a"(idx), "=d"(off) : "d"(0), "a"(bit), "r"(sizeof(uintptr_t) * 8));
@@ -11,11 +12,25 @@
 #define BMAP_PREV_MUL(x, m)     (BMAP_NEXT_MUL(x, m) - m)
 
 bitmap_t* bmap_new(size_t bitcnt) {
-    /* TODO: memory allocation */
-    return NULL;
+    bitmap_t* bmap = (bitmap_t*)kheap_alloc(sizeof(bitmap_t));
+
+    if(!bmap)
+        return NULL;
+
+    void* storage  = kheap_alloc(bitcnt / 8);
+
+    if(!storage)
+        return NULL;
+
+    if(!bmap_init(bmap, storage, bitcnt)) {
+        kheap_free(bmap);
+        kheap_free(storage);
+    }
+
+    return bmap;
 }
 
-uint8_t bmap_init(bitmap_t* handle_storage, void* storage, size_t bitcnt) {
+bool bmap_init(bitmap_t* handle_storage, void* storage, size_t bitcnt) {
     if(!handle_storage || !storage) {
         return false;
     }
@@ -32,7 +47,8 @@ uint8_t bmap_init(bitmap_t* handle_storage, void* storage, size_t bitcnt) {
 
 void bmap_destroy(bitmap_t* bmap) {
     if(bmap && bmap->allocated) {
-        /* TODO: free memory for storage and handle */
+        kheap_free((void*) bmap->storage);
+        kheap_free(bmap);
     }
 }
 

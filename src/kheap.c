@@ -109,7 +109,7 @@
  * @parma f flags (KHEAP_PRESENT).
  */
 #define KHEAP_BL_SET(h, s, f) \
-    { *h = s | f; register kheap_block_t* ft = KHEAP_BL_H2F(h); *ft = s | f | KHEAP_FOOTER; }
+    { *h = (s) | f; register kheap_block_t* ft = KHEAP_BL_H2F(h); *ft = (s) | f | KHEAP_FOOTER; }
 
 /**
  * The header of a heap memory block. If bit 0 is set, the block
@@ -205,16 +205,22 @@ void* kheap_alloc(size_t bytes) {
 
         if(!KHEAP_BL_HAS_NEXT(block)) {
             /* no more room, allocate another page, and try again */
+            register phys_addr_t phys = pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
+            register size_t sz = KHEAP_BL_B2DATASZ(*block);
+
             /* TODO: optimize: allocate as many pages at once 
              *       as required to hold the region */
-            vmem_map(spc_current(), 
-                pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K), 
-                (void*)kheap_state.vmem_mark, KHEAP_PG_FLAGS);
+            if(!vmem_map(spc_current(), phys,
+                (void*)kheap_state.vmem_mark, KHEAP_PG_FLAGS))
+            {
+                error("failed to allocate more room for the kernel heap!\n");
+            } else {
+                kheap_state.vmem_mark += PAGE_SIZE_4K;
+                KHEAP_BL_SET(block, sz + PAGE_SIZE_4K, 0);
 
-            kheap_state.vmem_mark += PAGE_SIZE_4K;
-
-            /* re-check the current block (which has just been resized)  */
-            continue;
+                /* re-check the current block (which has just been resized)  */
+                continue;
+            }
         }
 
         /* no matching block, and still blocks to search left over */
