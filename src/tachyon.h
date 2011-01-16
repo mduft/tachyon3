@@ -80,8 +80,8 @@ typedef struct {
  * moment this stores the multiboot informations, if available.
  */
 typedef struct {
-    uint32_t ax;
-    uint32_t bx;
+    uint32_t ax;    /**< value of the eax register passed by the loader */
+    uint32_t bx;    /**< value of the ebx register passed by the loader */
 } init_state_t;
 
 /**

@@ -205,22 +205,25 @@ void* kheap_alloc(size_t bytes) {
 
         if(!KHEAP_BL_HAS_NEXT(block)) {
             /* no more room, allocate another page, and try again */
-            register phys_addr_t phys = pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
             register size_t sz = KHEAP_BL_B2DATASZ(*block);
+            register size_t pcnt = ALIGN_UP(bytes, PAGE_SIZE_4K) / PAGE_SIZE_4K;
 
-            /* TODO: optimize: allocate as many pages at once 
-             *       as required to hold the region */
-            if(!vmem_map(spc_current(), phys,
-                (void*)kheap_state.vmem_mark, KHEAP_PG_FLAGS))
-            {
-                error("failed to allocate more room for the kernel heap!\n");
-            } else {
-                kheap_state.vmem_mark += PAGE_SIZE_4K;
-                KHEAP_BL_SET(block, sz + PAGE_SIZE_4K, 0);
+            for(register size_t i = 0; i < pcnt; ++i) {
+                register phys_addr_t phys = pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
 
-                /* re-check the current block (which has just been resized)  */
-                continue;
+                if(!vmem_map(spc_current(), phys,
+                    (void*)kheap_state.vmem_mark, KHEAP_PG_FLAGS))
+                {
+                    error("failed to allocate more room for the kernel heap!\n");
+                    return NULL;
+                } else {
+                    kheap_state.vmem_mark += PAGE_SIZE_4K;
+                    KHEAP_BL_SET(block, sz + (PAGE_SIZE_4K * pcnt), 0);
+                }
             }
+
+            /* re-check the current block (which has just been resized)  */
+            continue;
         }
 
         /* no matching block, and still blocks to search left over */
@@ -261,16 +264,44 @@ void kheap_free(void* mem) {
 }
 
 void* kheap_realloc(void* mem, size_t bytes) {
-    /* TODO: try to resize current chunk. or is trying to find a
-     * fit more expesive then re-allocating all the time? */
-
     if(!kheap_validate(mem)) {
         error("kernel heap block validation failed for %p!\n", mem);
         return NULL;
     }
 
+    register kheap_block_t* block = KHEAP_BL_M2H(mem);
+
+    /* no shrinking ... */
+    if(KHEAP_BL_B2DATASZ(*block) >= bytes)
+        return mem;
+
+    if(KHEAP_BL_HAS_NEXT(block)) {
+        register kheap_block_t* next = KHEAP_BL_NEXT(block);
+
+        if(!((*next) & KHEAP_PRESENT) && 
+            (KHEAP_BL_DATASZ2SZ(KHEAP_BL_B2DATASZ(*next)) + 
+             KHEAP_BL_B2DATASZ(*block)) >= bytes)
+        {
+            if(((ssize_t)KHEAP_BL_B2DATASZ(*next) - ((ssize_t)bytes - 
+                (ssize_t)KHEAP_BL_B2DATASZ(*block))) <= 0) 
+            {
+                /* completely merge block */
+                register size_t nsz = (KHEAP_BL_B2DATASZ(*block) + 
+                    KHEAP_BL_DATASZ2SZ(KHEAP_BL_B2DATASZ(*next)));
+                KHEAP_BL_SET(block, nsz, KHEAP_PRESENT);
+            } else {
+                register size_t nsz = KHEAP_BL_B2DATASZ(*next) - 
+                    (bytes - KHEAP_BL_B2DATASZ(*block));
+                KHEAP_BL_SET(block, bytes, KHEAP_PRESENT);
+                next = KHEAP_BL_NEXT(block);
+                KHEAP_BL_SET(next, nsz, 0);
+            }
+            return mem;
+        }
+    }
+
     void* new = kheap_alloc(bytes);
-    memmove(new, mem, KHEAP_BL_B2DATASZ(*KHEAP_BL_M2H(mem)));
+    memmove(new, mem, KHEAP_BL_B2DATASZ(*block));
     kheap_free(mem);
     return new;
 }
