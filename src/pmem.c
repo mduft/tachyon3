@@ -179,11 +179,12 @@ recheck:
  * Helper to really allocate memory either with filling degree
  * hinting on or off. only used from the real pmem_alloc.
  *
+ * @param[out] addr the allocated address if successfull
  * @param length    the block length to allocate
  * @param align     the minimum alignment for the block.
  * @param use_fdeg  whether to take filling degree into
  *                  account to speed up free region search.
- * @return          the allocate address, or 0 on failure.
+ * @return          true on success, false on failure.
  */
 static bool pmem_alloc_helper(phys_addr_t* addr, size_t length, off_t align, bool use_fdeg) {
     listnode_t* current = reg_list.head;

@@ -31,7 +31,7 @@
  * Calculate the user data's memory block size from the management
  * block size (including header + footer)
  *
- * @parma b the size of the management block.
+ * @param b the size of the management block.
  */
 #define KHEAP_BL_SZ2DATASZ(b)   ((b) - (sizeof(kheap_block_t) * 2))
 
@@ -106,7 +106,7 @@
  *
  * @param h pointer to the header.
  * @param s new size of the block.
- * @parma f flags (KHEAP_PRESENT).
+ * @param f flags (KHEAP_PRESENT).
  */
 #define KHEAP_BL_SET(h, s, f) \
     { *h = (s) | f; register kheap_block_t* ft = KHEAP_BL_H2F(h); *ft = (s) | f | KHEAP_FOOTER; }
