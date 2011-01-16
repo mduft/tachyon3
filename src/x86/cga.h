@@ -6,7 +6,8 @@
 #define CGA_WIDTH      80
 #define CGA_HEIGHT     25
 
-#define CGA_VR_LOCATION   0xB8000
+#define CGA_VR_LOCATION   CGA_VIRTUAL
+#define CGA_VR_PHYSICAL   0xB8000
 #define CGA_VR_SIZE       (CGA_WIDTH*CGA_HEIGHT*2)
 
 /**

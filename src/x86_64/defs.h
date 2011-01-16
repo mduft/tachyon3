@@ -11,3 +11,4 @@
 
 #define APIC_VIRTUAL        0xFFFFFFFFA0000000
 
+#define CGA_VIRTUAL         (CORE_VMA_X86_64 - 0x1000)

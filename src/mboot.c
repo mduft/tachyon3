@@ -3,6 +3,11 @@
 
 #include "mboot.h"
 #include "extp.h"
+#include "vmem.h"
+#include "spc.h"
+#include "log.h"
+
+#include <x86/paging.h>
 
 #define MAX_MBOOT_MEM_REGIONS   16
 #define MBOOT_MAGIC             0x2BADB002
@@ -21,6 +26,9 @@
 
 #define MBOOT_MM_AVAILABLE      1
 #define MBOOT_MM_RESERVED       2
+
+#define MBOOT_VTEMP_REG_START   0xA0000000
+#define MBOOT_VTEMP_REG_END     0xA00F0000
 
 INSTALL_EXTENSION(EXTP_PMEM_REGION, mboot_pmem_init, "multiboot")
 
@@ -58,23 +66,64 @@ typedef struct {
     uint32_t    type;
 } PACKED mboot_mmap_t;
 
+static void* mboot_find_free_page() {
+    /* this is some arbitrary address to search for free room
+     * for temporary mappings */
+    static void* mboot_pg_temp = (void*)MBOOT_VTEMP_REG_START;
+
+    while(vmem_resolve(spc_current(), mboot_pg_temp) != 0 && 
+            (uintptr_t)mboot_pg_temp < MBOOT_VTEMP_REG_END) 
+    {
+        mboot_pg_temp = (void*)((uintptr_t)mboot_pg_temp + PAGE_SIZE_4K);
+    }
+
+    if((uintptr_t)mboot_pg_temp >= MBOOT_VTEMP_REG_END) {
+        warn("out of temporary virtual space to map multiboot structures\n");
+        return NULL;
+    }
+
+    return mboot_pg_temp;
+}
+
+static void* mboot_map(uint32_t mbi_struct) {
+    void* vaddr = mboot_find_free_page();
+
+    uintptr_t page = ALIGN_DN(mbi_struct, PAGE_SIZE_4K);
+    uintptr_t off = ALIGN_RST(mbi_struct, PAGE_SIZE_4K);
+
+    if(!vaddr || !vmem_map(spc_current(), page, vaddr, 0)) {
+        error("cannot temporary map multiboot structure!\n")
+        return NULL;
+    }
+
+    return (void*)((uintptr_t)vaddr + off);
+}
+
+static void mboot_unmap(void* mapped) {
+    vmem_unmap(spc_current(), mapped);
+}
+
 void mboot_pmem_init() {
     if(boot_state.ax != MBOOT_MAGIC) {
         return;
     }
 
-    register mboot_info_t* mbi = (mboot_info_t*)(uintptr_t)boot_state.bx;
+    register mboot_info_t* mbi = (mboot_info_t*)mboot_map(boot_state.bx);
 
     if(mbi->flags & MBOOT_FL_MEMMAP) {
-        for(mboot_mmap_t* mmap = (mboot_mmap_t*)(uintptr_t)mbi->mmap_addr;
-            (uintptr_t)mmap < (mbi->mmap_addr + mbi->mmap_len);
-            mmap = (mboot_mmap_t*)((uintptr_t)mmap + 
-                mmap->size + sizeof(mmap->size))) 
+        mboot_mmap_t* mm = (mboot_mmap_t*)mboot_map(mbi->mmap_addr);
+
+        for(mboot_mmap_t* mmap = mm; (uintptr_t)mmap < ((uintptr_t)mm + mbi->mmap_len);
+            mmap = (mboot_mmap_t*)((uintptr_t)mmap + mmap->size + sizeof(mmap->size))) 
         {
             if(mmap->type == MBOOT_MM_AVAILABLE) {
                 pmem_add(mmap->addr, mmap->len);
             }
         }
+
+        mboot_unmap(mm);
     }
+
+    mboot_unmap(mbi);
 }
 

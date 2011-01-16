@@ -106,7 +106,6 @@ bootstrap_x86_64_x64:
     movq %rsp, %rbp
 
     call bss_init
-    call cga_init
 
     call x86_64_idt_init
 
@@ -115,8 +114,6 @@ bootstrap_x86_64_x64:
     mov  %eax, (boot_state)
     movl (bootstrap_x86_64_boot_ebx), %ebx
     mov  %ebx, (boot_state + 4)
-
-    # TODO: assure that the multiboot information is mapped!
 
     call boot
     call abort

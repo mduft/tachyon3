@@ -10,7 +10,7 @@
 /* defined in paging.S */
 extern phys_addr_t x86_pg_tmap;
 
-phys_addr_t* ps_mapspace = &x86_pg_tmap;
+phys_addr_t* ps_mapspace = (phys_addr_t*)((uintptr_t)&x86_pg_tmap + CORE_VMA_X86);
 
 #define VM_CHECK_MAPPING(x) \
     { if(!(x)) { error("cannot map " #x " for %p\n", virt); } }

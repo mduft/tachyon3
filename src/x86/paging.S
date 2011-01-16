@@ -41,6 +41,24 @@ x86_pg_pt:
     x86_pte 0x64, 0x00385000
     x86_pte 0x17, 0x003E9000
 
+# duplicate the mapping for high memory, as we want 
+# to later on unmap the lower stuff (without dooming
+# the upper mappings too).
+.align 0x1000
+x86_pg_pt_high:
+    .long 0x0
+    x86_pte 0x64, 0x00001000
+    x86_pte 0x64, 0x00065000
+    x86_pte 0x64, 0x000C9000
+    x86_pte 0x64, 0x0012D000
+    x86_pte 0x64, 0x00191000
+    x86_pte 0x64, 0x001F5000
+    x86_pte 0x64, 0x00259000
+    x86_pte 0x64, 0x002BD000
+    x86_pte 0x64, 0x00321000
+    x86_pte 0x64, 0x00385000
+    x86_pte 0x17, 0x003E9000
+
 x86_pg_pt_temp:
     .fill 0x3F6, 0x4, 0x0
     x86_pg_tmap:
@@ -57,7 +75,7 @@ x86_pg_pt_temp:
 x86_pg_pd:
     .long x86_pg_pt + ( PG_BASE_KFLAGS ) # 0 - 4MB
     .fill 0x2FF, 0x4, 0x0                # 767 not present entries.
-    .long x86_pg_pt + ( PG_BASE_KFLAGS ) # higher half map
+    .long x86_pg_pt_high + ( PG_BASE_KFLAGS ) # higher half map
     .fill 0x0FE, 0x4, 0x0                # 254 not present entries.
     .long x86_pg_pt_temp + ( PG_BASE_KFLAGS ) # temp mapping
 

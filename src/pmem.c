@@ -7,6 +7,7 @@
 #include "log.h"
 #include "extp.h"
 #include "kheap.h"
+#include "vmem.h"
 
 #define PMEM_PAGESIZE   4096
 #define PMEM_FDEG       80
@@ -89,6 +90,10 @@ void pmem_init() {
     if(!pmem_reserve(0x0, 0x1000)) {
         warn("failed protecting real mode IVT.\n");
     }
+
+    /* initialize virtual memory. this releases the identity
+     * mapping for the physical kernel load address */
+    vmem_init();
 
     /* here we are sufficiently initialized, so virtual memory
      * can allocate physical memory for the initial mappings,

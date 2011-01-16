@@ -154,7 +154,7 @@ all-archs-iso:
 
 KQFLAGS := $(BASE_QFLAGS) $(QFLAGS)
 
-qemu: $(KERNEL)
+qemu: all-kernel
 	@arch=$(ARCH); arch=$${arch%%-*}; qe=$$(type -p qemu-system-$${arch}); test -z "$${qe}" && qe=qemu; \
 	 echo "using $${qe}..."; $${qe} $(KQFLAGS) -kernel $(KERNEL);
 
@@ -170,7 +170,7 @@ gdb:
 # grub2 network boot
 #
 
-qemu-netboot-grub2: $(KERNEL) $(GRUB2_CFG) $(GRUB2_PXE)
+qemu-netboot-grub2: all-kernel $(GRUB2_CFG) $(GRUB2_PXE)
 	@arch=$(ARCH); arch=$${arch%%-*}; qe=$$(type -p qemu-system-$${arch}); test -z "$${qe}" && qe=qemu; \
 	 echo "using $${qe}..."; $${qe} $(KQFLAGS) -net nic -net user,tftp=$(BUILDDIR),bootfile=$(subst $(BUILDDIR),,$(GRUB2_PXE)) -boot n;
 
@@ -181,7 +181,7 @@ qemu-netboot-grub2-dbg:
 # direct network boot - multiboot loaded by gPXE.
 #
 
-qemu-netboot: $(KERNEL)
+qemu-netboot: all-kernel
 	@arch=$(ARCH); arch=$${arch%%-*}; qe=$$(type -p qemu-system-$${arch}); test -z "$${qe}" && qe=qemu; \
 	 echo "using $${qe}..."; $${qe} $(KQFLAGS) -net nic -net user,tftp=$(BUILDDIR),bootfile=/$(notdir $(KERNEL)) -boot n;
 
@@ -225,7 +225,7 @@ $(GRUB2_PXE):
 	@mknet=$$(type -p grub-mknetdir); test -x "$${mknet}" || { echo "grub-mknetdir not found!"; exit 1; }; \
 	 $${mknet} --net-directory=$(BUILDDIR);
 
-$(GRUB2_ISO): $(GRUB2_CFG) $(KERNEL)
+$(GRUB2_ISO): $(GRUB2_CFG) all-kernel
 	@-rm -f "$@"
 	@mkresc=$$(type -p grub-mkrescue); test -x "$${mkresc}" || { echo "grub-mkrescue not found!"; exit 1; }; \
 	 $${mkresc} -o "$@" --modules="biosdisk iso9660 multiboot sh" $(BUILDDIR)

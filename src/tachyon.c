@@ -7,11 +7,6 @@
 #include "ldsym.h"
 #include "mboot.h"
 
-/* testing */
-#if 1
-#include "kheap.h"
-#endif
-
 init_state_t const boot_state;
 
 void boot() {
@@ -26,11 +21,5 @@ void boot() {
         error("failed to protect physical lower and kernel memory\n");
     }
 
-    void* p1 = kheap_alloc(0x10);
-    void* p2 = kheap_alloc(0x20);
-    void* p3 = kheap_alloc(0x3);
-
-    kheap_free(p1);
-    kheap_free(p2);
-    kheap_free(p3);
+    fatal("kernel ended unexpectedly.\n");
 }

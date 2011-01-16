@@ -28,6 +28,12 @@
 #define VM_ENTRY_FLAG_MASK  (~0xFFF)
 
 /**
+ * Initializes the virtual memory subsystem. This mainly means
+ * reclaiming the safety mapped memory, which is not really used
+ */
+void vmem_init();
+
+/**
  * Maps a specified physical address to a virtual one.
  *
  * @param spc    the address space to use.

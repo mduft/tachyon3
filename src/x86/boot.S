@@ -111,7 +111,6 @@ bootstrap_x86:
     mov   %eax, (boot_state + 4)
     mov   %ebx, (boot_state)
 
-    call cga_init
     call x86_idt_init
 
     call boot

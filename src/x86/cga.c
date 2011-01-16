@@ -3,14 +3,20 @@
 
 #include "cga.h"
 #include <extp.h>
+#include <vmem.h>
+#include <spc.h>
+#include "paging.h"
 
 INSTALL_EXTENSION(EXTP_LOG_WRITER, cga_write, "screen")
+INSTALL_EXTENSION(EXTP_VMEM_INIT, cga_init, "screen")
 
 static uint16_t __cga_x = 0;
 static uint16_t __cga_y = 0;
 static uint16_t __cga_attr = 0x0700;
 
 void cga_init() {
+    vmem_map(spc_current(), CGA_VR_PHYSICAL, (void*)CGA_VR_LOCATION, PG_WRITABLE);
+
     asm("cld; rep stosl;"
         :   /* no output */
         :   "D"(CGA_VR_LOCATION),
