@@ -3,7 +3,6 @@
 
 #include "pmem.h"
 #include "bmap.h"
-#include "list.h"
 #include "log.h"
 #include "extp.h"
 #include "kheap.h"
@@ -22,20 +21,20 @@
  * region is to be searched in the normal allocation
  * path. If memory runs low, all regions are searched.
  */
-typedef struct {
+typedef struct __tag_pmem_region {
     bitmap_t* bmap;     /**< the bitmap denoting page level allocation */
     phys_addr_t start;  /**< the lowest page's address managed by this region */
     size_t length;      /**< the length in bytes of this region */
+    struct __tag_pmem_region* next; /**< the next region in the list */
 } pmem_region_t;
-
-/** The list of physical memory region descriptors */
-static list_t reg_list;
-
-/** This list node holds the descriptor of the bootstrap memory */
-static listnode_t first_node;
 
 /** This defines the struct to hold the initial memory region */
 static pmem_region_t first_region;
+
+/** This is the head of the region list */
+static pmem_region_t* pmem_region_head;
+
+static pmem_region_t* pmem_region_tail;
 
 /** 
  * This bitmap holds the individual bits for each page of
@@ -75,15 +74,15 @@ static void pmem_iterate_extp(char const* tag, extp_func_t cb, char const* desc)
 }
 
 void pmem_init() {
-    reg_list.head = &first_node;
-    reg_list.head->next = NULL;
-    reg_list.head->payload = (uintptr_t)&first_region;
-
     bmap_init(&first_bmap, first_storage, (sizeof(first_storage) * 8));
 
     first_region.bmap = &first_bmap;
     first_region.start = 0;
     first_region.length = ((first_bmap.bits - (1 /* savety zone */)) * PMEM_PAGESIZE);
+    first_region.next = NULL;
+
+    pmem_region_head = &first_region;
+    pmem_region_tail = pmem_region_head;
 
     /* immediately reserve the first physical page (real
      * mode IVT). */
@@ -105,24 +104,21 @@ void pmem_init() {
     extp_iterate(EXTP_PMEM_REGION, pmem_iterate_extp);
 
     /* some debugging information */
-    listnode_t* current = reg_list.head;
+    pmem_region_t* current = pmem_region_head;
     while(current) {
-        pmem_region_t* reg = (pmem_region_t*)current->payload;
-        trace("pmem: %p - %p (%dKB)\n", reg->start, 
-            reg->start + reg->length, reg->length / 1024);
+        trace("pmem: %p - %p (%dKB)\n", current->start, 
+            current->start + current->length, current->length / 1024);
         current = current->next;
     }
 }
 
 void pmem_add(phys_addr_t start, size_t length) {
-    listnode_t* current;
+    pmem_region_t* reg;
     
 recheck:
 
-    current = reg_list.head;
-    while(current) {
-        pmem_region_t* reg = (pmem_region_t*)current->payload;
-
+    reg = pmem_region_head;
+    while(reg) {
         if(start >= reg->start && start < (reg->start + reg->length)) {
             /* start within this region */
             if((start + length) <= (reg->start + reg->length)) {
@@ -147,20 +143,18 @@ recheck:
             goto recheck;
         }
 
-        current = current->next;
+        reg = reg->next;
     }
 
     /* we have a checked region here, with correct start and end.
      * now allocate the required management structures, etc. */
     pmem_region_t* region = (pmem_region_t*)kheap_alloc(sizeof(pmem_region_t));
-    listnode_t* node = (listnode_t*)kheap_alloc(sizeof(listnode_t));
     bitmap_t* bmap = bmap_new(PMEM_PAGES(length));
 
-    if(!region || !node || !bmap) {
+    if(!region || !bmap) {
         error("not enough memory to allocate memory management structures!\n");
 
         if(region)  kheap_free(region);
-        if(node)    kheap_free(node);
         if(bmap)    kheap_free(bmap);
 
         return;
@@ -169,10 +163,10 @@ recheck:
     region->start = start;
     region->length = length;
     region->bmap = bmap;
+    region->next = NULL;
 
-    node->payload = (uintptr_t)region;
-    node->next = reg_list.head;
-    reg_list.head = node;
+    pmem_region_tail->next = region;
+    pmem_region_tail = region;
 }
 
 /**
@@ -187,10 +181,9 @@ recheck:
  * @return          true on success, false on failure.
  */
 static bool pmem_alloc_helper(phys_addr_t* addr, size_t length, off_t align, bool use_fdeg) {
-    listnode_t* current = reg_list.head;
+    pmem_region_t* reg = pmem_region_head;
 
-    while(current) {
-        pmem_region_t* reg = (pmem_region_t*)current->payload;
+    while(reg) {
         size_t fdeg = (use_fdeg ? bmap_fdeg(reg->bmap) : 0);
 
         /* make sure there is enough free room in the region to
@@ -213,7 +206,7 @@ static bool pmem_alloc_helper(phys_addr_t* addr, size_t length, off_t align, boo
             /* TODO: unlock */
         }
 
-        current = current->next;
+        reg = reg->next;
     }
 
     return false;
@@ -247,11 +240,9 @@ next_pass:
     cur = addr;
 
     while(top > cur) {
-        listnode_t* current = reg_list.head;
+        pmem_region_t* reg = pmem_region_head;
 
-        while(current) {
-            pmem_region_t* reg = (pmem_region_t*)current->payload;
-
+        while(reg) {
             while(pmem_reg_contains(reg, cur)) {
                 register size_t idx = PMEM_TO_REGBIT(reg, cur);
 
@@ -269,7 +260,7 @@ next_pass:
                     goto pass_ok;
             }
 
-            current = current->next;
+            reg = reg->next;
         }
 
         cur += PMEM_PAGESIZE;
@@ -285,11 +276,9 @@ pass_ok:
 }
 
 void pmem_free(phys_addr_t addr, size_t length) {
-    listnode_t* current = reg_list.head;
+    pmem_region_t* reg = pmem_region_head;
 
-    while(current) {
-        pmem_region_t* reg = (pmem_region_t*)current->payload;
-
+    while(reg) {
         if(pmem_reg_contains(reg, addr)) {
             /* free relative to the current region. */
             addr = PMEM_TO_REGBIT(reg, addr);
@@ -297,7 +286,7 @@ void pmem_free(phys_addr_t addr, size_t length) {
             return;
         }
 
-        current = current->next;
+        reg = reg->next;
     }
 
     warn("cannot find physical region to free %p\n", addr);
