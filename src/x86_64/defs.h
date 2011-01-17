@@ -12,3 +12,9 @@
 #define APIC_VIRTUAL        0xFFFFFFFFA0000000
 
 #define CGA_VIRTUAL         (CORE_VMA_X86_64 - 0x1000)
+
+/* registers */
+#define AX  "rax"
+#define BX  "rbx"
+#define CX  "rcx"
+#define DX  "rdx"

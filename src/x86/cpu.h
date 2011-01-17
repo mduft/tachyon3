@@ -31,3 +31,12 @@
 #define CR4_PCID_ENABLE         (1 << 17)
 #define CR4_OS_XSAVE            (1 << 18)
 
+#define FL_TF                   (1 << 8)
+#define FL_IF                   (1 << 9)
+#define FL_NT                   (1 << 14)
+#define FL_RF                   (1 << 16)
+#define FL_VM                   (1 << 17)
+#define FL_AC                   (1 << 18)
+#define FL_VIF                  (1 << 19)
+#define FL_VIP                  (1 << 20)
+#define FL_ID                   (1 << 21)

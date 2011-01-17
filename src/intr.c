@@ -3,6 +3,7 @@
 
 #include "tachyon.h"
 #include "log.h"
+#include "intr.h"
 
 /**
  * C lowest-level iterrupt handler. All interrupts are routed here
@@ -13,4 +14,3 @@
 void intr_dispatch(interrupt_t* state) {
     fatal("unhandled interrupt %d in %p\n", state->num, state->ip);
 }
-
