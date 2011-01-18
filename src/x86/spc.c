@@ -2,10 +2,11 @@
  * This file is part of the 'tachyon' operating system. */
 
 #include <spc.h>
+#include <pmem.h>
+#include "paging.h"
 
 spc_t spc_new() {
-    /* TODO */
-    return 0;
+    return pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
 }
 
 void spc_delete(spc_t target) {

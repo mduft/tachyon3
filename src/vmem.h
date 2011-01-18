@@ -74,3 +74,12 @@ phys_addr_t vmem_unmap(spc_t spc, void* virt);
  */
 phys_addr_t vmem_resolve(spc_t spc, void* virt);
 
+/**
+ * Destroys all virtual mappings in an address space, freeing
+ * all mapped physical memory. As an exception, the kernel
+ * global mappings are left alone.
+ *
+ * @param spc   the virtual address space.
+ */
+void vmem_destroy(spc_t spc);
+
