@@ -4,6 +4,7 @@
 #include "log.h"
 #include "extp.h"
 #include "string.h"
+#include "spl.h"
 
 #define MAX_LOG_DESTINATIONS     32
 #define MAX_LOG_WRITE_BUFFER     4096
@@ -234,7 +235,10 @@ static void log_format_message(char* buf, size_t len, char const* fmt, va_list a
 
 }
 
+static spinlock_t log_lock;
+
 void log_init() {
+    spl_init(&log_lock);
     extp_iterate(EXTP_LOG_WRITER, log_add_writer);
 }
 
@@ -248,7 +252,6 @@ void log_set_level(char const* dest, log_level_t lvl) {
 }
 
 void log_write(log_level_t lvl, char const* fmt, ...) {
-    /* TODO: lock this ... */
     char buf[MAX_LOG_WRITE_BUFFER];
     va_list lst;
 
@@ -256,10 +259,14 @@ void log_write(log_level_t lvl, char const* fmt, ...) {
     log_format_message(buf, sizeof(buf), fmt, lst);
     va_end(lst);
 
+    spl_lock(&log_lock);
+
     for(register size_t idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
         if(destinations[idx].writer && destinations[idx].level >= lvl) {
             destinations[idx].writer(buf);
         }
     }
+
+    spl_unlock(&log_lock);
 }
 

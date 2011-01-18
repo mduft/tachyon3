@@ -10,8 +10,13 @@
  * in the future.
  */
 typedef struct {
-    bool locked;    /**< whether the spinlock is locked. KEEP THIS FIRST */
+    uintptr_t locked;    /**< whether the spinlock is locked (and by which cpu). KEEP THIS FIRST */
 } spinlock_t;
+
+/**
+ * Initializes a spinlock to default values.
+ */
+void spl_init(spinlock_t* lock);
 
 /**
  * Locks the spinlock. Blocks until the lock is held.

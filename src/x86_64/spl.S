@@ -11,50 +11,42 @@
 
 spl_lock:
     push %rbx
-    push %rcx
-    mov $0x0, %rax
-    mov $0x1, %rbx                      # TODO: use current CPU id.
-    1:
-        mov $0x3, %rcx                  # only try to actively spin some times.
-        2:
-            lock cmpxchg %rbx, (%rdi)
-            jz 3f
+    mov $0x1, %rbx              # target value (TODO: use current cpu's id)
 
-            pause
-            loop 2b
+    1:                          # TODO: limit loop count and sleep on every N iterations
+    mov $0x0, %rax              # check whether lock is free.
+    lock cmpxchg %rbx, (%rdi)   # compare and exchange.
+    jz 2f                       # if zero, we've got the lock
+    pause                       # hint the cpu to improve performance
+    jmp 1b                      # and loop back
 
-    # TODO: give up thread's timeslice, and re-schedule.
-    jmp 1b
-
-    3:
-    pop %rcx
+    2:
     pop %rbx
     ret
 
 spl_try_lock:
     push %rbx
-    mov $0x0, %rax
-    mov $0x1, %rbx              # TODO: use current CPU id. 
-    lock cmpxchg %rbx, (%rdi)
-    jnz 1f                      # if ZF, success, else ret false (RAX = 0)
-    mov $0x1, %rax              # contains non-zero here. alias to "true"
-
+    mov $0x0, %rax              # check whether lock is free.
+    mov $0x1, %rbx              # target value (TODO: use current cpu's id)
+    lock cmpxchg %rbx, (%rdi)   # compare and exchange locked
+    mov $0x0, %rax              # reset, old value is not used.
+    jnz 1f                      # is not zero, lock was not free.
+    mov $0x1, %rax              # zero, so success, return = true.
     1:
     pop %rbx
     ret
 
 spl_unlock:
-    movq $0x0, (%rdi)            # should do on any newer CPU. no locking needed.
+    movq $0x0, (%rdi)           # a simple mov should suffice on newer cpus.
     ret
 
 spl_locked:
-    cmp $0x0, (%rdi)
-    jz 1f
-
-    mov $0x1, %rax
-
+    mov $0x0, %rax
+    cmp %rax, (%rdi)            # test whether locked.
+    je 1f                       # free, return false (already in rax).
+    mov $0x1, %rax              # locked, return true.
     1:
     ret
     
 spl_mine:
-    jmp spl_locked              # TODO: compare locks value with current CPU id
+    jmp spl_locked              # TODO: check lock value for current cpu id.

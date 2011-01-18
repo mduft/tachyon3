@@ -7,6 +7,7 @@
 #include "extp.h"
 #include "kheap.h"
 #include "vmem.h"
+#include "spl.h"
 
 #define PMEM_PAGESIZE   4096
 #define PMEM_FDEG       80
@@ -34,7 +35,11 @@ static pmem_region_t first_region;
 /** This is the head of the region list */
 static pmem_region_t* pmem_region_head;
 
+/** This is the tail of the region list */
 static pmem_region_t* pmem_region_tail;
+
+/** The global lock across all cpus */
+static spinlock_t pmem_lock;
 
 /** 
  * This bitmap holds the individual bits for each page of
@@ -83,6 +88,8 @@ void pmem_init() {
 
     pmem_region_head = &first_region;
     pmem_region_tail = pmem_region_head;
+
+    spl_init(&pmem_lock);
 
     /* immediately reserve the first physical page (real
      * mode IVT). */
@@ -192,18 +199,17 @@ static bool pmem_alloc_helper(phys_addr_t* addr, size_t length, off_t align, boo
         if(fdeg == 0 || ((reg->length * (100-fdeg))) > (length * 100)) {
             size_t idx;
 
-            /* TODO: lock this allocation. permormance consideration:
-             * should we lock the whole loop, or is locking/unlocking
-             * fast enough? */
-
+            spl_lock(&pmem_lock);
+            
             if(bmap_search(reg->bmap, &idx, 0, PMEM_PAGES(length), (align / PMEM_PAGESIZE), BMAP_SRCH_HINTED)) {
                 if(bmap_fill(reg->bmap, 1, idx, idx + PMEM_PAGES(length))) {
                     *addr = PMEM_FROM_REGBIT(reg, idx);
+                    spl_unlock(&pmem_lock);
                     return true;
                 }
             }
 
-            /* TODO: unlock */
+            spl_unlock(&pmem_lock);
         }
 
         reg = reg->next;
@@ -232,8 +238,7 @@ bool pmem_reserve(phys_addr_t addr, size_t length) {
         fatal("misaligned physical address!\n");
     }
 
-    /* TODO: lock this. this should be used during initialization only,
-     * so it is not so important for this code to be ultra-performant. */
+    spl_lock(&pmem_lock);
 
 next_pass:
     top = (addr + length);
@@ -248,6 +253,7 @@ next_pass:
 
                 if(checkPass) {
                     if(bmap_get(reg->bmap, idx)) {
+                        spl_unlock(&pmem_lock);
                         return false;
                     }
                 } else {
@@ -271,6 +277,8 @@ pass_ok:
         checkPass = false;
         goto next_pass;
     }
+
+    spl_unlock(&pmem_lock);
 
     return true;
 }

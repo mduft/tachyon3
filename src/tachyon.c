@@ -22,18 +22,5 @@ void boot() {
         error("failed to protect physical lower and kernel memory\n");
     }
 
-    spinlock_t lock;
-
-    if(!spl_try_lock(&lock)) {
-        error("cannot lock\n");
-    }
-
-    if(spl_try_lock(&lock)) {
-        error("can lock locked lock\n");
-    }
-
-    spl_unlock(&lock);
-
-
     fatal("kernel ended unexpectedly.\n");
 }
