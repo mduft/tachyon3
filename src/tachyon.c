@@ -6,6 +6,7 @@
 #include "log.h"
 #include "ldsym.h"
 #include "mboot.h"
+#include "spl.h"
 
 init_state_t const boot_state;
 
@@ -20,6 +21,19 @@ void boot() {
     if(!pmem_reserve(0xA0000, (((size_t)&_core_lma_end) - 0xA0000))) {
         error("failed to protect physical lower and kernel memory\n");
     }
+
+    spinlock_t lock;
+
+    if(!spl_try_lock(&lock)) {
+        error("cannot lock\n");
+    }
+
+    if(spl_try_lock(&lock)) {
+        error("can lock locked lock\n");
+    }
+
+    spl_unlock(&lock);
+
 
     fatal("kernel ended unexpectedly.\n");
 }
