@@ -53,6 +53,7 @@ KERNEL_SOURCES	:= \
 	$(wildcard $(SOURCEDIR)/src/*.S) \
 	$(wildcard $(SOURCEDIR)/src/$(ARCH)/*.c) \
 	$(wildcard $(SOURCEDIR)/src/$(ARCH)/*.S) \
+    $(wildcard $(SOURCEDIR)/src/contrib/*/*.c) \
 	$(KERNEL_ADD)
 
 KERNEL_CSOURCES := $(filter %.c,$(KERNEL_SOURCES))
