@@ -10,8 +10,13 @@
 #define KHEAP_END       0xE0000000
 
 #define APIC_VIRTUAL    0xE0000000
+#define APIC_VSZ        0x1000
 
 #define CGA_VIRTUAL     (CORE_VMA_X86 - 0x1000)
+#define CGA_VSZ         0x1000
+
+#define RM_VIRTUAL      APIC_VIRTUAL + APIC_VSZ
+#define RM_VSZ          0x10000
 
 /* registers */
 #define AX  "eax"

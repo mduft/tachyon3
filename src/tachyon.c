@@ -7,6 +7,7 @@
 #include "ldsym.h"
 #include "mboot.h"
 #include "spl.h"
+#include "rm.h"
 
 init_state_t const boot_state;
 

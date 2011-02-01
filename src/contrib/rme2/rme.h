@@ -88,7 +88,7 @@ outl (unsigned int __value, unsigned short int __port)
  * \note Feel free to edit this value, just make sure it stays a power
  *       of two.
  */
-#define RME_BLOCK_SIZE	0x1000
+#define RME_BLOCK_SIZE	RM_VSZ
 
 /**
  * \brief Magic return Instruction Pointer
