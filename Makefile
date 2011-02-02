@@ -27,7 +27,7 @@ BASE_CFLAGS		:= $(BASE_CPPFLAGS) -Werror -ffreestanding -nostartfiles -nostdlib 
 BASE_CXXFLAGS	:= $(BASE_CFLAGS) -fno-rtti -fno-exceptions -Wold-style-cast
 BASE_LDFLAGS	 = -T $(ARCH_PPLSCRIPT) -Map=$(KERNEL).map
 
-BASE_QFLAGS		:= -curses -serial file:$(BUILDDIR)/serial.log
+BASE_QFLAGS		:= -curses -serial file:$(BUILDDIR)/serial-qemu.log
 BASE_GDBFLAGS	:= 
 
 MAKE			:= $(MAKE) --no-print-directory
@@ -208,7 +208,7 @@ BOCHS_RC	:= $(BUILDDIR)/bochsrc.txt
 
 $(BOCHS_RC): $(SOURCEDIR)/config/misc/bochsrc.in $(GRUB2_ISO)
 	@-$(MAKE_BDIR)
-	@sed -e "s,@GRUB2_ISO@,$(GRUB2_ISO),g" < "$<" > "$@"
+	@sed -e "s,@GRUB2_ISO@,$(GRUB2_ISO),g" -e "s,@SERIAL_FILE@,$(BUILDDIR)/serial-bochs.log,g" < "$<" > "$@"
 
 bochs-cd: $(BOCHS_RC) $(GRUB2_ISO)
 	@bochs="$$(type -p bochs)"; test -x "$${bochs}" || { echo "bochs not found!"; exit 1; }; \

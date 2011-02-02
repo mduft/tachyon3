@@ -3,5 +3,6 @@ megs: 128
 
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
 ata0-slave: type=cdrom, path=@GRUB2_ISO@, status=inserted
+com1: enabled=1, mode=file, dev=@SERIAL_FILE@
 
 boot: cdrom
