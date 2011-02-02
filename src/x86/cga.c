@@ -5,9 +5,9 @@
 #include <extp.h>
 #include <vmem.h>
 #include <spc.h>
+#include <log.h>
 #include "paging.h"
 
-INSTALL_EXTENSION(EXTP_LOG_WRITER, cga_write, "screen")
 INSTALL_EXTENSION(EXTP_VMEM_INIT, cga_init, "screen")
 
 static uint16_t __cga_x = 0;
@@ -37,6 +37,8 @@ void cga_init() {
         );
 
     __cga_x = __cga_y = 0;
+
+    log_add_writer(cga_write, "screen-log");
 }
 
 static void scroll1() {
@@ -57,7 +59,7 @@ static void scroll1() {
 
 #define CALC_LOCATION (int16_t*)CGA_VR_LOCATION + (((CGA_WIDTH) * __cga_y) + __cga_x)
 
-void cga_write(char* str) {
+void cga_write(char const* str) {
     int16_t* vram_current = CALC_LOCATION;
 
     while(str && *str) {

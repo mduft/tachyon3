@@ -11,13 +11,6 @@
 #define LOG_DEFAULT_LEVEL        Warning
 
 /**
- * The actual type for the extension point callback.
- *
- * @param msg   the formatted message to write.
- */
-typedef void (*log_writer_t)(char const* msg);
-
-/**
  * The structure holding each log destination. This holds the
  * writer itself and associated information.
  *
@@ -47,17 +40,9 @@ static log_destination_t destinations[MAX_LOG_DESTINATIONS];
  * @param writer    the extension callback, must be of actual type log_writer_t.
  * @param descr     the extension description, used as name for the writer.
  */
-static void log_add_writer(char const* tag, extp_func_t writer, char const* descr) {
-    for(register size_t idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
-        if(!destinations[idx].writer) {
-            destinations[idx].writer = (log_writer_t)writer;
-            destinations[idx].level  = LOG_DEFAULT_LEVEL;
-            destinations[idx].name   = descr;
-            return;
-        }
-    }
-
-    warn("maximum writer count exceeded, cannot add %p\n", writer);
+static void log_extp_add_writer(char const* tag, extp_func_t writer, char const* descr) {
+    if(!log_add_writer((log_writer_t)writer, descr))
+        warn("maximum writer count exceeded, cannot add %p\n", writer);
 }
 
 /**
@@ -240,7 +225,20 @@ static spinlock_t log_lock;
 
 void log_init() {
     spl_init(&log_lock);
-    extp_iterate(EXTP_LOG_WRITER, log_add_writer);
+    extp_iterate(EXTP_LOG_WRITER, log_extp_add_writer);
+}
+
+bool log_add_writer(log_writer_t writer, char const* descr) {
+    for(register size_t idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
+        if(!destinations[idx].writer) {
+            destinations[idx].writer = writer;
+            destinations[idx].level  = LOG_DEFAULT_LEVEL;
+            destinations[idx].name   = descr;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void log_set_level(char const* dest, log_level_t lvl) {

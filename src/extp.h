@@ -14,6 +14,7 @@
 #define EXTP_LOG_WRITER     "log.writer"
 #define EXTP_PMEM_REGION    "pmem.region"
 #define EXTP_VMEM_INIT      "vmem.init"
+#define EXTP_KINIT          "k.init"
 
 /**
  * Dummy extension point callback type. The real type depends

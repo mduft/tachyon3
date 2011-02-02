@@ -18,6 +18,13 @@ typedef enum {
 } log_level_t;
 
 /**
+ * The actual type for the extension point callback.
+ *
+ * @param msg   the formatted message to write.
+ */
+typedef void (*log_writer_t)(char const* msg);
+
+/**
  * Just a small wrapper macro, which adds a terminating NULL on the
  * way to log_write(), as otherwise calling the following macros
  * with just a format string, and without parameters, would result
@@ -40,6 +47,15 @@ typedef enum {
  * the default logging level.
  */
 void log_init();
+
+/**
+ * Add an additional output destination for the log subsystem.
+ *
+ * @param writer    the writer to add.
+ * @param descr     a descriptive string for debug purpose.
+ * @return          true if successful, false otherwise.
+ */
+bool log_add_writer(log_writer_t writer, char const* descr);
 
 /**
  * Formats and writes a string to the log. The message is multicast

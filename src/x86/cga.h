@@ -20,6 +20,8 @@ void cga_init();
  * Write a string to the CGA adapter. The screen position
  * is calculated automatically, and the screen will also
  * automatically scroll down, when the bottom is reached.
+ *
+ * @param str   string to write.
  */
-void cga_write(char* str);
+void cga_write(char const* str);
 

@@ -12,6 +12,8 @@
 
 #include <contrib/rme2/rme.h>
 
+INSTALL_EXTENSION(EXTP_KINIT, rm_init, "real mode emulator");
+
 /** convert rme state to our state */
 #define RME2OURS(rme, ours) \
     (ours)->ax.dword = (rme)->AX.D; (ours)->bx.dword = (rme)->BX.D; \
@@ -92,7 +94,18 @@ void rm_init() {
 }
 
 bool rm_int(uint8_t vec, rm_state_t* state) {
-    RME_DO(CallInt, state, vec);
+    //RME_DO(CallInt, state, vec);
+    tRME_State rme_state;                       
+    memset(&rme_state, 0, sizeof(rme_state));   
+    OURS2RME(state, &rme_state);                
+    rme_state.Memory[0] = (void*)RM_VIRTUAL;    
+    switch(RME_FUNC_CallInt) {                   
+    case RME_ERR_OK:                            
+        RME2OURS(&rme_state, state);            
+        return true;                            
+    SWITCH_LOGERR                               
+    }                                           
+    return false;                              
 }
 
 bool rm_call(rm_state_t* state) {

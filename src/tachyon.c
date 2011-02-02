@@ -8,13 +8,18 @@
 #include "mboot.h"
 #include "spl.h"
 #include "rm.h"
+#include "extp.h"
+#include "mem.h"
 
 init_state_t const boot_state;
 
+void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
+    info("initializing %s\n", descr);
+    cb();
+}
+
 void boot() {
     log_init();
-    log_set_level("screen", Trace);
-
     pmem_init();
 
     /* reserve the kernel's physical memory, so nobody
@@ -23,13 +28,16 @@ void boot() {
         error("failed to protect physical lower and kernel memory\n");
     }
 
-    rm_init();
+    /* initialize kernel internals registered as extension
+     * points in no specific order */
+    extp_iterate(EXTP_KINIT, init_subsys);
 
     rm_state_t state;
-    state.ax.word = 0x11;
+    memset(&state, 0, sizeof(state));
+    state.ax.word = 0x4F00;
 
     if(!rm_int(0x10, &state))
-        warn("failed calling int 0x10\n");
+        warn("failed calling int 0x15\n");
 
     fatal("kernel ended unexpectedly.\n");
 }

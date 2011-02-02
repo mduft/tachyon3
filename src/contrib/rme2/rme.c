@@ -791,6 +791,7 @@ decode:
 			
 			#if USE_SIZE_OVERRIDES == 1
 			if(State->Decoder.bOverrideOperand) {
+                #ifdef __X86_64__
 				uint64_t	qword, qword2;
 				if( *from.D == 0 )	return RME_Int_Expt_DivideError(State);
 				#if DEBUG >= 2
@@ -801,6 +802,10 @@ decode:
 				if(qword2 > 0xFFFFFFFF)	return RME_Int_Expt_DivideError(State);
 				State->AX.D = qword2;
 				State->DX.D = qword - qword2 * (*from.D);
+                #else
+                ERROR_S("qword div not implemented for 32-bit x86\n");
+                return RME_ERR_UNDEFOPCODE;
+                #endif
 			}
 			else
 			#endif
