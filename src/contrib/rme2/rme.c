@@ -16,11 +16,16 @@
 #include <mem.h>
 #include <log.h>
 
+#define FORMATTED_DEBUG(fmt, ...) \
+    log_write(Debug, fmt, ##__VA_ARGS__)
+
+#define FORMATTED_ERROR(fmt, ...) \
+    log_write(Error, fmt, ##__VA_ARGS__)
+
 // Settings
-#define DEBUG	2	// Enable debug?
+#define DEBUG	0	// Enable debug?
 #define RME_DO_NULL_CHECK	1
 #define ERR_OUTPUT	1	// Enable using printf on an error?
-#define	printf	debug	// Formatted print function
 #define	outB(state,port,val)	(outb(port,val),0)	// Write 1 byte to an IO Port
 #define	outW(state,port,val)	(outw(port,val),0)	// Write 2 bytes to an IO Port
 #define	outD(state,port,val)	(outl(port,val),0)	// Write 4 bytes to an IO Port
@@ -74,14 +79,14 @@
 
 // --- Debug Macro ---
 #if DEBUG
-# define DEBUG_S(...)	{ printf(__VA_ARGS__); }
+# define DEBUG_S(...)	{ FORMATTED_DEBUG(__VA_ARGS__); }
 #else
-# define DEBUG_S(...)
+# define DEBUG_S(...)   { /* required for if/else matchin */ }
 #endif
 #if ERR_OUTPUT
-# define ERROR_S(...)	{ printf(__VA_ARGS__); }
+# define ERROR_S(...)	{ FORMATTED_ERROR(__VA_ARGS__); }
 #else
-# define ERROR_S(...)
+# define ERROR_S(...)   { /* required for if/else matchin */ }
 #endif
 
 // === MACRO VOODOO ===

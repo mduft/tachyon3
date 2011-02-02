@@ -16,13 +16,13 @@ typedef union {
         uint8_t lobyte;
         uint8_t hibyte;
     };
-} rm_gpr_t;
+} rm_reg_t;
 
 /**
  * Describes the current real mode call state.
  */
 typedef struct {
-    rm_gpr_t    ax, bx, cx, dx, sp, bp, si, di;
+    rm_reg_t    ax, bx, cx, dx, sp, bp, si, di;
     uint16_t    ss, ds, es, cs, ip, fl;
 } rm_state_t;
 

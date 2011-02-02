@@ -185,6 +185,7 @@ static void log_format_message(char* buf, size_t len, char const* fmt, va_list a
                 goto string;
 
             switch(c) {
+            case 'i':
             case 'd':   if(lng) { DO_NUMBER(s, int64_t, 10, ' ', width);   }
                         else    { DO_NUMBER(s, int32_t, 10, ' ', width);  }
             case 'u':   if(lng) { DO_NUMBER(s, uint64_t, 10, ' ', width);  }

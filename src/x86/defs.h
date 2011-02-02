@@ -16,7 +16,7 @@
 #define CGA_VSZ         0x1000
 
 #define RM_VIRTUAL      APIC_VIRTUAL + APIC_VSZ
-#define RM_VSZ          0x10000
+#define RM_VSZ          0x110000
 
 /* registers */
 #define AX  "eax"

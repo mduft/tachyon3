@@ -91,11 +91,10 @@ void pmem_init() {
 
     spl_init(&pmem_lock);
 
-    /* immediately reserve the first physical page (real
-     * mode IVT). */
-    if(!pmem_reserve(0x0, 0x1000)) {
-        warn("failed protecting real mode IVT.\n");
-    }
+    /* reserve the page at address zero, as most people don't
+     * know how to handle it. rm_init() needs to spare this
+     * page when reserving real mode memory! */
+    pmem_reserve(0, PMEM_PAGESIZE);
 
     /* initialize virtual memory. this releases the identity
      * mapping for the physical kernel load address */

@@ -23,5 +23,13 @@ void boot() {
         error("failed to protect physical lower and kernel memory\n");
     }
 
+    rm_init();
+
+    rm_state_t state;
+    state.ax.word = 0x11;
+
+    if(!rm_int(0x10, &state))
+        warn("failed calling int 0x10\n");
+
     fatal("kernel ended unexpectedly.\n");
 }
