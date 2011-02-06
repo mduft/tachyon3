@@ -61,3 +61,11 @@ error:
     return false;
 }
 
+bool vmem_mgmt_make_glob_spc(spc_t space) {
+    /* TODO */
+    return false;
+}
+
+void vmem_mgmt_clobber_spc(spc_t space) {
+    /* TODO */
+}

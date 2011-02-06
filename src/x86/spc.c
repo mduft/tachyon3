@@ -3,14 +3,32 @@
 
 #include <spc.h>
 #include <pmem.h>
+#include <vmem_mgmt.h>
+#include <log.h>
 #include "paging.h"
 
 spc_t spc_new() {
-    return pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
+    spc_t sp = (spc_t)pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
+
+    if(sp == 0) {
+        /* zero is reserved in any case */
+        error("cannot create new address space!\n");
+        return 0;
+    }
+
+    /* we need to stick in the correct global mappings */
+    if(!vmem_mgmt_make_glob_spc(sp)) {
+        error("cannot insert global mappings into new address space!\n");
+        pmem_free(sp, PAGE_SIZE_4K);
+        return 0;
+    }
+
+    return sp;
 }
 
 void spc_delete(spc_t target) {
-    /* TODO */
+    vmem_mgmt_clobber_spc(target);
+    pmem_free(target, PAGE_SIZE_4K);
 }
 
 spc_t spc_current() {

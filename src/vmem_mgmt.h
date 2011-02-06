@@ -76,3 +76,20 @@ void vmem_mgmt_free(phys_addr_t addr);
 bool vmem_mgmt_split(spc_t space, uintptr_t virt, 
         uintptr_t** pd, uintptr_t** pt, size_t* ipd, size_t* ipt, uint32_t flags);
 
+/**
+ * Prepares a given address space by putting all kernel global
+ * mappings in it.
+ *
+ * @param space the address space to manipulate.
+ * @return      true on success, false otherwise.
+ */
+bool vmem_mgmt_make_glob_spc(spc_t space);
+
+/**
+ * Completely clobbers a given address space, unmapping all pages, and freeing all associated memory.
+ *
+ * Note that global kernel mappings are left intact, of course.
+ *
+ * @param space the address space to clobber.
+ */
+void vmem_mgmt_clobber_spc(spc_t space);

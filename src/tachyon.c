@@ -32,12 +32,14 @@ void boot() {
      * points in no specific order */
     extp_iterate(EXTP_KINIT, init_subsys);
 
+    /*
     rm_state_t state;
     memset(&state, 0, sizeof(state));
     state.ax.word = 0x4F00;
 
     if(!rm_int(0x10, &state))
         warn("failed calling int 0x15\n");
+    */
 
     fatal("kernel ended unexpectedly.\n");
 }
