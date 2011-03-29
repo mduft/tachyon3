@@ -8,6 +8,7 @@
 #include "paging.h"
 
 spc_t spc_new() {
+    // FIXME: would need far less room for a pml4 (64-bit only!)
     spc_t sp = (spc_t)pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
 
     if(sp == 0) {
