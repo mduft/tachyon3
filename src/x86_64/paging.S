@@ -10,6 +10,7 @@ SECTION_BOOT_DATA
 .global x86_64_pg_pml4
 .global x86_64_pg_tmap
 .global x86_64_pg_kernel_pdpt
+.global x86_64_pg_pt_low
 
 #define PG_BASE_KFLAGS (PG_PRESENT | PG_WRITABLE | PG_GLOBAL)
 

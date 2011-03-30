@@ -5,16 +5,16 @@
 #include <vmem_mgmt.h>
 #include <log.h>
 #include <pmem.h>
+#include <mem.h>
 
 #include <x86/paging.h>
 
 /* defined in paging.S */
 extern phys_addr_t x86_64_pg_tmap;
 extern phys_addr_t x86_64_pg_kernel_pdpt;
+extern phys_addr_t x86_64_pg_pt_low;
 
 phys_addr_t* ps_mapspace = (phys_addr_t*)((uintptr_t)&x86_64_pg_tmap + CORE_VMA_X86_64);
-
-#define VM_KFLAGS ( PG_PRESENT | PG_WRITABLE | PG_GLOBAL )
 
 #define VM_CHECK_MAPPING(x) \
     { if(!(x)) { error("cannot map " #x " for %p\n", virt); } }
@@ -84,14 +84,15 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
     uintptr_t* pml4 = (uintptr_t*)vmem_mgmt_map(space);
 
     if(!pml4) {
-        error("failed to fill global address space components\n");
+        error("failed to map pml4\n");
         return false;
     }
 
-    pml4[3] = (uintptr_t)&x86_64_pg_kernel_pdpt | VM_KFLAGS;
+    memset(pml4, 0, PAGE_SIZE_4K);
+    pml4[511] = (uintptr_t)&x86_64_pg_kernel_pdpt | PG_KFLAGS;
 
     phys_addr_t phys_pdpt_low = pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
-    pml4[0] = phys_pdpt_low | VM_KFLAGS;
+    pml4[0] = phys_pdpt_low | PG_KFLAGS;
 
     uintptr_t* pdpt = (uintptr_t*)vmem_mgmt_map(phys_pdpt_low);
     
@@ -100,10 +101,23 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
         return false;
     }
 
-    phys_addr_t phys_pd_low = pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
-    pdpt[0] = phys_pd_low | VM_KFLAGS;
-    // TODO: map kernel_pg_pt_low and 2MB - 4MB!
+    memset(pdpt, 0, PAGE_SIZE_4K);
 
+    phys_addr_t phys_pd_low = pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
+    pdpt[0] = phys_pd_low | PG_KFLAGS;
+
+    uintptr_t* pd = (uintptr_t*)vmem_mgmt_map(phys_pd_low);
+
+    if(!phys_pd_low || !pd) {
+        error("failed to map pd\n");
+        return false;
+    }
+
+    memset(pd, 0, PAGE_SIZE_4K);
+    pd[0] = (phys_addr_t)&x86_64_pg_pt_low | PG_KFLAGS;
+    pd[1] = 0x200000 | PG_KFLAGS | PG_LARGE;
+
+    vmem_mgmt_unmap(pd);
     vmem_mgmt_unmap(pdpt);
     vmem_mgmt_unmap(pml4);
 
@@ -111,8 +125,7 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
 }
 
 #define vmem_mgmt_clobber_helper(level) \
-static void vmem_mgmt_clobber_ ## level(uintptr_t* level) { \
-    for(register size_t i = 0; i < 1024; ++i) { \
+    for(register size_t i = 0; i < 512; ++i) { \
         if(!(level[i] & PG_PRESENT)) \
             continue; \
         phys_addr_t addr = level[i] & VM_ENTRY_FLAG_MASK;
@@ -129,39 +142,46 @@ static void vmem_mgmt_clobber_ ## level(uintptr_t* level) { \
 #define vmem_mgmt_clobber_helper_end(level) \
         pmem_free(addr, PAGE_SIZE_4K); \
         level[i] &= ~PG_PRESENT; \
-    } \
+    }
+
+static void vmem_mgmt_clobber_pt(uintptr_t* pt) {
+    vmem_mgmt_clobber_helper(pt);
+    vmem_mgmt_clobber_helper_end(pt);
 }
 
-vmem_mgmt_clobber_helper(pt);
-vmem_mgmt_clobber_helper_end(pt);
+static void vmem_mgmt_clobber_pd(uintptr_t* pd) {
+    if((pd[0] & VM_ENTRY_FLAG_MASK) == (phys_addr_t)&x86_64_pg_pt_low) {
+        pd[0] = 0;
+        pd[1] = 0;
+    }
 
-vmem_mgmt_clobber_helper(pd);
-vmem_mgmt_clobber_helper_chain(pt);
-vmem_mgmt_clobber_helper_end(pd);
+    vmem_mgmt_clobber_helper(pd);
 
-vmem_mgmt_clobber_helper(pdpt);
-vmem_mgmt_clobber_helper_chain(pd);
-vmem_mgmt_clobber_helper_end(pdpt);
+    if(pd[i] & PG_LARGE) {
+        phys_addr_t large_page = pd[i] & VM_ENTRY_FLAG_MASK;
+        pmem_free(large_page, PAGE_SIZE_2M);
+    } else {
+        vmem_mgmt_clobber_helper_chain(pt);
+    }
+
+    vmem_mgmt_clobber_helper_end(pd);
+}
+
+static void vmem_mgmt_clobber_pdpt(uintptr_t* pdpt) {
+    vmem_mgmt_clobber_helper(pdpt);
+    vmem_mgmt_clobber_helper_chain(pd);
+    vmem_mgmt_clobber_helper_end(pdpt);
+}
 
 void vmem_mgmt_clobber_spc(spc_t space) {
     uintptr_t* pml4 = (uintptr_t*)vmem_mgmt_map(space);
-    // 4 pml4 entries in 64-bit paging.
-    for(register size_t i = 0; i < 4; ++i) {
-        if(!(pml4[i] & PG_PRESENT))
-            continue;
+    vmem_mgmt_clobber_helper(pml4);
 
-        phys_addr_t addr = pml4[i] & VM_ENTRY_FLAG_MASK;
+    if(addr == (phys_addr_t)&x86_64_pg_kernel_pdpt)
+        continue;
 
-        if(addr == (phys_addr_t)&x86_64_pg_kernel_pdpt)
-            continue;
-
-        vmem_mgmt_clobber_helper_chain(pdpt);
-
-        // FIXME: would need far less room for a pml4
-        pmem_free(addr, PAGE_SIZE_4K);
-        pml4[i] &= ~PG_PRESENT;
-    }
+    vmem_mgmt_clobber_helper_chain(pdpt);
+    vmem_mgmt_clobber_helper_end(pml4);
 
     vmem_mgmt_unmap(pml4);
-    pmem_free(space, PAGE_SIZE_4K);
 }

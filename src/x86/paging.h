@@ -17,3 +17,5 @@
 #define PAGE_SIZE_4K            0x001000
 #define PAGE_SIZE_2M            0x200000
 
+#define PG_KFLAGS ( PG_PRESENT | PG_WRITABLE | PG_GLOBAL )
+

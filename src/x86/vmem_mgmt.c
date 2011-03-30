@@ -4,10 +4,14 @@
 #include <vmem.h>
 #include <vmem_mgmt.h>
 #include <log.h>
+#include <pmem.h>
+#include <mem.h>
 
 #include <x86/paging.h>
 
 /* defined in paging.S */
+extern phys_addr_t x86_pg_pt;
+extern phys_addr_t x86_pg_pt_high;
 extern phys_addr_t x86_pg_tmap;
 
 phys_addr_t* ps_mapspace = (phys_addr_t*)((uintptr_t)&x86_pg_tmap + CORE_VMA_X86);
@@ -62,10 +66,51 @@ error:
 }
 
 bool vmem_mgmt_make_glob_spc(spc_t space) {
-    /* TODO */
-    return false;
+    uintptr_t* pd = (uintptr_t*)vmem_mgmt_map(space);
+
+    if(!pd) {
+        error("failed to map pd\n");
+        return false;
+    }
+
+    memset(pd, 0, PAGE_SIZE_4K);
+    pd[0] = (uintptr_t)&x86_pg_pt | PG_KFLAGS;
+    pd[0x300] = (uintptr_t)&x86_pg_pt_high | PG_KFLAGS;
+    pd[0x3FF] = (uintptr_t)&x86_pg_tmap | PG_KFLAGS;
+
+    vmem_mgmt_unmap(pd);
+    return true;
 }
 
 void vmem_mgmt_clobber_spc(spc_t space) {
-    /* TODO */
+    uintptr_t* pd = (uintptr_t*)vmem_mgmt_map(space);
+    
+    if(!pd) {
+        error("failed to map pd\n");
+        return;
+    }
+
+    for(register size_t i = 0; i < 1024; ++i) {
+        // skip kernel mappings.
+        if(i == 0 || i == 0x300 || i == 0x3FF) {
+            continue;
+        }
+
+        if(pd[i] & PG_PRESENT) {
+            phys_addr_t addr = pd[i] & VM_ENTRY_FLAG_MASK;
+            uintptr_t* pt = (uintptr_t*)vmem_mgmt_map(addr);
+
+            for(register size_t j = 0; j < 1024; ++j) {
+                if(pt[j] & PG_PRESENT) {
+                    phys_addr_t paddr = pt[j] & VM_ENTRY_FLAG_MASK;
+                    pmem_free(paddr, PAGE_SIZE_4K);
+                }
+            }
+
+            vmem_mgmt_unmap(pt);
+            pmem_free(addr, PAGE_SIZE_4K);
+        }
+    }
+
+    vmem_mgmt_unmap(pd);
 }

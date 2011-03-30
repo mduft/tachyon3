@@ -10,6 +10,7 @@
 #include "rm.h"
 #include "extp.h"
 #include "mem.h"
+#include "spc.h"
 
 init_state_t const boot_state;
 
@@ -40,6 +41,14 @@ void boot() {
     if(!rm_int(0x10, &state))
         warn("failed calling int 0x15\n");
     */
+
+    spc_t s = spc_new();
+    spc_t old = spc_current();
+    spc_switch(s);
+    info("huhu\n");
+    spc_switch(old);
+    spc_delete(s);
+    info("huhu2\n");
 
     fatal("kernel ended unexpectedly.\n");
 }
