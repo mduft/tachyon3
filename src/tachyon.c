@@ -11,6 +11,7 @@
 #include "extp.h"
 #include "mem.h"
 #include "spc.h"
+#include "process.h"
 
 init_state_t const boot_state;
 
@@ -32,6 +33,10 @@ void boot() {
     /* initialize kernel internals registered as extension
      * points in no specific order */
     extp_iterate(EXTP_KINIT, init_subsys);
+
+    /* initialize the core process with the current address
+     * space, and other relevant data. */
+    tachyon.space = spc_current();
 
     /*
     rm_state_t state;
