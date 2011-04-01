@@ -83,14 +83,14 @@ $(ARCH_PPLSCRIPT): $(ARCH_LINKSCRIPT)
 	 fi
 	@$(CPP) $(KCPPFLAGS) -P -D__ASM__ -o "$@" "$<"
 
-$(KERNEL): $(KERNEL_OBJECTS) $(ARCH_PPLSCRIPT)
+$(KERNEL): $(KERNEL).sym.o
 	@-$(MAKE_BDIR)
 	@if test $(VERBOSE) = 0; then \
 		echo "[LD  ] $(notdir $@)"; \
 	 else \
 	 	echo "$(LD) $(KLDFLAGS) -o \"$@\" $(KERNEL_OBJECTS)"; \
 	 fi
-	@$(LD) $(KLDFLAGS) -o "$@" $(KERNEL_OBJECTS)
+	@$(LD) $(KLDFLAGS) -o "$@" $(filter-out %ksym_dummy.o,$(KERNEL_OBJECTS)) $(KERNEL).sym.o
 
 $(KERNEL).dbg: $(KERNEL)
 	@if test $(VERBOSE) = 0; then \
@@ -105,6 +105,34 @@ $(KERNEL).dbg: $(KERNEL)
 	@$(OBJCOPY) --strip-debug "$<"
 	@$(OBJCOPY) --add-gnu-debuglink="$@" "$<"
 	@touch "$@"
+
+$(KERNEL).sym.c: $(KERNEL_OBJECTS) $(ARCH_PPLSCRIPT)
+	@-rm -f "$@"
+	@-rm -f "$@.bin"
+	@$(LD) $(KLDFLAGS) -o "$@.bin" $(KERNEL_OBJECTS)
+	@echo "// GENERATED, DON'T TOUCH!" > "$@.tmp"
+	@echo "typedef struct { void* a; void* s; char const* n; } ksym_t;" >> "$@.tmp"
+	@x86_64-pc-elf-nm -S -g "$@.bin" | grep -E '^[0-9a-fA-F]*[ \t]+[0-9a-fA-F]*[ \t]+[Tt]' | while read addr size type name; do \
+		echo "extern void $${name}();" >> "$@.tmp"; \
+	done;
+	@echo "ksym_t ksym_table[] = {" >> "$@.tmp"
+	@x86_64-pc-elf-nm -S -g "$@.bin" | grep -E '^[0-9a-fA-F]*[ \t]+[0-9a-fA-F]*[ \t]+[Tt]' | while read addr size type name; do \
+		echo "	{ (void*)$${name}, (void*)0x$${size}, \"$${name}\"}," >> "$@.tmp"; \
+	done;
+	@echo "	{ 0, 0, 0 }," >> "$@.tmp"
+	@echo "};" >> "$@.tmp"
+	@mv "$@.tmp" "$@"
+	@rm "$@.bin"
+
+$(KERNEL).sym.o: $(KERNEL).sym.c
+	@-$(MAKE_BDIR)
+	@if test $(VERBOSE) = 0; then \
+		echo "[CC  ] $(subst $(SOURCEDIR)/,,$<)"; \
+	 else \
+	 	echo "$(CC) $(KCFLAGS) -c -o \"$@\" \"$<\""; \
+	 fi
+	@$(CC) $(KCFLAGS) -c -o "$@" "$<"
+
 
 all-kernel: $(KERNEL) $(KERNEL).dbg
 	@printf "kernel ready: " 

@@ -12,6 +12,7 @@
 #include "mem.h"
 #include "spc.h"
 #include "process.h"
+#include "ksym.h"
 
 init_state_t const boot_state;
 
@@ -54,6 +55,8 @@ void boot() {
     spc_switch(old);
     spc_delete(s);
     info("huhu2\n");
+
+    info("we're in %p -> %s\n", boot, ksym_get(boot)->name);
 
     fatal("kernel ended unexpectedly.\n");
 }
