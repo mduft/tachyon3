@@ -11,6 +11,14 @@
 .global intr_enable
 .global intr_disable
 
+.type intr_state, @function
+.type intr_enable, @function
+.type intr_disable, @function
+
+.size intr_state, .intr_state_end - intr_state
+.size intr_enable, .intr_enable_end - intr_enable
+.size intr_disable, .intr_disable_end - intr_disable
+
 # .----------------------------------------.
 # | returns the state of interrupt delivery|
 # | on the current CPU in eax              |
@@ -26,6 +34,7 @@ intr_state:
     mov $1, %eax
     1:
     ret
+.intr_state_end:
 
 # .----------------------------------------.
 # | enables interrupt if a per-cpu count   |
@@ -36,6 +45,7 @@ intr_enable:
     # TODO: per-cpu count.
     sti
     ret
+.intr_enable_end:
 
 # .----------------------------------------.
 # | disables interrupts if a per-cpu count |
@@ -46,3 +56,4 @@ intr_disable:
     # TODO: per-cpu count.
     cli
     ret
+.intr_disable_end:

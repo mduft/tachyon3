@@ -10,6 +10,12 @@ SECTION_BOOT_DATA
 .global x86_64_idt_init
 .global x86_64_idt_set
 
+.type x86_64_idt_init, @function
+.type x86_64_idt_set, @function
+
+.size x86_64_idt_init, .x86_64_idt_init_end - x86_64_idt_init
+.size x86_64_idt_set, .x86_64_idt_set_end - x86_64_idt_set
+
 # .----------------------------------------.
 # | 64 bit IDT                             |
 # '----------------------------------------'
@@ -199,6 +205,7 @@ x86_64_idt_init:
     pop %rcx
     pop %rbp
     ret
+.x86_64_idt_init_end:
 
 x86_64_idt_set:
     push %rbp
@@ -262,3 +269,4 @@ x86_64_idt_set:
     pop %rax
     pop %rbp
     ret
+.x86_64_idt_set_end:

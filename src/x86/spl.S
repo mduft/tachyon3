@@ -9,6 +9,18 @@
 .global spl_locked
 .global spl_mine
 
+.type spl_lock, @function
+.type spl_try_lock, @function
+.type spl_unlock, @function
+.type spl_locked, @function
+.type spl_mine, @function
+
+.size spl_lock, .spl_lock_end - spl_lock
+.size spl_try_lock, .spl_try_lock_end - spl_try_lock
+.size spl_unlock, .spl_unlock_end - spl_unlock
+.size spl_locked, .spl_locked_end - spl_locked
+.size spl_mine, .spl_mine_end - spl_mine
+
 spl_lock:
     push %ebx
     push %edi
@@ -26,6 +38,7 @@ spl_lock:
     pop %edi
     pop %ebx
     ret
+.spl_lock_end:
 
 spl_try_lock:
     push %ebx
@@ -41,6 +54,7 @@ spl_try_lock:
     pop %edi
     pop %ebx
     ret
+.spl_try_lock_end:
 
 spl_unlock:
     push %edi
@@ -48,6 +62,7 @@ spl_unlock:
     movl $0x0, (%edi)           # a simple mov should suffice on newer cpus.
     pop %edi
     ret
+.spl_unlock_end:
 
 spl_locked:
     push %edi
@@ -59,6 +74,8 @@ spl_locked:
     1:
     pop %edi
     ret
+.spl_locked_end:
     
 spl_mine:
     jmp spl_locked              # TODO: check lock value for current cpu id.
+.spl_mine_end:

@@ -7,7 +7,13 @@
 #include <x86/msr.h>
 
 .global bootstrap_x86_64
-.global abort
+.global bootstrap_x86_64_x64
+
+.type bootstrap_x86_64, @function
+.type bootstrap_x86_64_x64, @function
+
+.size bootstrap_x86_64, .bootstrap_x86_64_end - bootstrap_x86_64
+.size bootstrap_x86_64_x64, .bootstrap_x86_64_x64_end - bootstrap_x86_64_x64
 
 # .----------------------------------------.
 # | 32 bit init code. switches to 64-bit.  |
@@ -91,6 +97,8 @@ bootstrap_x86_64:
 
     ljmp $0x18,$bootstrap_x86_64_x64
 
+.bootstrap_x86_64_end:
+
 # .----------------------------------------.
 # | 64 bit init code. enables paging.      |
 # '----------------------------------------'
@@ -122,6 +130,8 @@ bootstrap_x86_64_x64:
         cli
         hlt
         jmp 1b
+
+.bootstrap_x86_64_x64_end:
 
 # .----------------------------------------.
 # | Data required in lower half.           |

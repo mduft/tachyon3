@@ -7,6 +7,8 @@
 #include <x86/msr.h>
 
 .global bootstrap_x86
+.type bootstrap_x86, @function
+.size bootstrap_x86, .bootstrap_x86_end - bootstrap_x86
 
 # .------------------------------.
 # | DATA Section                 |
@@ -121,3 +123,4 @@ bootstrap_x86:
     # '------------------------------------'
 
     call abort
+.bootstrap_x86_end:
