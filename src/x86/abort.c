@@ -3,9 +3,11 @@
 
 #include <tachyon.h>
 #include <log.h>
+#include <ksym.h>
 
 void abort(void) {
-    error("out of luck - aborted.");
+    error("out of luck - aborted.\n");
+    ksym_trace(Error);
 
     stop:
         asm("cli; hlt;");

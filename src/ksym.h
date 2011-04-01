@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tachyon.h"
+#include "log.h"
 
 /**
  * Describes a kernel symbol.
@@ -24,3 +25,16 @@ typedef struct {
  */
 ksym_t const* ksym_get(void* addr);
 
+/**
+ * Print a current stack trace.
+ *
+ * @param the level to write the trace at.
+ */
+void ksym_trace(log_level_t level);
+
+/**
+ * Helper to get the current base pointer of the calling function.
+ *
+ * @return the base pointer
+ */
+uintptr_t* ksym_get_bp();

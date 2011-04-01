@@ -48,15 +48,5 @@ void boot() {
         warn("failed calling int 0x15\n");
     */
 
-    spc_t s = spc_new();
-    spc_t old = spc_current();
-    spc_switch(s);
-    info("huhu\n");
-    spc_switch(old);
-    spc_delete(s);
-    info("huhu2\n");
-
-    info("we're in %p -> %s\n", boot, ksym_get(boot)->name);
-
     fatal("kernel ended unexpectedly.\n");
 }
