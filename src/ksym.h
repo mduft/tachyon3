@@ -5,6 +5,7 @@
 
 #include "tachyon.h"
 #include "log.h"
+#include "list.h"
 
 /**
  * Describes a kernel symbol.
@@ -30,7 +31,17 @@ ksym_t const* ksym_get(void* addr);
  *
  * @param the level to write the trace at.
  */
-void ksym_trace(log_level_t level);
+void ksym_write_trace(log_level_t level, list_t* trace);
+
+/**
+ * Retrieve a stack trace from the current stack position.
+ * The caller is responsible for calling list_delete() to
+ * free resources allocated by the trace. The ksym_t* ers
+ * need not be freed.
+ *
+ * @return a list containing ksym_t*
+ */
+list_t* ksym_trace();
 
 /**
  * Helper to get the current base pointer of the calling function.

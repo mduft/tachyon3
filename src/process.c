@@ -7,6 +7,7 @@
 #include "mem.h"
 #include "spc.h"
 #include "log.h"
+#include "list.h"
 
 process_t tachyon;
 
@@ -19,6 +20,7 @@ process_t* prc_new() {
     memset(prc, 0, sizeof(prc));
 
     prc->space = spc_new();
+    prc->threads = list_new();
 
     return prc;
 }
@@ -26,6 +28,7 @@ process_t* prc_new() {
 process_t* prc_destroy(process_t* prc) {
     if(prc) {
         spc_delete(prc->space);
+        list_delete(prc->threads);
         kheap_free(prc);
     }
 

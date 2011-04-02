@@ -29,7 +29,7 @@ list_t* list_delete(list_t* list) {
     return NULL;
 }
 
-void list_add(list_t* list, void* data) {
+void list_add(list_t* list, void const* data) {
     if(!list) {
         error("NULL list to add to.\n");
         return;

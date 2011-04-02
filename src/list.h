@@ -9,7 +9,7 @@
  * Defines the layout of a single list node.
  */
 typedef struct _tag_list_node_t {
-    void* data;         /**< the associated data */
+    void const* data;         /**< the associated data */
     struct _tag_list_node_t* next; /**< pointer to the next node, or NULL */
 } list_node_t;
 
@@ -47,7 +47,7 @@ list_t* list_delete(list_t* list);
  * @param list  the list to add a node to.
  * @parma data  the data to insert into the node.
  */
-void list_add(list_t* list, void* data);
+void list_add(list_t* list, void const* data);
 
 /**
  * Removes a given item from the list.

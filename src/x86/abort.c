@@ -7,7 +7,10 @@
 
 void abort(void) {
     error("out of luck - aborted.\n");
-    ksym_trace(Error);
+
+    list_t* trace = ksym_trace();
+    ksym_write_trace(Error, trace);
+    list_delete(trace);
 
     stop:
         asm("cli; hlt;");
