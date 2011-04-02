@@ -58,7 +58,11 @@ void vmem_init() {
     while(id_map <= (PAGE_SIZE_4K * 1024)) {
         /* TODO: check whether the address is reserved (in kernel memory, etc.) */
         /* theoretically, we could release _all_ lower memory, and it must work */
-        vmem_unmap(spc_current(), (void*)id_map);
+
+        /* TODO: check why interrupt handling is destroyed when releasing the
+           identity map... */
+        warn("not releasing identity map!\n");
+        //vmem_unmap(spc_current(), (void*)id_map);
 
         id_map += PAGE_SIZE_4K;
     }
