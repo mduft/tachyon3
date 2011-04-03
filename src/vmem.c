@@ -53,20 +53,6 @@ static void vmem_extp_init(char const* tag, extp_func_t func, char const* desc) 
 }
 
 void vmem_init() {
-    uintptr_t id_map = PAGE_SIZE_4K;
-
-    while(id_map <= (PAGE_SIZE_4K * 1024)) {
-        /* TODO: check whether the address is reserved (in kernel memory, etc.) */
-        /* theoretically, we could release _all_ lower memory, and it must work */
-
-        /* TODO: check why interrupt handling is destroyed when releasing the
-           identity map... */
-        warn("not releasing identity map!\n");
-        //vmem_unmap(spc_current(), (void*)id_map);
-
-        id_map += PAGE_SIZE_4K;
-    }
-
     /* call virtual memory init dependant initializers. */
     extp_iterate(EXTP_VMEM_INIT, vmem_extp_init);
 }

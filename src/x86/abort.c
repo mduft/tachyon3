@@ -6,7 +6,8 @@
 #include <ksym.h>
 
 void abort(void) {
-    error("out of luck - aborted.\n");
+    // don't use fatal() as this calls abort ;)
+    log_write(Fatal, "tachyon aborted.\n");
 
     list_t* trace = ksym_trace();
     ksym_write_trace(Error, trace);
