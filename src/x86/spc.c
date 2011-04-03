@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 by Markus Duft <mduft@gentoo.org>
+/* Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
  * This file is part of the 'tachyon' operating system. */
 
 #include <spc.h>
