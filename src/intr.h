@@ -5,6 +5,8 @@
 
 #include "tachyon.h"
 
+typedef bool (*intr_handler_t)(interrupt_t* info);
+
 /**
  * Enable interrupts. This decrements a counter until
  * it reaches zero, and then really enables them.
@@ -24,3 +26,20 @@ void intr_disable();
  */
 bool intr_state();
 
+/**
+ * Register an interrupt handler for a specific interrupt
+ * gate.
+ *
+ * @param gate      the gate to register a handler for.
+ * @param handler   the handler callback.
+ */
+void intr_add(uint16_t gate, intr_handler_t handler);
+
+/**
+ * Removes an interrupt handler for a specific interrupt
+ * gate.
+ *
+ * @param gate      the gate to remove the handler from.
+ * @param handler   the handler callback.
+ */
+void intr_remove(uint16_t gate, intr_handler_t handler);

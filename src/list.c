@@ -50,7 +50,7 @@ void list_add(list_t* list, void const* data) {
     list->size++;
 }
 
-void list_remove(list_t* list, list_node_t* item) {
+void list_remove(list_t* list, void const* item) {
     if(!list) {
         error("NULL list to remove from.\n");
         return;
@@ -59,11 +59,12 @@ void list_remove(list_t* list, list_node_t* item) {
     list_node_t* node = list->head;
 
     while(node != NULL) {
-        if(node->next == item) {
-            node->next = node->next->next;
+        if(node->next && node->next->data == item) {
+            list_node_t* nn = node->next;
+            node->next = nn->next;
             list->size--;
 
-            kheap_free(item);
+            kheap_free(nn);
 
             return;
         }

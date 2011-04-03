@@ -55,7 +55,7 @@ void list_add(list_t* list, void const* data);
  * @param list  the list to remove the item from.
  * @param node  the node to remove.
  */
-void list_remove(list_t* list, list_node_t* item);
+void list_remove(list_t* list, void const* data);
 
 /**
  * Start iterating over list_node_t's.

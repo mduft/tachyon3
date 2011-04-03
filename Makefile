@@ -112,10 +112,11 @@ $(KERNEL).sym.dmp: $(KERNEL_OBJECTS) $(ARCH_PPLSCRIPT)
 	@$(LD) $(KLDFLAGS) -o "$@.bin" $(KERNEL_OBJECTS)
 	@echo "declare -a names" >> "$@"
 	@echo "declare -a sizes" >> "$@"
-	@$(NM) -S -g "$@.bin" | grep -E '^[0-9a-fA-F]*[ \t]+[0-9a-fA-F]*[ \t]+[Tt]' | while read addr size type name; do \
+	@$(NM) -n -S --defined-only "$@.bin" | sed -e 's,\(^[0-9a-fA-F]*[ \t]*\)\([tT].*$$\),\10a \2,g' | grep -E '^[0-9a-fA-F]*[ \t]+[0-9a-fA-F]*[ \t]+[Tt]' | while read addr size type name; do \
 		test -z "$${size}" && size=1; \
 		test -z "$${idx}" && idx=0; \
 		echo "names[$${idx}]=\"$${name}\"" >> "$@"; \
+        echo "addrs[$${idx}]=0x$${addr}" >> "$@"; \
 		echo "sizes[$${idx}]=0x$${size}" >> "$@"; \
 		((idx += 1)); \
 	done;
@@ -134,7 +135,7 @@ $(KERNEL).sym.S: $(KERNEL).sym.dmp
 	@source "$<"; \
 	 case "$(ARCH)" in x86) op=".long" ;; x86_64) op=".quad" ;; esac; \
 	 x=0; while [[ $${x} -lt $${#names[@]} ]]; do \
-	 	echo "	$${op} $${names[$${x}]}" >> "$@"; \
+	 	echo "	$${op} $${addrs[$${x}]}" >> "$@"; \
 		echo "	$${op} $${sizes[$${x}]}" >> "$@"; \
 		echo "	$${op} .sym$${x}" >> "$@"; \
 		((x += 1)); \

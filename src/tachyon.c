@@ -13,12 +13,23 @@
 #include "spc.h"
 #include "process.h"
 #include "ksym.h"
+#include "intr.h"
 
 init_state_t const boot_state;
 
 void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
     info("initializing %s\n", descr);
     cb();
+}
+
+static bool test_int3(interrupt_t* state) {
+    info("int3 caught from %p!\n", state->ip);
+
+    list_t* trace = ksym_trace();
+    ksym_write_trace(Info, trace);
+    list_delete(trace);
+
+    return true;
 }
 
 void boot() {
@@ -47,6 +58,9 @@ void boot() {
     if(!rm_int(0x10, &state))
         warn("failed calling int 0x15\n");
     */
+
+    intr_add(3, test_int3);
+    asm volatile("int3");
 
     fatal("kernel ended unexpectedly.\n");
 }
