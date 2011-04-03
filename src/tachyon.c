@@ -22,16 +22,6 @@ void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
     cb();
 }
 
-static bool test_int3(interrupt_t* state) {
-    info("int3 caught from %p!\n", state->ip);
-
-    list_t* trace = ksym_trace();
-    ksym_write_trace(Info, trace);
-    list_delete(trace);
-
-    return true;
-}
-
 void boot() {
     log_init();
     pmem_init();
@@ -58,12 +48,6 @@ void boot() {
     if(!rm_int(0x10, &state))
         warn("failed calling int 0x15\n");
     */
-
-    intr_add(3, test_int3);
-    asm volatile("int3");
-
-    uintptr_t* p = (uintptr_t*)NULL;
-    *p = 1;
 
     fatal("kernel ended unexpectedly.\n");
 }

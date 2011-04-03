@@ -8,7 +8,7 @@
 
 list_t* list_new() {
     list_t* list = (list_t*)kheap_alloc(sizeof(list_t));
-    memset(list, 0, sizeof(list));
+    memset(list, 0, sizeof(list_t));
 
     return list;
 }
@@ -36,7 +36,7 @@ void list_add(list_t* list, void const* data) {
     }
 
     list_node_t* new_node = (list_node_t*)kheap_alloc(sizeof(list_node_t));
-    memset(new_node, 0, sizeof(new_node));
+    memset(new_node, 0, sizeof(list_node_t));
 
     new_node->data = data;
 

@@ -17,7 +17,7 @@ process_t* prc_new() {
     if(!prc)
         return NULL;
 
-    memset(prc, 0, sizeof(prc));
+    memset(prc, 0, sizeof(process_t));
 
     prc->space = spc_new();
     prc->threads = list_new();
