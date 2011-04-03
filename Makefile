@@ -116,8 +116,8 @@ $(KERNEL).sym.dmp: $(KERNEL_OBJECTS) $(ARCH_PPLSCRIPT)
 		test -z "$${size}" && size=1; \
 		test -z "$${idx}" && idx=0; \
 		echo "names[$${idx}]=\"$${name}\"" >> "$@"; \
-        echo "addrs[$${idx}]=0x$${addr}" >> "$@"; \
-		echo "sizes[$${idx}]=0x$${size}" >> "$@"; \
+        echo "addrs[$${idx}]=$${addr}" >> "$@"; \
+		echo "sizes[$${idx}]=$${size}" >> "$@"; \
 		((idx += 1)); \
 	done;
 	@-rm -f "$@.bin"
@@ -135,11 +135,31 @@ $(KERNEL).sym.S: $(KERNEL).sym.dmp
 	@source "$<"; \
 	 case "$(ARCH)" in x86) op=".long" ;; x86_64) op=".quad" ;; esac; \
 	 x=0; while [[ $${x} -lt $${#names[@]} ]]; do \
-	 	echo "	$${op} $${addrs[$${x}]}" >> "$@"; \
-		echo "	$${op} $${sizes[$${x}]}" >> "$@"; \
+        if [[ $${x} -gt 0 ]]; then \
+            ((y=x-1)); \
+            echo "ibase=16" > "$@.calc"; \
+            echo "$${addrs[$${x}]} - ($${addrs[$${y}]}+$${sizes[$${y}]})" | tr '[a-z]' '[A-Z]' >> "$@.calc"; \
+            echo "quit" >> "$@.calc"; \
+            cross=`bc -s -q "$@.calc"`; \
+            addrs[$${x}]=$${addrs[$${x}]}; \
+            sizes[$${x}]=$${sizes[$${x}]}; \
+            if [[ $${cross} -lt 0 && $${cross} -gt -11 ]]; then \
+                sizes[$${y}]=$${sizes[$${y}]}$${cross}; \
+            fi; \
+            rm -f "$@.calc"; \
+        fi; \
+		((x += 1)); \
+		printf "[SYM ] Generated %5d of %5d\r" $${x} $${#names[@]}; \
+     done; \
+	 printf "\n"; \
+	 x=0; while [[ $${x} -lt $${#names[@]} ]]; do \
+	 	echo "	$${op} 0x$${addrs[$${x}]}" >> "$@"; \
+		echo "	$${op} 0x$${sizes[$${x}]}" >> "$@"; \
 		echo "	$${op} .sym$${x}" >> "$@"; \
 		((x += 1)); \
-	 done;
+		printf "[SYM ] Wrote     %5d of %5d\r" $${x} $${#names[@]}; \
+	 done; \
+	 printf "\n";
 
 $(KERNEL).sym.o: $(KERNEL).sym.S
 	@-$(MAKE_BDIR)

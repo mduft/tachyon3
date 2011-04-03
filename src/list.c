@@ -40,7 +40,7 @@ void list_add(list_t* list, void const* data) {
 
     new_node->data = data;
 
-    if(!list->tail) {
+    if(!list->head) {
         list->head = new_node;
     } else {
         list->tail->next = new_node;

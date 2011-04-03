@@ -62,5 +62,8 @@ void boot() {
     intr_add(3, test_int3);
     asm volatile("int3");
 
+    uintptr_t* p = (uintptr_t*)NULL;
+    *p = 1;
+
     fatal("kernel ended unexpectedly.\n");
 }
