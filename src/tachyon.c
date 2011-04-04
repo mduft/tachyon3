@@ -24,6 +24,10 @@ void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
 
 void boot() {
     log_init();
+
+    /* initialize early kernel extensions (before memory is initialized!) */
+    extp_iterate(EXTP_EARLY_KINIT, init_subsys);
+
     pmem_init();
 
     /* reserve the kernel's physical memory, so nobody

@@ -6,6 +6,7 @@
 #include <vmem.h>
 #include <spc.h>
 #include <log.h>
+#include <mem.h>
 #include "paging.h"
 
 INSTALL_EXTENSION(EXTP_VMEM_INIT, cga_init, "screen")
@@ -64,8 +65,27 @@ void cga_write(char const* str) {
 
     while(str && *str) {
         if(*str != '\n' && *str != '\r') {
-            *vram_current = *str | __cga_attr;
-            ++__cga_x;
+            switch(*str) {
+            case '\t': {
+                uint16_t x = ALIGN_UP(__cga_x + 1, 8) - __cga_x;
+                __cga_x += x;
+                while(x--) {
+                    *vram_current++ = ' ' | __cga_attr;
+                }
+                vram_current = CALC_LOCATION - 1;
+                break;
+            }
+            case '\b':
+                if(__cga_x > 0)
+                    --__cga_x;
+                vram_current = CALC_LOCATION;
+                *vram_current = ' ' | __cga_attr;
+                break;
+            default:
+                *vram_current = *str | __cga_attr;
+                ++__cga_x;
+                break;
+            }
         }
 
         if(__cga_x >= CGA_WIDTH || *str == '\n' || *str == '\r') {

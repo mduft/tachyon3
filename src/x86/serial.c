@@ -6,7 +6,7 @@
 #include <log.h>
 #include <io.h>
 
-INSTALL_EXTENSION(EXTP_KINIT, serial_init, "serial-log")
+INSTALL_EXTENSION(EXTP_EARLY_KINIT, serial_init, "serial-log")
 
 #define PORT_COM1   0x3F8
 
