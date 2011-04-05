@@ -106,6 +106,17 @@ $(KERNEL).dbg: $(KERNEL)
 	@$(OBJCOPY) --add-gnu-debuglink="$@" "$<"
 	@touch "$@"
 
+all-kernel: $(KERNEL) $(KERNEL).dbg
+	@printf "kernel ready: " 
+	@(cd $(dir $(KERNEL)) && ls -hs $(notdir $(KERNEL)))
+
+clean:
+	@-rm -rf $(SOURCEDIR)/.build
+
+#.----------------------------------.
+#| Kernel Symbol Table dumping      |
+#'----------------------------------'
+
 $(KERNEL).sym.dmp: $(KERNEL_OBJECTS) $(ARCH_PPLSCRIPT)
 	@-rm -f "$@"
 	@-rm -f "$@.bin"
@@ -169,14 +180,6 @@ $(KERNEL).sym.o: $(KERNEL).sym.S
 	 	echo "$(CC) $(KCFLAGS) -D__ASM__ -c -o \"$@\" \"$<\""; \
 	 fi
 	@$(CC) $(KCFLAGS) -D__ASM__ -c -o "$@" "$<"
-
-
-all-kernel: $(KERNEL) $(KERNEL).dbg
-	@printf "kernel ready: " 
-	@(cd $(dir $(KERNEL)) && ls -hs $(notdir $(KERNEL)))
-
-clean:
-	@-rm -rf $(SOURCEDIR)/.build
 
 #.----------------------------------.
 #| General Template Rules           |
