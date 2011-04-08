@@ -41,6 +41,8 @@ _x86_64_isr\num:
     .if !\has_err
     push $0x0
     .endif
+    # TODO: find state from cpu_context->thread.cpu
+    call x86_64_state_save
     .if \res
     call abort
     .else
@@ -52,6 +54,7 @@ _x86_64_isr\num:
     .else
     addq $0x8, %rsp
     .endif
+    call x86_64_state_restore
     iretq
     .endif
 ._x86_64_isr_end\num:

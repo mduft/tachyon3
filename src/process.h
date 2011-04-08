@@ -6,14 +6,18 @@
 #include "tachyon.h"
 #include "thread.h"
 #include "list.h"
+#include "spl.h"
 
 /**
  * The descriptor of a process. Holds all relevant
  * information associated with it.
  */
-typedef struct {
-    spc_t space;        /**< the address space for a process */
-    list_t* threads;    /**< list of associated threads */
+typedef struct _tag_process_t {
+    pid_t id;
+    spc_t space;
+    spinlock_t lock;
+    tid_t ctid;
+    list_t* threads;
 } process_t;
 
 /**
@@ -37,3 +41,28 @@ process_t* prc_new();
  */
 process_t* prc_delete(process_t* prc);
 
+/**
+ * Retrieves the next valid thread-id for the given
+ * process.
+ *
+ * @param prc   the process to get a free id for.
+ * @return      the thread id.
+ */
+tid_t prc_next_tid(process_t* prc);
+
+/**
+ * Adds a thread to the process' thread list. This
+ * should be called only by thread implementations.
+ *
+ * @param prc   the target process.
+ * @param thr   the thread to add.
+ */
+void prc_add_thread(process_t* prc, thread_t* thr);
+
+/**
+ * Removes a thread from the given process' thread list.
+ *
+ * @param prc   the target process.
+ * @param thr   the thread to remove.
+ */
+void prc_remove_thread(process_t* prc, thread_t* thr);

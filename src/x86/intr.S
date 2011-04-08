@@ -3,7 +3,7 @@
 
 #include <x86/defs.h>
 #include <x86/asm.h>
-#include <x86/cpu.h>
+#include <x86/reg.h>
 
 .section .text
 

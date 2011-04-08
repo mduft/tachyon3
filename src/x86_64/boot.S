@@ -3,7 +3,7 @@
 
 #include <x86_64/defs.h>
 #include <x86/asm.h>
-#include <x86/cpu.h>
+#include <x86/reg.h>
 #include <x86/msr.h>
 
 .global bootstrap_x86_64

@@ -2,7 +2,7 @@
 # This file is part of the 'tachyon' operating system.
 
 #include <x86_64/defs.h>
-#include <x86/cpu.h>
+#include <x86/reg.h>
 
 .section .text
 
