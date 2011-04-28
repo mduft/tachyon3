@@ -61,10 +61,14 @@ typedef phys_addr_t spc_t;
 
 typedef uint8_t     bool;
 
+struct _tag_cpu_context_t;
+
 /**
  * describes the available information when an interrupt happens.
  */
 typedef struct {
+    struct _tag_cpu_context_t* ctx; /**< interrupted threads cpu context */
+
     uintptr_t   num;    /**< the interrupt number */
     uintptr_t   code;   /**< the error code, or zero if none */
     uintptr_t   ip;     /**< the interrupted location */

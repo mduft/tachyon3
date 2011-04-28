@@ -16,6 +16,7 @@
 #define EXTP_VMEM_INIT      "vmem.init"
 #define EXTP_EARLY_KINIT    "k.init.early"
 #define EXTP_KINIT          "k.init"
+#define EXTP_CPUINIT        "cpu.init"
 
 /**
  * Dummy extension point callback type. The real type depends

@@ -41,12 +41,19 @@ _x86_64_isr\num:
     .if !\has_err
     push $0x0
     .endif
-    # TODO: find state from cpu_context->thread.cpu
+    push $\num
+
+    subq $0x8, %rsp      # reserve space for the context address on the stack
+    push %rax            # save the current RAX
+    call x86_64_ctx_get  # retrieve the current context.
+    mov %rax, 0x08(%rsp) # save the pointer to the reserved stack space.
+    pop %rax             # restore the original RAX
+
     call x86_64_state_save
+
     .if \res
     call abort
     .else
-    push $\num
     mov %rsp, %rdi
     callq intr_dispatch
     .if !\has_err

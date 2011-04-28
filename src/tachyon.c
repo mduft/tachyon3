@@ -40,6 +40,9 @@ void boot() {
      * points in no specific order */
     extp_iterate(EXTP_KINIT, init_subsys);
 
+    /* initialize the BSP. this creates the initial cpu context and state */
+    extp_iterate(EXTP_CPUINIT, init_subsys);
+
     /* initialize the core process with the current address
      * space, and other relevant data. */
     tachyon.space = spc_current();
@@ -52,6 +55,8 @@ void boot() {
     if(!rm_int(0x10, &state))
         warn("failed calling int 0x15\n");
     */
+
+    asm volatile("int3");
 
     fatal("kernel ended unexpectedly.\n");
 }

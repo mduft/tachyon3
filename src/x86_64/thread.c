@@ -2,11 +2,11 @@
  * This file is part of the 'tachyon' operating system. */
 
 #include "thread.h"
+#include "cpu.h"
 #include <process.h>
 #include <kheap.h>
 #include <spl.h>
 #include <mem.h>
-#include <cpu.h>
 
 thread_t* thr_create(process_t* parent, thread_start_t entry) {
     thread_t* thr = kheap_alloc(sizeof(thread_t));
@@ -35,7 +35,7 @@ thread_t* thr_delete(thread_t* thr) {
 }
 
 thread_t* thr_switch(thread_t* target) {
-    cpu_context_t* context = cpu_context_current();
+    cpu_context_t* context = x86_64_ctx_get();
 
     spl_lock(&context->lock);
 
