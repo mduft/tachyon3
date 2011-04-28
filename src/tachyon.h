@@ -61,24 +61,6 @@ typedef phys_addr_t spc_t;
 
 typedef uint8_t     bool;
 
-struct _tag_cpu_context_t;
-
-/**
- * describes the available information when an interrupt happens.
- */
-typedef struct {
-    struct _tag_cpu_context_t* ctx; /**< interrupted threads cpu context */
-
-    uintptr_t   num;    /**< the interrupt number */
-    uintptr_t   code;   /**< the error code, or zero if none */
-    uintptr_t   ip;     /**< the interrupted location */
-    uintptr_t   cs;     /**< the code segment of the interrupted location. */
-    uintptr_t   flags;  /**< the eflags/rflags of the interrupted thread. */
-
-    uintptr_t   sp;     /**< (only on ring change). the original stack pointer */
-    uintptr_t   ss;     /**< (only on ring change). the original stack segment */
-} interrupt_t;
-
 /**
  * Describes the initial state when tachyon takes control. At the
  * moment this stores the multiboot informations, if available.

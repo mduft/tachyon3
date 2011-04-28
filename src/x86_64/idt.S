@@ -49,19 +49,20 @@ _x86_64_isr\num:
     mov %rax, 0x08(%rsp) # save the pointer to the reserved stack space.
     pop %rax             # restore the original RAX
 
-    call x86_64_state_save
+    call x86_64_isr_state_save
 
     .if \res
     call abort
     .else
-    mov %rsp, %rdi
+    mov 0x08(%rsp), %rsi    # pass in the interrupt number
+    mov %rsp, %rdi          # pass in the interrupt state
     callq intr_dispatch
     .if !\has_err
     addq $0x10, %rsp
     .else
     addq $0x8, %rsp
     .endif
-    call x86_64_state_restore
+    call x86_64_isr_state_restore
     iretq
     .endif
 ._x86_64_isr_end\num:

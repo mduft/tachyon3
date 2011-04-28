@@ -34,11 +34,11 @@ intr_gate_desc_t intr_gate_table[MAX_INTR];
  *
  * @param state state information for the interrupt.
  */
-void intr_dispatch(interrupt_t* state) {
-    if(state->num >= MAX_INTR)
-        fatal("cannot handle out of bounds gate: %d at %p\n", state->num, state->ip);
+void intr_dispatch(interrupt_t* state, uint16_t num) {
+    if(num >= MAX_INTR)
+        fatal("cannot handle out of bounds gate: %d\n", num);
 
-    intr_gate_desc_t* gate = &intr_gate_table[state->num];
+    intr_gate_desc_t* gate = &intr_gate_table[num];
 
     if(gate->list) {
         list_t* handlers = gate->h.list;
@@ -60,7 +60,7 @@ void intr_dispatch(interrupt_t* state) {
             return;
     }
 
-    fatal("unhandled interrupt %d in %p\n", state->num, state->ip);
+    fatal("unhandled interrupt %d\n", num);
 }
 
 void intr_add(uint16_t num, intr_handler_t handler) {

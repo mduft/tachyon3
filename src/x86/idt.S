@@ -43,6 +43,9 @@ _x86_isr\num:
     call abort
     .else
     push $\num
+    # TODO: save state
+    push $0x0 # dummy state!
+    push 0x4(%esp)
     push %esp
     call intr_dispatch
     .if !\has_err

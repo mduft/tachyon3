@@ -5,6 +5,8 @@
 
 #include "tachyon.h"
 
+typedef struct _tag_interrupt_t interrupt_t;
+
 typedef bool (*intr_handler_t)(interrupt_t* info);
 
 /**

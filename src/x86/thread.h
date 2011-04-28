@@ -24,9 +24,9 @@ struct _tag_thread_t {
 /**
  * Returns the threads current context.
  */
-extern thr_context_t* x86_64_ctx_get();
+extern thr_context_t* x86_ctx_get();
 
 /**
  * Sets the current context for this cpu.
  */
-extern void x86_64_ctx_set(thr_context_t* ctx);
+extern void x86_ctx_set(thr_context_t* ctx);

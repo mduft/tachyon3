@@ -7,7 +7,7 @@
 #include <thread.h>
 
 typedef struct {
-    uintptr_t rip;
+    uintptr_t eip;
 } cpu_state_t;
 
 
