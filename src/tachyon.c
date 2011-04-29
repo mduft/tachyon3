@@ -14,6 +14,7 @@
 #include "process.h"
 #include "ksym.h"
 #include "intr.h"
+#include "kheap.h"
 
 init_state_t const boot_state;
 
@@ -56,7 +57,12 @@ void boot() {
         warn("failed calling int 0x15\n");
     */
 
-    asm volatile("int3");
+    kheap_state_t buf;
+    kheap_info(&buf);
+
+    info("kheap: used bytes: %d, allocated blocks: %d\n", buf.used, buf.blocks);
+
+    asm volatile("int $0x20");
 
     fatal("kernel ended unexpectedly.\n");
 }

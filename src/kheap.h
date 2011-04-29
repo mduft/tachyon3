@@ -5,6 +5,11 @@
 
 #include "tachyon.h"
 
+typedef struct {
+    uintmax_t used;     /**< used bytes in kernel heap */
+    uintmax_t blocks;   /**< count of allocated blocks */
+} kheap_state_t;
+
 /**
  * Initializes the kernel heap. The extents and location
  * of this heap are fixed at a specific region.
@@ -43,3 +48,9 @@ void kheap_free(void* mem);
  */
 void* kheap_realloc(void* mem, size_t bytes);
 
+/**
+ * Retrieves a snapshot of the current kernel heap state.
+ *
+ * @param target    the target buffer for the information.
+ */
+void kheap_info(kheap_state_t* target);

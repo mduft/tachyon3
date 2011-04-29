@@ -4,13 +4,14 @@
 #pragma once
 
 #include "cpu.h"
+#include "thread.h"
 #include <intr.h>
 
 /**
  * describes the available information when an interrupt happens.
  */
 struct _tag_interrupt_t {
-    struct _tag_thr_context_t* ctx; /**< interrupted threads thread context */
+    thr_context_t* ctx; /**< interrupted threads thread context */
 
     uintptr_t   num;    /**< the interrupt number */
     uintptr_t   code;   /**< the error code, or zero if none */

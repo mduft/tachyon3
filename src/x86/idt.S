@@ -35,6 +35,8 @@ x86_idt_ptr:
 .section .text
 
 .macro x86_isr num, has_err, res=0
+.type _x86_isr\num, @function
+.size _x86_isr\num, ._x86_isr_end\num - _x86_isr\num
 _x86_isr\num:
     .if !\has_err
     push $0x0
@@ -55,6 +57,7 @@ _x86_isr\num:
     .endif
     iret
     .endif
+._x86_isr_end\num:
 .endm
 
 x86_isr     EX_DIV_ERR,      0       #DE     0x00

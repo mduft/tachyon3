@@ -18,6 +18,9 @@
 #define RM_VIRTUAL          APIC_VIRTUAL + APIC_VSZ
 #define RM_VSZ              0x110000
 
+/* ksym support */
+#define INTR_MAGIC_FRAME    0xDEADBEEFBADC0FFE
+
 /* registers */
 #define AX  "rax"
 #define BX  "rbx"

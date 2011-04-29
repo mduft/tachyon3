@@ -40,6 +40,7 @@ void cga_init() {
     __cga_x = __cga_y = 0;
 
     log_add_writer(cga_write, "screen-log");
+    log_set_level("screen-log", Info);
 }
 
 static void scroll1() {

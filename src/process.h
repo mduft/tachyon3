@@ -13,11 +13,13 @@
  * information associated with it.
  */
 typedef struct _tag_process_t {
-    pid_t id;
-    spc_t space;
-    spinlock_t lock;
-    tid_t ctid;
-    list_t* threads;
+    pid_t id;           /**< the process' unique id within the system */
+    spc_t space;        /**< the root of the process' address space */
+    uint8_t ring;       /**< the ring the process lives in (kernel-space, user-space, ...) */
+    uint8_t priority;   /**< the process' priority */
+    spinlock_t lock;    /**< a process lock, locked whenever the process is modified */
+    tid_t ctid;         /**< the current thread id counter - each new thread gets ctid++ */
+    list_t* threads;    /**< the list of all currently alive threads */
 } process_t;
 
 /**

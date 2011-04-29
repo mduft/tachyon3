@@ -131,6 +131,7 @@ typedef uintptr_t kheap_block_t;
 static struct {
     uintptr_t vmem_mark;    /**< the current virtual memory allocation mark */
     size_t used_bytes;      /**< the current count of allocated bytes */
+    size_t block_count;     /**< count of allocated blocks */
 } kheap_state;
 
 /**
@@ -170,6 +171,7 @@ static inline bool kheap_validate(void* m) {
 void kheap_init() {
     kheap_state.vmem_mark = KHEAP_START + PAGE_SIZE_4K;
     kheap_state.used_bytes = 0;
+    kheap_state.block_count = 0;
 
     phys_addr_t phys = pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
 
@@ -200,6 +202,7 @@ void* kheap_alloc(size_t bytes) {
             KHEAP_BL_SET(KHEAP_BL_NEXT(block), freesz, 0);
 
             kheap_state.used_bytes += bytes;
+            kheap_state.block_count++;
             return KHEAP_BL_H2M(block);
         }
 
@@ -240,6 +243,9 @@ void kheap_free(void* mem) {
         register kheap_block_t* block = KHEAP_BL_M2H(mem); 
         register size_t actual_sz = KHEAP_BL_B2DATASZ(*block);
 
+        kheap_state.used_bytes -= actual_sz;
+        kheap_state.block_count--;
+
         if(KHEAP_BL_HAS_NEXT(block)) {
             register kheap_block_t* next = KHEAP_BL_NEXT(block);
 
@@ -275,6 +281,8 @@ void* kheap_realloc(void* mem, size_t bytes) {
     if(KHEAP_BL_B2DATASZ(*block) >= bytes)
         return mem;
 
+    size_t orig_sz = KHEAP_BL_B2DATASZ(*block);
+
     if(KHEAP_BL_HAS_NEXT(block)) {
         register kheap_block_t* next = KHEAP_BL_NEXT(block);
 
@@ -289,12 +297,14 @@ void* kheap_realloc(void* mem, size_t bytes) {
                 register size_t nsz = (KHEAP_BL_B2DATASZ(*block) + 
                     KHEAP_BL_DATASZ2SZ(KHEAP_BL_B2DATASZ(*next)));
                 KHEAP_BL_SET(block, nsz, KHEAP_PRESENT);
+                kheap_state.used_bytes += (nsz - orig_sz);
             } else {
                 register size_t nsz = KHEAP_BL_B2DATASZ(*next) - 
                     (bytes - KHEAP_BL_B2DATASZ(*block));
                 KHEAP_BL_SET(block, bytes, KHEAP_PRESENT);
                 next = KHEAP_BL_NEXT(block);
                 KHEAP_BL_SET(next, nsz, 0);
+                kheap_state.used_bytes += (bytes - orig_sz);
             }
             return mem;
         }
@@ -304,4 +314,14 @@ void* kheap_realloc(void* mem, size_t bytes) {
     memmove(new, mem, KHEAP_BL_B2DATASZ(*block));
     kheap_free(mem);
     return new;
+}
+
+void kheap_info(kheap_state_t* target) {
+    if(!target) {
+        error("target buffer is NULL!\n");
+        return;
+    }
+
+    target->used = kheap_state.used_bytes;
+    target->blocks = kheap_state.block_count;
 }

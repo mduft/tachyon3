@@ -17,21 +17,32 @@ typedef enum {
 } thread_state_t;
 
 /**
- * Defines the type for a threads entry point.
- */
-typedef void (*thread_start_t)();
-
-/**
- * The descriptor of a thread. Holds all relevant
- * information associated with it (platform dependant).
- */
-typedef struct _tag_thread_t thread_t;
-
-/**
  * Describes a process, forward declared to avoid circular
  * includes process <-> thread
  */
 struct _tag_process_t;
+
+/**
+ * Describes a threads cpu context. Forward declared as the
+ * actual structure is platform dependant.
+ */
+struct _tag_thr_context_t;
+
+/**
+ * Describes a thread and its state (both CPU and thread state)
+ */
+typedef struct {
+    tid_t id;                           /**< the threads id within it's process */
+    thread_state_t state;               /**< the threads execution state */
+    struct _tag_process_t* parent;      /**< the threads parent process */
+    struct _tag_thr_context_t* context; /**< the threads associated cpu context */
+} thread_t;
+
+
+/**
+ * Defines the type for a threads entry point.
+ */
+typedef void (*thread_start_t)();
 
 /**
  * Creates a new thread within the given process.

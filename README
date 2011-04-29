@@ -1,6 +1,10 @@
 Getting started:
 ================
 
+ATTENTION: the x86 port is currently a little behind. The current
+           states went appart when i was starting to implement
+           threading and context switching.
+
 to be able to build tachyon, you will at least need matching
 binutils and a compiler. any more or less resent (>4.0) gcc
 should do, and any binutils working with it.

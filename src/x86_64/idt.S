@@ -51,18 +51,36 @@ _x86_64_isr\num:
 
     call x86_64_isr_state_save
 
+    mov 0x08(%rsp), %rsi    # pass in the interrupt number
+    mov %rsp, %rdi          # pass in the interrupt state
+
+    push 0x18(%rsp)         # push dummy return address.
+    mov $INTR_MAGIC_FRAME, %rax
+    push %rax               # push magic number for tracer.
+    push %rbp               # new frame to ease tracing.
+    mov %rsp, %rbp          # ...
+
     .if \res
     call abort
     .else
-    mov 0x08(%rsp), %rsi    # pass in the interrupt number
-    mov %rsp, %rdi          # pass in the interrupt state
     callq intr_dispatch
-    .if !\has_err
-    addq $0x10, %rsp
-    .else
-    addq $0x8, %rsp
-    .endif
+
+    call x86_64_ctx_get     # retrieve current (new?) context.
+    mov %rax, (%rsp)        # save new context ptr to stack.
+
+    pop %rbp             # restore old frame
+    pop %rax             # remove magic frame
+    pop %rax             # remove dummy return address.
+
     call x86_64_isr_state_restore
+
+    # TODO: kernel call return value?
+
+    .if !\has_err
+    addq $0x18, %rsp
+    .else
+    addq $0x10, %rsp
+    .endif
     iretq
     .endif
 ._x86_64_isr_end\num:
