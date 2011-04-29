@@ -7,6 +7,7 @@
 #include "thread.h"
 #include "list.h"
 #include "spl.h"
+#include "heap.h"
 
 /**
  * The descriptor of a process. Holds all relevant
@@ -20,12 +21,9 @@ typedef struct _tag_process_t {
     spinlock_t lock;    /**< a process lock, locked whenever the process is modified */
     tid_t ctid;         /**< the current thread id counter - each new thread gets ctid++ */
     list_t* threads;    /**< the list of all currently alive threads */
+    heap_t heap;        /**< the process' heap for it's address space */
+    heap_t stack_heap;  /**< heap to allocate stack space from */
 } process_t;
-
-/**
- * The core tachyon process descriptor.
- */
-extern process_t tachyon;
 
 /**
  * Creates a new process descriptor and allocates a new

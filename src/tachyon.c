@@ -16,7 +16,16 @@
 #include "intr.h"
 #include "kheap.h"
 
+/**
+ * the initial state at boot. contains various boot relevant data,
+ * saved by the early entry routine
+ */
 init_state_t const boot_state;
+
+/**
+ * The kernel process.
+ */
+process_t* core;
 
 void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
     info("initializing %s\n", descr);
@@ -46,7 +55,16 @@ void boot() {
 
     /* initialize the core process with the current address
      * space, and other relevant data. */
-    tachyon.space = spc_current();
+    core = prc_new();
+
+    if(!core)
+        fatal("failed to create core process\n");
+
+    /* this is a special case: the address space for the core
+     * process exists already, and we don't want to configure
+     * a new one - so discard the new one, and use the existing */
+    spc_delete(core->space);
+    core->space = spc_current();
 
     /*
     rm_state_t state;
@@ -57,10 +75,7 @@ void boot() {
         warn("failed calling int 0x15\n");
     */
 
-    kheap_state_t buf;
-    kheap_info(&buf);
-
-    info("kheap: used bytes: %d, allocated blocks: %d\n", buf.used, buf.blocks);
+    info("kheap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
 
     asm volatile("int $0x20");
 

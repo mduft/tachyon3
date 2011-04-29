@@ -4,53 +4,21 @@
 #pragma once
 
 #include "tachyon.h"
+#include "heap.h"
 
-typedef struct {
-    uintmax_t used;     /**< used bytes in kernel heap */
-    uintmax_t blocks;   /**< count of allocated blocks */
-} kheap_state_t;
+/** helper macros around heap_* for the kernel heap */
+#define kheap_alloc(x)      heap_alloc(&kheap, x)
+#define kheap_free(x)       heap_free(&kheap, x)
+#define kheap_realloc(x, s) heap_realloc(&kheap, x, s)
+#define kheap_state()       kheap.state
 
 /**
- * Initializes the kernel heap. The extents and location
- * of this heap are fixed at a specific region.
- *
- * @see KHEAP_START
- * @see KHEAP_END
+ * The actual kernel heap.
+ */
+extern heap_t kheap;
+
+/**
+ * Initializes the kernels internal heap.
  */
 void kheap_init();
 
-/**
- * Allocates a chunk of memory of bytes size.
- * The returned block is guaranteed to be aligned to at
- * least 4 bytes (8 bytes on 64 bit architectures).
- *
- * @param bytes the number of bytes to allocate.
- * @return      a pointer to a memory block.
- */
-void* kheap_alloc(size_t bytes);
-
-/**
- * Deallocates a previously allocated block of memory.
- *
- * @param mem   the block to deallocate.
- */
-void kheap_free(void* mem);
-
-/**
- * Resizes a given memory chunk by either really extending
- * the block if room is there, or otherwise allocating a
- * large enough block, moving the contents there, and freeing
- * the old memory.
- *
- * @param mem   the old memory block.
- * @param bytes the new block size in bytes.
- * @return      pointer to the resized block.
- */
-void* kheap_realloc(void* mem, size_t bytes);
-
-/**
- * Retrieves a snapshot of the current kernel heap state.
- *
- * @param target    the target buffer for the information.
- */
-void kheap_info(kheap_state_t* target);
