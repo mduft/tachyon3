@@ -90,7 +90,7 @@ void rm_init() {
         vmem_map(spc_current(), mem, (void*)vmem, PG_WRITABLE);
     }
 
-    info("real-mode emulation initialized.\n");
+    trace("real-mode emulation initialized.\n");
 }
 
 bool rm_int(uint8_t vec, rm_state_t* state) {

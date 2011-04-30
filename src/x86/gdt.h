@@ -21,3 +21,10 @@
 #define GDT_CODE_CONFORMING     (1 << 10)
 #define GDT_CODE_READ_ENABLE    (1 << 9)
 
+/* gate indices */
+
+#define GDT_KCODE32  0x08
+#define GDT_KDATA32  0x10
+#define GDT_KCODE64  0x18
+#define GDT_KDATA64  0x20
+

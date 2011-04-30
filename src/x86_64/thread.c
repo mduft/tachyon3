@@ -7,9 +7,12 @@
 #include <kheap.h>
 #include <spl.h>
 #include <mem.h>
+#include <x86/gdt.h>
 
 #include "intr.h"
 #include <log.h>
+
+#define THR_STACKSIZE 0x8000
 
 thread_t* thr_create(process_t* parent, thread_start_t entry) {
     thread_t* thr = kheap_alloc(sizeof(thread_t));
@@ -22,9 +25,22 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
     thr->id = prc_next_tid(parent);
     thr->parent = parent;
     thr->context = kheap_alloc(sizeof(thr_context_t));
+    thr->stack_base = heap_alloc(&parent->stack_heap, THR_STACKSIZE);
 
-    // TODO: create a stack!
+    memset(thr->context, 0, sizeof(thr_context_t));
+
+    // TODO: error checking
+    
+    thr->stack_base[0] = 0;
+    thr->stack_base[1] = 0;
+
     thr->context->state.rip = (uintptr_t)entry;
+    thr->context->state.rsp = (uintptr_t)&thr->stack_base[2];
+
+    if(parent->ring == 0) {
+        thr->context->state.ss = GDT_KDATA64;
+        thr->context->state.cs = GDT_KCODE64;
+    } // TODO: else
 
     return thr;
 }

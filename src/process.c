@@ -14,7 +14,7 @@
 // TODO: hack: swap platform specific intialization of process to correct location.
 #include <x86/paging.h>
 
-process_t* prc_new() {
+process_t* prc_new(spc_t space) {
     process_t* prc = kheap_alloc(sizeof(process_t));
 
     if(!prc) {
@@ -23,7 +23,7 @@ process_t* prc_new() {
 
     memset(prc, 0, sizeof(process_t));
 
-    prc->space = spc_new();
+    prc->space = space;
 
     if(!prc->space) {
         goto fail;
@@ -76,8 +76,6 @@ fail:
             heap_delete(&prc->stack_heap);
         if(prc->heap.state.valid)
             heap_delete(&prc->heap);
-        if(prc->space)
-            spc_delete(prc->space);
         if(prc->threads)
             list_delete(prc->threads);
         

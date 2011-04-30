@@ -39,5 +39,8 @@ spc_t spc_current() {
 }
 
 void spc_switch(spc_t target) {
+    if(target == spc_current())
+        return;
+
     asm volatile("mov %0, %%cr3" :: "r"(target));
 }

@@ -26,6 +26,15 @@ init_state_t const boot_state;
  */
 process_t* core;
 
+// -- TESTTEST
+void test_thr() {
+    while(true) {
+        info("hello thread\n");
+        for(int i = 0; i <100000; ++i);
+    }
+}
+// -- TESTTEST
+
 void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
     info("initializing %s\n", descr);
     cb();
@@ -48,16 +57,13 @@ void boot() {
 
     /* initialize the core process with the current address
      * space, and other relevant data. */
-    core = prc_new();
+    core = prc_new(spc_current());
 
     if(!core)
         fatal("failed to create core process\n");
 
-    /* this is a special case: the address space for the core
-     * process exists already, and we don't want to configure
-     * a new one - so discard the new one, and use the existing */
-    spc_delete(core->space);
-    core->space = spc_current();
+    thread_t* hi_thread = thr_create(core, test_thr);
+    thr_switch(hi_thread);
 
     /*
     rm_state_t state;

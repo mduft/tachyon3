@@ -26,12 +26,17 @@ typedef struct _tag_process_t {
 } process_t;
 
 /**
- * Creates a new process descriptor and allocates a new
- * address space for it.
+ * Creates a new process descriptor within the given
+ * address space, and initializes memory management
+ * for it.
+ *
+ * @attention the new process takes ownership of the
+ *            given address space. This means the space
+ *            is destroyed when the process exits.
  *
  * @return the new process' descriptor.
  */
-process_t* prc_new();
+process_t* prc_new(spc_t space);
 
 /**
  * Frees any resources associated with a process.
