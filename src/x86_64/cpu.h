@@ -30,6 +30,12 @@ typedef struct {
     uintptr_t r13;
     uintptr_t r14;
     uintptr_t r15;
+
+    uintptr_t cr0;
+    uintptr_t cr2;
+    uintptr_t cr3;
+    uintptr_t cr4;
+    uintptr_t cr8;
 } x86_64_cpu_state_t;
 
 

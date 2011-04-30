@@ -72,6 +72,16 @@ x86_64_isr_state_save:
     mov %r13, 0x88(%rax)    # |  * R13   (0x88)    (save) |
     mov %r14, 0x90(%rax)    # |  * R14   (0x90)    (save) |
     mov %r15, 0x98(%rax)    # |  * R15   (0x98)    (save) |
+    mov %cr0, %rbx          # |                    (load) |
+    mov %rbx, 0xa0(%rax)    # |  * CR0   (0xa0)    (save) |
+    mov %cr2, %rbx          # |                    (load) |
+    mov %rbx, 0xa8(%rax)    # |  * CR2   (0xa8)    (save) |
+    mov %cr3, %rbx          # |                    (load) |
+    mov %rbx, 0xb0(%rax)    # |  * CR3   (0xb0)    (save) |
+    mov %cr4, %rbx          # |                    (load) |
+    mov %rbx, 0xb8(%rax)    # |  * CR4   (0xb8)    (save) |
+    mov %cr8, %rbx          # |                    (load) |
+    mov %rbx, 0xc0(%rax)    # |  * CR8   (0xc0)    (save) |
                             # |                           |
                             # | TODO: %fs, %gs?           |
                             # '---------------------------'

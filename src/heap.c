@@ -107,6 +107,17 @@
     { *h = (s) | f; register heap_block_t* ft = HEAP_BL_H2F(h); *ft = (s) | f | HEAP_FOOTER; }
 
 /**
+ * Perform critical operational checks on this heap to
+ * validate integrity.
+ *
+ * @param h the heap to check.
+ */
+#define HEAP_CHECK(h) \
+    if(h->space != spc_current()) \
+        fatal("the heap can only operate if the heaps address space is active!\n"); \
+
+
+/**
  * The header of a heap memory block. If bit 0 is set, the block
  * is allocated, otherwise it is free. If bit 1 is set, the
  * information block points to a footer.
@@ -129,12 +140,6 @@ static inline bool heap_validate(heap_t* heap, void* m) {
     if((uintptr_t)m % sizeof(heap_block_t)) {
         return false;
     }
-
-    if(heap->space != spc_current())
-        fatal("pff - wrong address space for this heap (%p != %p)\n", heap->space, spc_current());
-
-    if(!heap->state.valid)
-        return false;
 
     register heap_block_t* hdr = HEAP_BL_M2H(m);
 
@@ -161,6 +166,8 @@ static inline bool heap_validate(heap_t* heap, void* m) {
 bool heap_init(heap_t* heap) {
     if(!heap || heap->start == 0 || heap->end == 0 || heap->space == 0)
         return false;
+
+    HEAP_CHECK(heap);
 
     heap->state.vmem_mark = heap->start + PAGE_SIZE_4K;
     heap->state.used_bytes = 0;
@@ -192,6 +199,8 @@ heap_t* heap_delete(heap_t* heap) {
 }
 
 void* heap_alloc(heap_t* heap, size_t bytes) {
+    HEAP_CHECK(heap);
+
     bytes = ALIGN_UP(bytes, sizeof(heap_block_t));
 
     register heap_block_t* block = (heap_block_t*)heap->start;
@@ -242,6 +251,8 @@ void* heap_alloc(heap_t* heap, size_t bytes) {
 }
 
 void heap_free(heap_t* heap, void* mem) {
+    HEAP_CHECK(heap);
+
     if(!heap_validate(heap, mem)) {
         error("kernel heap block validation failed for %p!\n", mem);
     } else {
@@ -275,6 +286,8 @@ void heap_free(heap_t* heap, void* mem) {
 }
 
 void* heap_realloc(heap_t* heap, void* mem, size_t bytes) {
+    HEAP_CHECK(heap);
+
     if(!heap_validate(heap, mem)) {
         error("kernel heap block validation failed for %p!\n", mem);
         return NULL;

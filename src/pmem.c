@@ -8,6 +8,7 @@
 #include "kheap.h"
 #include "vmem.h"
 #include "spl.h"
+#include "ldsym.h"
 
 #define PMEM_PAGESIZE   4096
 #define PMEM_FDEG       80
@@ -49,10 +50,10 @@ static bitmap_t first_bmap;
 
 /**
  * This represents the real storage for the bitmap above.
- * it can hold bits for up to 640KB of physical memory, which
+ * it can hold bits for up to 4MB of physical memory, which
  * is the bare minimum that must be available at boot.
  */
-static uint32_t first_storage[5];
+static uint32_t first_storage[32];
 
 /**
  * Checks whether a given adress lies within a region.
@@ -95,6 +96,17 @@ void pmem_init() {
      * know how to handle it. rm_init() needs to spare this
      * page when reserving real mode memory! */
     pmem_reserve(0, PMEM_PAGESIZE);
+
+    /* from 4K to 0xa0000 (start of kernel memory) for
+     * real mode */
+    pmem_reserve(PMEM_PAGESIZE, PMEM_PAGESIZE * 158);
+
+    /* reserve the kernel's physical memory, so nobody
+     * else tries to use it */
+    if(!pmem_reserve(0xA0000, (((size_t)&_core_lma_end) - 0xA0000))) {
+        error("failed to protect physical lower and kernel memory\n");
+    }
+
 
     /* initialize virtual memory. this releases the identity
      * mapping for the physical kernel load address */
@@ -219,14 +231,18 @@ static bool pmem_alloc_helper(phys_addr_t* addr, size_t length, off_t align, boo
 
 phys_addr_t pmem_alloc(size_t length, off_t align) {
     phys_addr_t addr;
-    
+
     if(pmem_alloc_helper(&addr, length, align, true))
-        return addr;
+        goto ok;
 
     if(pmem_alloc_helper(&addr, length, align, false))
-        return addr;
+        goto ok;
 
     fatal("out of physical memory\n");
+
+  ok:
+    trace("allocated %d bytes at %p\n", length, addr);
+    return addr;
 }
 
 bool pmem_reserve(phys_addr_t addr, size_t length) {
@@ -236,6 +252,8 @@ bool pmem_reserve(phys_addr_t addr, size_t length) {
     if(ALIGN_RST(addr, PMEM_PAGESIZE) != 0) {
         fatal("misaligned physical address!\n");
     }
+
+    debug("try to reserve physical memory at %p (length: %d bytes)\n", addr, length);
 
     spl_lock(&pmem_lock);
 
@@ -253,6 +271,7 @@ next_pass:
                 if(checkPass) {
                     if(bmap_get(reg->bmap, idx)) {
                         spl_unlock(&pmem_lock);
+                        debug("failed to reserve region, %p already reserved\n", cur);
                         return false;
                     }
                 } else {

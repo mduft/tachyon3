@@ -35,6 +35,13 @@ process_t* prc_new() {
         goto fail;
     }
 
+    // ATTENTION: a rather lengthy operation (but should be ok for
+    // process creation): To be able to initialize the heap, the
+    // address space of the process must be activated. It is then
+    // deactivated again.
+    spc_t old = spc_current();
+    spc_switch(prc->space);
+
     prc->heap.start = PHEAP_START;
     prc->heap.end = PHEAP_END;
     prc->heap.space = prc->space;
@@ -55,6 +62,9 @@ process_t* prc_new() {
     if(!heap_init(&prc->stack_heap)) {
         goto fail;
     }
+
+    // switch back too the previous address space.
+    spc_switch(old);
 
     spl_init(&prc->lock);
 
