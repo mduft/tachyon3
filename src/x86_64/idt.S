@@ -65,12 +65,12 @@ _x86_64_isr\num:
     .else
     callq intr_dispatch
 
-    call x86_64_ctx_get     # retrieve current (new?) context.
-    mov %rax, (%rsp)        # save new context ptr to stack.
-
     pop %rbp             # restore old frame
     pop %rax             # remove magic frame
     pop %rax             # remove dummy return address.
+
+    call x86_64_ctx_get     # retrieve current (new?) context.
+    mov %rax, (%rsp)        # save new context ptr to stack.
 
     call x86_64_isr_state_restore
 

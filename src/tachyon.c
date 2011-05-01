@@ -27,11 +27,17 @@ init_state_t const boot_state;
 process_t* core;
 
 // -- TESTTEST
+thread_t* thr;
 void test_thr() {
     while(true) {
         info("hello thread\n");
         for(int i = 0; i <100000; ++i);
     }
+}
+
+bool handle_int32(interrupt_t* state) {
+    thr_switch(thr);
+    return true;
 }
 // -- TESTTEST
 
@@ -62,9 +68,6 @@ void boot() {
     if(!core)
         fatal("failed to create core process\n");
 
-    thread_t* hi_thread = thr_create(core, test_thr);
-    thr_switch(hi_thread);
-
     /*
     rm_state_t state;
     memset(&state, 0, sizeof(state));
@@ -76,7 +79,12 @@ void boot() {
 
     info("kheap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
 
+    // -- TESTTEST
+    thr = thr_create(core, test_thr);
+    intr_add(0x20, handle_int32);
+
     asm volatile("int $0x20");
+    // -- TESTTEST
 
     fatal("kernel ended unexpectedly.\n");
 }

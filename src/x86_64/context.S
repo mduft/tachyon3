@@ -18,11 +18,11 @@ the_one_and_only_context:
     .quad 0x0
 
 x86_64_ctx_get:
-    mov the_one_and_only_context, %rax
+    movq the_one_and_only_context, %rax
     ret
 .x86_64_ctx_get_end:
 
 x86_64_ctx_set:
-    mov %rax, the_one_and_only_context
+    movq %rax, the_one_and_only_context
     ret
 .x86_64_ctx_set_end:
