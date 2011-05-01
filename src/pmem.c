@@ -144,6 +144,7 @@ recheck:
                 return;
             }
 
+            length -= (reg->start + reg->length) - start;
             start = reg->start + reg->length;
             goto recheck;
         }

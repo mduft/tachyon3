@@ -235,7 +235,7 @@ void* heap_alloc(heap_t* heap, size_t bytes) {
                     return NULL;
                 } else {
                     heap->state.vmem_mark += PAGE_SIZE_4K;
-                    HEAP_BL_SET(block, sz + (PAGE_SIZE_4K * i), 0);
+                    HEAP_BL_SET(block, sz + (PAGE_SIZE_4K * (i + 1)), 0);
                 }
             }
 
