@@ -27,11 +27,22 @@ typedef struct {
 ksym_t const* ksym_get(void* addr);
 
 /**
- * Print a current stack trace.
+ * Print a given stack trace.
  *
- * @param the level to write the trace at.
+ * @param level the level to write the trace at.
+ * @param trace the trace to write.
  */
 void ksym_write_trace(log_level_t level, list_t* trace);
+
+/**
+ * Print a part of the given stack trace, limiting the
+ * count of items.
+ *
+ * @param level the level to write the trace at.
+ * @param trace the trace to write.
+ * @param limit the maximum count of rows.
+ */
+void ksym_write_trace_top(log_level_t level, list_t* trace, int16_t limit);
 
 /**
  * Retrieve a stack trace from the current stack position.

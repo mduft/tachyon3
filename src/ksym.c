@@ -24,7 +24,12 @@ ksym_t const* ksym_get(void* addr) {
 }
 
 void ksym_write_trace(log_level_t level, list_t* trace) {
+    ksym_write_trace_top(level, trace, -1);
+}
+
+void ksym_write_trace_top(log_level_t level, list_t* trace, int16_t limit) {
     list_node_t* node = list_begin(trace);
+    int16_t num = 0;
 
     while(node) {
         ksym_t* current = (ksym_t*)node->data;
@@ -45,6 +50,9 @@ void ksym_write_trace(log_level_t level, list_t* trace) {
         }
 
         node = node->next;
+
+        if(limit != -1 && ++num >= limit)
+            break;
     }
 }
 
