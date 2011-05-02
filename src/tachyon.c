@@ -29,10 +29,16 @@ process_t* core;
 // -- TESTTEST
 thread_t* thr;
 void test_thr() {
-    while(true) {
-        info("hello thread\n");
-        for(int i = 0; i <100000; ++i);
-    }
+    static int lvl = 0;
+
+    char stk_arr[256];
+    stk_arr[0] = 0;
+
+    lvl++;
+    info("hello thread %d\n", lvl);
+    if(lvl < 10000)
+        test_thr();
+    lvl--;
 }
 
 bool handle_int32(interrupt_t* state) {

@@ -23,7 +23,7 @@
 #define PHEAP_END           0x0000700000000000
 
 #define SHEAP_START         0x0000700000000000
-#define SHEAP_END           0x00007FFFFFFFFFFF
+#define SHEAP_END           0x00007FFFFFFFF000
 
 #define APIC_VIRTUAL        0xFFFFFFFFA0000000
 #define APIC_VSZ            0x1000

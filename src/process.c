@@ -52,14 +52,18 @@ process_t* prc_new(spc_t space) {
         goto fail;
     }
 
-    prc->stack_heap.start = SHEAP_START;
-    prc->stack_heap.end = SHEAP_END;
-    prc->stack_heap.space = prc->space;
-    // TODO: see above - swap to correct location.
-    // TODO: no execute on stack...?
-    prc->stack_heap.pg_fl = (PG_WRITABLE | PG_USER);
+    stack_allocator_desc_t desc = {
+        .top = SHEAP_END,
+        .bottom = SHEAP_START,
+        .space = prc->space,
+        // TODO: see above - swap to correct location.
+        // TODO: no execute on stack...?
+        .pg_fl = (PG_WRITABLE | PG_USER)
+    };
 
-    if(!heap_init(&prc->stack_heap)) {
+    prc->stka = stka_new(&desc);
+
+    if(!prc->stka) {
         goto fail;
     }
 
@@ -72,8 +76,8 @@ process_t* prc_new(spc_t space) {
 
 fail:
     if(prc) {
-        if(prc->stack_heap.state.valid)
-            heap_delete(&prc->stack_heap);
+        if(prc->stka)
+            stka_delete(prc->stka);
         if(prc->heap.state.valid)
             heap_delete(&prc->heap);
         if(prc->threads)
@@ -96,7 +100,7 @@ process_t* prc_destroy(process_t* prc) {
     if(list_size(prc->threads) > 0)
         fatal("trying to destroy process with threads!\n");
 
-    heap_delete(&prc->stack_heap);
+    stka_delete(prc->stka);
     heap_delete(&prc->heap);
 
     spc_delete(prc->space);

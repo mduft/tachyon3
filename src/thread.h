@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tachyon.h"
+#include "stka.h"
 
 /**
  * Describes the different states a thread can be in.
@@ -34,7 +35,7 @@ struct _tag_thr_context_t;
 typedef struct {
     tid_t id;                           /**< the threads id within it's process */
     thread_state_t state;               /**< the threads execution state */
-    uintptr_t* stack_base;              /**< real virtual stack base address */
+    stack_t* stack;                     /**< the threads stack */
     struct _tag_process_t* parent;      /**< the threads parent process */
     struct _tag_thr_context_t* context; /**< the threads associated cpu context */
 } thread_t;

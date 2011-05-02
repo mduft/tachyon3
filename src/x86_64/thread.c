@@ -12,8 +12,6 @@
 #include "intr.h"
 #include <log.h>
 
-#define THR_STACKSIZE 0x8000
-
 thread_t* thr_create(process_t* parent, thread_start_t entry) {
     thread_t* thr = kheap_alloc(sizeof(thread_t));
 
@@ -25,16 +23,14 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
     thr->id = prc_next_tid(parent);
     thr->parent = parent;
     thr->context = kheap_alloc(sizeof(thr_context_t));
-    thr->stack_base = heap_alloc(&parent->stack_heap, THR_STACKSIZE);
+    thr->stack = stka_alloc(parent->stka);
 
     memset(thr->context, 0, sizeof(thr_context_t));
 
     // TODO: error checking
-    
-    memset(thr->stack_base, 0, THR_STACKSIZE);
 
     thr->context->state.rip = (uintptr_t)entry;
-    thr->context->state.rsp = ((uintptr_t)thr->stack_base) + THR_STACKSIZE - (sizeof(uintptr_t) * 2);
+    thr->context->state.rsp = thr->stack->top - (sizeof(uintptr_t) * 2);
 
     if(parent->ring == 0) {
         thr->context->state.ss = GDT_KDATA64;
@@ -48,7 +44,9 @@ thread_t* thr_delete(thread_t* thr) {
     if(thr->context) {
         kheap_free(thr->context);
     }
-    // TODO: destroy stack!
+    if(thr->stack) {
+        stka_free(thr->parent->stka, thr->stack);
+    }
     if(thr) {
         kheap_free(thr);
     }
