@@ -52,6 +52,8 @@ void boot() {
     /* initialize early kernel extensions (before memory is initialized!) */
     extp_iterate(EXTP_EARLY_KINIT, init_subsys);
 
+    info("tachyon 3.0 built " __TIMESTAMP__ "\n");
+
     pmem_init();
 
     /* initialize kernel internals registered as extension

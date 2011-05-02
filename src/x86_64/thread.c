@@ -31,11 +31,10 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
 
     // TODO: error checking
     
-    thr->stack_base[0] = 0;
-    thr->stack_base[1] = 0;
+    memset(thr->stack_base, 0, THR_STACKSIZE);
 
     thr->context->state.rip = (uintptr_t)entry;
-    thr->context->state.rsp = (uintptr_t)&thr->stack_base[2];
+    thr->context->state.rsp = ((uintptr_t)thr->stack_base) + THR_STACKSIZE - (sizeof(uintptr_t) * 2);
 
     if(parent->ring == 0) {
         thr->context->state.ss = GDT_KDATA64;
