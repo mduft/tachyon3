@@ -35,6 +35,8 @@ struct _tag_thr_context_t;
 typedef struct {
     tid_t id;                           /**< the threads id within it's process */
     thread_state_t state;               /**< the threads execution state */
+    uint8_t priority;                   /**< the threads priority, inherited from 
+                                         *   the parent process, may be overridden. */
     stack_t* stack;                     /**< the threads stack */
     struct _tag_process_t* parent;      /**< the threads parent process */
     struct _tag_thr_context_t* context; /**< the threads associated cpu context */

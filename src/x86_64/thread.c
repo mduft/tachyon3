@@ -24,6 +24,7 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
     thr->parent = parent;
     thr->context = kheap_alloc(sizeof(thr_context_t));
     thr->stack = stka_alloc(parent->stka);
+    thr->priority = parent->priority;
 
     memset(thr->context, 0, sizeof(thr_context_t));
 

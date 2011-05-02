@@ -14,7 +14,7 @@
 // TODO: hack: swap platform specific intialization of process to correct location.
 #include <x86/paging.h>
 
-process_t* prc_new(spc_t space) {
+process_t* prc_new(spc_t space, uint8_t priority) {
     process_t* prc = kheap_alloc(sizeof(process_t));
 
     if(!prc) {
@@ -66,6 +66,8 @@ process_t* prc_new(spc_t space) {
     if(!prc->stka) {
         goto fail;
     }
+
+    prc->priority = priority;
 
     // switch back too the previous address space.
     spc_switch(old);

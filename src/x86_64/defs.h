@@ -16,6 +16,7 @@
 #define CORE_LMA_X86_64     0x0000000000100000
 #define CORE_VMA_X86_64     0xFFFFFFFF80000000
 
+// leaves 16MB for the core binary mapping.
 #define KHEAP_START         0xFFFFFFFF81000000
 #define KHEAP_END           0xFFFFFFFFA0000000
 
@@ -23,7 +24,7 @@
 #define PHEAP_END           0x0000700000000000
 
 #define SHEAP_START         0x0000700000000000
-#define SHEAP_END           0x00007FFFFFFFF000
+#define SHEAP_END           0x0000800000000000
 
 #define APIC_VIRTUAL        0xFFFFFFFFA0000000
 #define APIC_VSZ            0x1000
@@ -35,7 +36,7 @@
 #define RM_VSZ              0x110000
 
 /* ksym support */
-#define INTR_MAGIC_FRAME    0xDEADBEEFBADC0FFE
+#define INTR_MAGIC_FRAME    0x00900d900dc0ffee
 
 /* registers */
 #define AX  "rax"

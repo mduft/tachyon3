@@ -29,16 +29,7 @@ process_t* core;
 // -- TESTTEST
 thread_t* thr;
 void test_thr() {
-    static int lvl = 0;
-
-    char stk_arr[256];
-    stk_arr[0] = 0;
-
-    lvl++;
-    info("hello thread %d\n", lvl);
-    if(lvl < 10000)
-        test_thr();
-    lvl--;
+    info("hello thread\n");
 }
 
 bool handle_int32(interrupt_t* state) {
@@ -71,7 +62,7 @@ void boot() {
 
     /* initialize the core process with the current address
      * space, and other relevant data. */
-    core = prc_new(spc_current());
+    core = prc_new(spc_current(), PRIO_NORMAL);
 
     if(!core)
         fatal("failed to create core process\n");

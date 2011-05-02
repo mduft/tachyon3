@@ -12,7 +12,7 @@
 #define STK_PAGESIZE    0x1000
 
 /** initial size of new stacks */
-#define STK_INITSIZE    (STK_PAGESIZE * 2)
+#define STK_INITSIZE    (STK_PAGESIZE * 4)
 
 /** size of reserved "guard" space into which the stack may grow. */
 #define STK_GUARDSIZE   (STK_PAGESIZE * 256)

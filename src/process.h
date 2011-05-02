@@ -10,6 +10,14 @@
 #include "heap.h"
 #include "stka.h"
 
+#define PRIO_KERNEL     0x00
+#define PRIO_HIGHEST    0x01
+#define PRIO_HIGH       0x02
+#define PRIO_NORMAL     0x03
+#define PRIO_LOW        0x04
+#define PRIO_LOWEST     0x05
+#define PRIO_IDLE       0x06
+
 /**
  * The descriptor of a process. Holds all relevant
  * information associated with it.
@@ -37,7 +45,7 @@ typedef struct _tag_process_t {
  *
  * @return the new process' descriptor.
  */
-process_t* prc_new(spc_t space);
+process_t* prc_new(spc_t space, uint8_t priority);
 
 /**
  * Frees any resources associated with a process.

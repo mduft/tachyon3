@@ -76,9 +76,9 @@ void intr_add(uint16_t num, intr_handler_t handler) {
             gate->h.list = list;
         }
         list_add(list, handler);
-        trace("adding handler for %d: %p (new handler count: %d)\n", num, handler, list_size(list));
+        trace("adding handler for interrupt %d: %p (new handler count: %d)\n", num, handler, list_size(list));
     } else {
-        trace("setting handler for %d: %p (old: %p)\n", num, handler, gate->h.handler);
+        trace("setting handler for interrupt %d: %p (old: %p)\n", num, handler, gate->h.handler);
         gate->h.handler = handler;
     }
 }
