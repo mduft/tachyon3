@@ -194,6 +194,8 @@ function tt_assure_complete() {
     [[ -n "${_tt_cur_version}" ]] || fatal "${_tt_cur_name} not complete: version missing"
     [[ -n "${_tt_cur_src}" ]] || fatal "${_tt_cur_name} not complete: source missing"
 
+    [[ -n "${_tt_cur_install_target}" ]] || _tt_cur_install_target=install
+
     info "package ${_tt_cur_name} seems complete ..."
 }
 
