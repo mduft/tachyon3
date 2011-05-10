@@ -12,26 +12,16 @@ should do, and any binutils working with it.
 only a 64 bit toolchain is required, as this is used to build
 the 32 bit kernel too.
 
-binutils:
-    ./configure --prefix=/opt/ttc2 --target=x86_64-pc-elf
-    make
-    make install
+A build script for the toolchain is provided, which builds the
+currently tested and used (by the developer(s)) versions of the
+required packages. Take a look at ./tools/toolchain.sh --help
+for information on how to use it. Hint: you will have to download
+the source packages manually, and place them in ./tools/.source.
+if you have differing versions, either pass the --version param
+to toolchain.sh, or directly modify toolchain.sh (the "tools"
+array variable near the top of the file).
 
-possibly install gmp, mpfr, mpc. all of them just need
-./configure --prefix=/opt/ttc2; make; make install;
-mpc needs --with-mpfr=/opt/ttc2 and (IIRC)--with-gmp=/opt/ttc2 
-additionally.
-
-gcc:
-    ./configure --prefix=/opt/ttc2 --with-gnu-ld --with-gnu-as \
-        --with-mpfr=/opt/ttc2 \ # only if required!
-        --with-gmp=/opt/ttc2 \  # only if required!
-        --with-mpc=/opt/ttc2    # only if required!
-    make all-gcc
-    make install-gcc
-
-Setup your PATH, to have the now ready toolchain in it. Then
-you can now do any of the following:
+Now you can do this in the source tachyon root directory:
 
     make                    # build default arch (x86_64)
     make all-archs          # build all supported ARCHs
