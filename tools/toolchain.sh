@@ -12,7 +12,7 @@ tools=(
     "gmp:5.0.2:"
     "mpfr:3.0.1:"
     "mpc:0.9:--with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
-    "gcc:4.6.0:--with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix}:all-gcc:install-gcc"
+    "gcc:4.6.0:--with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf:all-gcc:install-gcc"
     "gdb:7.2:--target=x86_64-pc-linux-gnu --disable-werror"
     "cgdb:0.6.5:"
     "grub:1.99~rc2:"
@@ -44,30 +44,30 @@ function tt_split() {
 
 _tt_home="$(cd "$(dirname "$0")"; pwd)"
 _tt_verbose=false
-_tt_build=false
 _tt_source="${_tt_home}/.source"
 _tt_bdir="${_tt_home}/.build"
 _tt_prefix="$(cd "${_tt_home}/.."; pwd)/.package"
 _tt_preflight=false
 _tt_clean=false
 _tt_jobs=1
+_tt_env="${_tt_prefix}/env.sh"
+_tt_pkg=
 
 help="$0 usage:
 
    --help                  print this message.
    -v | --verbose          verbose output.
-   -b | --build            build the tools (as opposed to setting environment only).
    -j <j> | --jobs=<j>     use 'j' jobs during builds.
    --clean                 remove existing build directories before building.
    --preflight             check package completeness (source availability) before
+   --package=<p>           only build a single package 'p'.
+   -e <e> | --env=<e>      generate the environment script to 'e' instead of the
+                           default '${_tt_env}'.
                            starting the builds.
    -s <s> | --source=s     use 's' as source directory containing the tools sources.
                            defaults to '${_tt_source}'.
    -t <t> | --temp=<t>     use 't' as temporary build directory.
                            defaults to '${_tt_bdir}'.
-   --version=<t>:<v>       use specified version 'v' for tool 't'. for example to use
-                           gcc-4.5.2, give --version=gcc:4.5.2
-   --configure=<t>:<f>     use configure flags 'f' for tool 't'
    -p <p> | --prefix=<p>   define the prefix where to install all the tools. defaults
                            to '${_tt_prefix}'."
 
@@ -79,7 +79,6 @@ function tt_parse_cl() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
         "-v"|"--verbose")   _tt_verbose=true                ;;
-        "-b"|"--build")     _tt_build=true                  ;;
         "-s")               shift; _tt_source="$1"          ;;
         "--source="*)       _tt_source="${1#--source=}"     ;;
         "-p")               shift; _tt_prefix="$1"          ;;
@@ -92,6 +91,7 @@ function tt_parse_cl() {
         "--preflight")      _tt_preflight=true              ;;
         "--clean")          _tt_clean=true                  ;;
         "--debug")          set -xv                         ;;
+        "--package="*)      _tt_pkg="${1#--package=}"       ;;
         "--help")           tt_exit_help 0                  ;;
         *)                  error "unknown argument: '$1'";
                             tt_exit_help 1                  ;;
@@ -105,7 +105,7 @@ function tt_parse_cl() {
 # | for the given package.                     |
 # '--------------------------------------------'
 function tt_build_dir() {
-    local dir="${_tt_bdir}/${_tt_cur_name}-${_tt_cur_version}"
+    local dir="${_tt_cur_bdir}"
 
     [[ -d ${dir} && ${_tt_clean} == false ]] && fatal "build directory ${dir} exists."
     [[ -d ${dir} ]] && rm -rf ${dir}
@@ -144,6 +144,27 @@ function tt_unpack() {
 
     tar ${tflags} "${_tt_cur_src}"
     cd ${_tt_cur_name}* || fatal "missing expected directory"
+
+    for patch in "${_tt_home}/patches/${_tt_cur_name}-${_tt_cur_version}"*.patch; do
+        [[ ${patch} == *'*.patch' ]] && break
+
+        local _p=undef
+        for p in 0 1 2 3 4; do
+            if patch --quiet -p${p} --dry-run < "${patch}" > /dev/null 2>&1; then
+                _p=${p}
+                break
+            fi
+        done
+
+        if [[ ${_p} == undef ]]; then
+            warn "patch ${patch} does not apply!"
+            continue
+        fi
+
+        info "applying ${patch}"
+
+        patch --quiet -p${_p} < "${patch}"
+    done
 }
 
 # .--------------------------------------------.
@@ -158,7 +179,7 @@ function tt_configure() {
     [[ -x ./configure ]] \
         || fatal "oups. cannot find configure script"
 
-    ./configure --prefix=${_tt_prefix} $(echo ${_tt_cur_flags})
+    ./configure --prefix=${_tt_prefix} $(eval echo ${_tt_cur_flags})
 }
 
 # .--------------------------------------------.
@@ -227,20 +248,39 @@ tt_parse_cl "$@"
 
 if [[ ${_tt_preflight} == true ]]; then
     for package in "${tools[@]}"; do
+        [[ -n ${_tt_pkg} && ${package} != ${_tt_pkg}* ]] && continue
         tt_use_package "${package}"
     done
 fi
 
-if [[ ${_tt_build} == true ]]; then
-    for package in "${tools[@]}"; do
-        tt_use_package "${package}"
-        tt_unpack || fatal "failed to unpack ${_tt_cur_name}-${_tt_cur_version}"
-        tt_configure || fatal "failed to configure ${_tt_cur_name}-${_tt_cur_version}"
-        tt_build || fatal "failed to build ${_tt_cur_name}-${_tt_cur_version}"
-        tt_install || fatal "failed to install ${_tt_cur_name}-${_tt_cur_version}"
-    done
-else
-    # TODO: argl...
-    export PATH=${_tt_prefix}/bin:${PATH}
-fi
+for package in "${tools[@]}"; do
+    [[ -n ${_tt_pkg} && ${package} != ${_tt_pkg}* ]] && continue
+    tt_use_package "${package}"
+
+    _tfbase="${_tt_cur_bdir}/"
+
+    [[ ${_tt_clean} == true ]] && rm -rf "${_tt_cur_bdir}"
+
+    [[ -f ${_tfbase}.unpacked ]] \
+        || tt_unpack || fatal "failed to unpack ${_tt_cur_name}-${_tt_cur_version}"
+    touch ${_tfbase}.unpacked
+    [[ -f ${_tfbase}.configured ]] \
+        || tt_configure || fatal "failed to configure ${_tt_cur_name}-${_tt_cur_version}"
+    touch ${_tfbase}.configured
+    [[ -f ${_tfbase}.built ]] \
+        || tt_build || fatal "failed to build ${_tt_cur_name}-${_tt_cur_version}"
+    touch ${_tfbase}.built
+    [[ -f ${_tfbase}.installed ]] \
+        || tt_install || fatal "failed to install ${_tt_cur_name}-${_tt_cur_version}"
+    touch ${_tfbase}.installed
+done
+
+info "cleaning up ..."
+[[ -n "${_tt_bdir}" && -e ${_tt_bdir} ]] \
+    && rm -rf "${_tt_bdir}"
+
+info "generating environment to ${_tt_env}"
+echo "export PATH=${_tt_prefix}/bin:\${PATH}" > "${_tt_env}"
+
+_tt_verbose=true info "done. do '. ${_tt_env}' to start using the new toolchain!"
 
