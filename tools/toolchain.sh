@@ -253,6 +253,11 @@ if [[ ${_tt_preflight} == true ]]; then
     done
 fi
 
+#
+# TODO: find a better way to do this...?
+#
+export LDFLAGS="-L${_tt_prefix}/lib -Wl,-rpath,${_tt_prefix}/lib"
+
 for package in "${tools[@]}"; do
     [[ -n ${_tt_pkg} && ${package} != ${_tt_pkg}* ]] && continue
     tt_use_package "${package}"
@@ -275,9 +280,11 @@ for package in "${tools[@]}"; do
     touch ${_tfbase}.installed
 done
 
-info "cleaning up ..."
-[[ -n "${_tt_bdir}" && -e ${_tt_bdir} ]] \
-    && rm -rf "${_tt_bdir}"
+if [[ ${_tt_clean} == true ]]; then
+    info "cleaning up ..."
+    [[ -n "${_tt_bdir}" && -e ${_tt_bdir} ]] \
+        && rm -rf "${_tt_bdir}"
+fi
 
 info "generating environment to ${_tt_env}"
 echo "export PATH=${_tt_prefix}/bin:\${PATH}" > "${_tt_env}"

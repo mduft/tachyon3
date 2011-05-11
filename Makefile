@@ -233,6 +233,7 @@ qemu-dbg:
 gdb:
 	@gdb=$$(type -p cgdb); test -x "$${gdb}" || gdb=$(GDB); test -x "$${gdb}" || gdb=gdb; \
 	 echo "using $${gdb}..."; \
+	 case "$${gdb}" in *"cgdb") gdb="$${gdb} -d $(GDB)";; esac; \
 	$${gdb} -x $(SOURCEDIR)/config/misc/gdb-qemu.gdbinit $(KERNEL)
 	
 #

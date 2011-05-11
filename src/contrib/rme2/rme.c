@@ -330,11 +330,13 @@ int RME_Int_DoOpcode(tRME_State *State)
 	 uint8_t	repType = 0;	// Repeat flag
 	 uint8_t	opcode, byte2;	// Current opcode and second byte
 	 int	ret;	// Return value from functions
+    #if DEBUG
 	// Initial CPU State
 	uint16_t	startIP, startCS;
 
 	startIP = State->IP;
 	startCS = State->CS;
+    #endif
 
 	State->Decoder.OverrideSegment = -1;
 	State->Decoder.bOverrideOperand = 0;
