@@ -26,7 +26,6 @@
 #define CORE_VMA_X86_64     0xFFFFFFFF80000000
 #define CORE_VMA_X86_64_END (CORE_VMA_X86_64 + 0x1000000)
 
-// leaves 16MB for the core binary mapping.
 #define KHEAP_START         0xFFFFFF0000000000
 #define KHEAP_END           0xFFFFFFFF70000000
 
@@ -44,6 +43,9 @@
 
 #define RM_VIRTUAL          (CGA_VIRTUAL + CGA_VSZ)
 #define RM_VSZ              0x110000
+
+#define GDT_VIRTUAL         (RM_VIRTUAL + RM_VSZ)
+#define GDT_VSZ             0x1000
 
 /* ksym support */
 #define INTR_MAGIC_FRAME    0x00900d900dc0ffee

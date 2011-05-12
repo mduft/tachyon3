@@ -17,6 +17,12 @@
 #define true    1
 #define false   0
 
+/** stringize the given argument */
+#define stringize(x) #x
+
+/** resolve a preprocessor macro and stringize the result */
+#define rstringize(x) stringize(x)
+
 #define ALIGN_DN(x, a)  ((x) & ~((a) - 1))
 #define ALIGN_UP(x, a)  ALIGN_DN(x + (a - 1), a)
 #define ALIGN_RST(x, a) ((x) & ((a) - 1))

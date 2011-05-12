@@ -21,10 +21,10 @@ x86_gdt:
 
     x86_gdt_code:
         .long 0x0000FFFF
-        .long 0x000F0000 | (GDT_PRESENT | GDT_TYPE_CODE_OR_DATA | GDT_TYPE_CODE | GDT_CODE_READ_ENABLE | GDT_DEF_OPSIZE_32BIT | GDT_GRANULARITY)
+        .long 0x000F0000 | GDT_SFL_CODE32
     x86_gdt_data:
         .long 0x0000FFFF
-        .long 0x000F0000 | (GDT_PRESENT | GDT_TYPE_CODE_OR_DATA | GDT_DATA_WRITE_ENABLE | GDT_DEF_OPSIZE_32BIT | GDT_GRANULARITY)
+        .long 0x000F0000 | GDT_SFL_DATA32
 
     x86_tss:
         .quad 0x0
