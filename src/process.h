@@ -43,9 +43,12 @@ typedef struct _tag_process_t {
  *            given address space. This means the space
  *            is destroyed when the process exits.
  *
+ * @param space     the address space used by the process.
+ * @param priority  the process' priority for the scheduler.
+ * @param ring      the process' target execution ring.
  * @return the new process' descriptor.
  */
-process_t* prc_new(spc_t space, uint8_t priority);
+process_t* prc_new(spc_t space, uint8_t priority, uint8_t ring);
 
 /**
  * Frees any resources associated with a process.

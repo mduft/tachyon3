@@ -55,7 +55,7 @@ static bool stka_grow(stack_allocator_t* allocator, stack_t* stack, uintptr_t am
         return false;
     }
 
-    if(stack->mapped - amount <= stack->guard) {
+    if(stack->mapped - amount < stack->guard) {
         error("cannot grow stack - maximum size exceeded\n");
         return false;
     }
@@ -93,7 +93,7 @@ stack_t* stka_alloc(stack_allocator_t* allocator) {
 
     stack->top = allocator->next_stk;
     stack->mapped = stack->top;
-    stack->guard = stack->top - STK_GUARDSIZE;
+    stack->guard = stack->top - (allocator->desc.fixed ? STK_INITSIZE : STK_GUARDSIZE);
 
     stka_grow(allocator, stack, STK_INITSIZE);
 

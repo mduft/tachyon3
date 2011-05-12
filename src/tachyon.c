@@ -53,19 +53,19 @@ void boot() {
 
     pmem_init();
 
-    /* initialize kernel internals registered as extension
-     * points in no specific order */
-    extp_iterate(EXTP_KINIT, init_subsys);
-
     /* initialize the BSP. this creates the initial cpu context and state */
     extp_iterate(EXTP_CPUINIT, init_subsys);
 
     /* initialize the core process with the current address
      * space, and other relevant data. */
-    core = prc_new(spc_current(), PRIO_NORMAL);
+    core = prc_new(spc_current(), PRIO_NORMAL, RING_KERNEL);
 
     if(!core)
         fatal("failed to create core process\n");
+
+    /* initialize kernel internals registered as extension
+     * points in no specific order */
+    extp_iterate(EXTP_KINIT, init_subsys);
 
     /*
     rm_state_t state;
