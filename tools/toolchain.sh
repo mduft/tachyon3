@@ -51,6 +51,7 @@ _tt_preflight=false
 _tt_clean=false
 _tt_jobs=1
 _tt_env="${_tt_prefix}/env.sh"
+_tt_mkenv="${_tt_prefix}/env.mk"
 _tt_pkg=
 
 help="$0 usage:
@@ -289,5 +290,6 @@ fi
 info "generating environment to ${_tt_env}"
 echo "export PATH=${_tt_prefix}/bin:\${PATH}" > "${_tt_env}"
 
-_tt_verbose=true info "done. do '. ${_tt_env}' to start using the new toolchain!"
+info "generating environment to ${_tt_mkenv}"
+echo "export PATH := ${_tt_prefix}/bin:\$(PATH)" > "${_tt_mkenv}"
 

@@ -14,10 +14,13 @@ ARCH_MAKEFILE	:= $(SOURCEDIR)/config/$(ARCH).mk
 ARCH_LINKSCRIPT	:= $(SOURCEDIR)/config/$(ARCH).ld
 ARCH_PPLSCRIPT  := $(BUILDDIR)/$(ARCH).ld
 
+ENV_MAKEFILE	:= $(SOURCEDIR)/.package/env.mk
+
 #.----------------------------------.
 #| Include the platform config.     |
 #'----------------------------------'
 
+include $(ENV_MAKEFILE)
 include $(ARCH_MAKEFILE)
 
 GDB				:= x86_64-pc-linux-gnu-gdb
