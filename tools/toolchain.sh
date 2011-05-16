@@ -8,15 +8,15 @@
 # each entry has this format: <name>:<version>:<configure flags>:<all target>:<install target>
 
 tools=(
-    "binutils:2.21:--target=x86_64-pc-elf"
-    "gmp:5.0.2:"
-    "mpfr:3.0.1:"
-    "mpc:0.9:--with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
-    "gcc:4.6.0:--with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf:all-gcc:install-gcc"
-    "gdb:7.2:--target=x86_64-pc-linux-gnu --disable-werror"
-    "cgdb:0.6.5:"
-    "grub:1.99~rc2:"
-    "xorriso:1.0.8:"
+    "binutils:2.21:--build=\${_tt_host} --target=x86_64-pc-elf"
+    "gmp:5.0.2:--build=\${_tt_host}"
+    "mpfr:3.0.1:--build=\${_tt_host}"
+    "mpc:0.9:--build=\${_tt_host} --with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
+    "gcc:4.6.0:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf:all-gcc:install-gcc"
+    "gdb:7.2:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
+    "cgdb:0.6.5:--build=\${_tt_host}"
+    "grub:1.99~rc2:--build=\${_tt_host}"
+    "xorriso:1.0.8:--build=\${_tt_host}"
     "qemu:0.14.1:--disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
     "bochs:2.4.6:--with-sdl --with-x11 --with-x --enable-x86-64 --enable-smp --enable-long-phy-address --enable-cpu-level=6 --enable-x2apic --enable-debugger --enable-logging --enable-vbe --enable-pci"
 )
@@ -179,7 +179,7 @@ function tt_configure() {
     [[ -x ./configure ]] \
         || fatal "oups. cannot find configure script"
 
-    ./configure --build="${_tt_host}" --prefix=${_tt_prefix} $(eval echo ${_tt_cur_flags})
+    ./configure --prefix=${_tt_prefix} $(eval echo ${_tt_cur_flags})
 }
 
 # .--------------------------------------------.
