@@ -53,6 +53,7 @@ _tt_jobs=1
 _tt_env="${_tt_prefix}/env.sh"
 _tt_mkenv="${_tt_prefix}/env.mk"
 _tt_pkg=
+_tt_host="$(uname -m)-pc-linux-gnu"
 
 help="$0 usage:
 
@@ -108,7 +109,7 @@ function tt_parse_cl() {
 function tt_build_dir() {
     local dir="${_tt_cur_bdir}"
 
-    [[ -d ${dir} && ${_tt_clean} == false ]] && fatal "build directory ${dir} exists."
+    [[ -d ${dir} && ${_tt_clean} == false ]] && { cd ${dir}; return; }
     [[ -d ${dir} ]] && rm -rf ${dir}
 
     mkdir -p "${dir}"
@@ -133,8 +134,6 @@ function tt_find_source() {
 # '--------------------------------------------'
 function tt_unpack() {
     info "unpacking ${_tt_cur_name}-${_tt_cur_version}"
-
-    tt_build_dir || fatal "cannot create build directory!"
 
     local tflags=
 
@@ -180,7 +179,7 @@ function tt_configure() {
     [[ -x ./configure ]] \
         || fatal "oups. cannot find configure script"
 
-    ./configure --prefix=${_tt_prefix} $(eval echo ${_tt_cur_flags})
+    ./configure --build="${_tt_host}" --prefix=${_tt_prefix} $(eval echo ${_tt_cur_flags})
 }
 
 # .--------------------------------------------.
@@ -258,6 +257,8 @@ fi
 # TODO: find a better way to do this...?
 #
 export LDFLAGS="-L${_tt_prefix}/lib -Wl,-rpath,${_tt_prefix}/lib"
+export CFLAGS="-I${_tt_prefix}/include"
+export CXXFLAGS="${CFLAGS}"
 
 for package in "${tools[@]}"; do
     [[ -n ${_tt_pkg} && ${package} != ${_tt_pkg}* ]] && continue
@@ -266,6 +267,8 @@ for package in "${tools[@]}"; do
     _tfbase="${_tt_cur_bdir}/"
 
     [[ ${_tt_clean} == true ]] && rm -rf "${_tt_cur_bdir}"
+
+    tt_build_dir || fatal "cannot create build directory!"
 
     [[ -f ${_tfbase}.unpacked ]] \
         || tt_unpack || fatal "failed to unpack ${_tt_cur_name}-${_tt_cur_version}"
