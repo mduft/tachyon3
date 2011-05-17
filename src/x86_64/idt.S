@@ -153,9 +153,10 @@ x86_64_isr     59,  0
 # | Functions to init and fill the idt     |
 # '----------------------------------------'
 
-.macro set_int_gate num
+.macro set_int_gate num, ist=0
     mov $_x86_64_isr\num, %rsi
     mov $\num, %rdi
+    mov $\ist, %r8
     call x86_64_idt_set
 .endm
 
@@ -165,27 +166,30 @@ x86_64_idt_init:
     push %rcx
     push %rsi
     push %rdi
+    push %r8
 
     set_int_gate 0
     set_int_gate 1
-    set_int_gate 2
+    set_int_gate 2,  1
     set_int_gate 3
     set_int_gate 4
     set_int_gate 5
     set_int_gate 6
     set_int_gate 7
-    set_int_gate 8
+    set_int_gate 8,  1
     set_int_gate 9
     set_int_gate 10
     set_int_gate 11
-    set_int_gate 12
+    set_int_gate 12, 1
     set_int_gate 13
-    set_int_gate 14
+    set_int_gate 14, 1
     set_int_gate 15
     set_int_gate 16
     set_int_gate 17
     set_int_gate 18
     set_int_gate 19
+
+    # reserved ints.
     set_int_gate 20
     set_int_gate 21
     set_int_gate 22
@@ -232,6 +236,7 @@ x86_64_idt_init:
 
     lidt (x86_64_idt_ptr)
 
+    pop %r8
     pop %rdi
     pop %rsi
     pop %rcx
@@ -247,6 +252,7 @@ x86_64_idt_set:
 
     # RDI: the gate number
     # RSI: the target RIP
+    # R8: the IST index to use
 
     # .----------------------------------------.
     # | Calculate the entries address in IDT   |
@@ -287,6 +293,7 @@ x86_64_idt_set:
     mov %rsi, %rbx
     and $~0xFFFF, %ebx
     or $(IDTT_LARGE_INT_GATE | IDTE_PRESENT), %ebx
+    or %r8d, %ebx
     mov %ebx, 4(%rax)
 
     shr $0x20, %rsi

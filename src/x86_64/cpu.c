@@ -4,6 +4,7 @@
 #include "cpu.h"
 #include "thread.h"
 #include "dyngdt.h"
+#include "tss.h"
 
 #include <extp.h>
 #include <kheap.h>
@@ -21,9 +22,11 @@ void cpu_init() {
     dyngdt_set(GDT_KCODE64, 0, 0xFFFFFFFF, GDT_TYPE_CODE | GDT_TYPE_CODE_READ_ENABLE, 0, true, false);
     dyngdt_set(GDT_KDATA64, 0, 0xFFFFFFFF, GDT_TYPE_DATA_WRITE_ENABLE, 0, true, false);
 
-    // TODO: TSS
+    tss_init();
 
     dyngdt_activate_and_unlock();
+
+    /* now set the IST bits in the IDT */
 }
 
 INSTALL_EXTENSION(EXTP_CPUINIT, cpu_init, "cpu state");

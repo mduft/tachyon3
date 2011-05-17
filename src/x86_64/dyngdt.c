@@ -67,8 +67,8 @@ void dyngdt_set(uint16_t sel, uintptr_t base, uint32_t limit, uint32_t type, uin
     raw_gdt[sel] = selector.bytes;
 
     if(sys && (type & GDT_TYPE_TSS) != 0) {
-        tss_selector_ext_t ext;
-        memset(&ext, 0, sizeof(tss_selector_ext_t));
+        selector_ext_t ext;
+        memset(&ext, 0, sizeof(selector_ext_t));
 
         ext.fields.base_high = (base >> 32);
         raw_gdt[sel+1] = ext.bytes;

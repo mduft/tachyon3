@@ -30,7 +30,7 @@ typedef struct {
 } PACKED selector_t;
 
 /**
- * Describes the second part of a TSS descriptor, as this
+ * Describes the second part of a 64 bit descriptor, as this
  * requires a larger base address field, which is written
  * into a second descriptor slot.
  */
@@ -44,21 +44,7 @@ typedef struct {
         } fields;
         uint64_t bytes;
     };
-} PACKED tss_selector_ext_t;
-
-/**
- * Describes a TSS, pointed to by a system selector in the
- * dyamic GDT.
- */
-typedef struct {
-    uint32_t _res0;
-    uint64_t rsp[3];            /**< array of system stack pointers for all rings. */
-    uint64_t _res1;
-    uint64_t ist[7];            /**< interrupt stacks. */
-    uint64_t _res2;
-    uint16_t _res3;
-    uint16_t iobm_off;          /**< I/O permission bitmap offset from actual tss location. */
-} PACKED tss_t;
+} PACKED selector_ext_t;
 
 /**
  * Creates a new dyanmic GDT for the current cpu.
