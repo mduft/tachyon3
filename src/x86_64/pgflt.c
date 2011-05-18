@@ -16,7 +16,7 @@
 #define ERRC_INSTR_FETCH            0x10
 
 static void pgflt_install();
-static bool pgflt_handler(interrupt_t* state);
+bool pgflt_handler(interrupt_t* state);
 
 INSTALL_EXTENSION(EXTP_KINIT, pgflt_install, "page fault handler");
 
@@ -24,7 +24,7 @@ static void pgflt_install() {
     intr_add(EX_PAGE_FAULT, pgflt_handler);
 }
 
-static bool pgflt_handler(interrupt_t* state) {
+bool pgflt_handler(interrupt_t* state) {
     ksym_t const* sym = ksym_get((void*)state->ip);
     info("page-fault at %p <%s> while %s %p\n",
         state->ip, sym ? sym->name : "unknown", ((state->code & ERRC_INSTR_FETCH) ? 
@@ -44,21 +44,28 @@ static bool pgflt_handler(interrupt_t* state) {
         if(!context->thread)
             fatal("no thread associated with current execution context!\n");
 
-        if(!context->thread->parent)
-            fatal("no process associated with current thread!\n");
-
-        stack_allocator_t* stka = context->thread->parent->stka;
         stack_t* stk = context->thread->stack;
 
-        if(stka_pgflt(stka, stk, context->state.cr2)) {
-            info("page fault handled by growing the stack for thread %d in process %d\n",
-                context->thread->id, context->thread->parent->id);
+        if(context->state.cr2 >= stk->guard && context->state.cr2 <= stk->top) {
+            trace("looks like a stack grow request, trying to enlarge stack\n");
 
-            return true;
+            if(!context->thread->parent)
+                fatal("no process associated with current thread!\n");
+
+            stack_allocator_t* stka = context->thread->parent->stka;
+
+            if(stka_pgflt(stka, stk, context->state.cr2)) {
+                info("page fault handled by growing the stack for thread %d in process %d\n",
+                    context->thread->id, context->thread->parent->id);
+
+                return true;
+            } else {
+                warn("growing stack for thread %d in process %d failed; stack is %d bytes large!\n",
+                    context->thread->id, context->thread->parent->id, stk->top - stk->mapped);
+            }
         }
     }
 
-    /* at the moment, we're not "handling" this, but only
-     * give some useful information to the developer... */
+    // no resolution found for the actual problem.
     return false;
 }

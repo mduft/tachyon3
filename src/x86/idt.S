@@ -50,11 +50,10 @@ _x86_isr\num:
     push 0x4(%esp)
     push %esp
     call intr_dispatch
-    .if !\has_err
+
+    # ATTENTION: the cpu does _not_ pop an error code, even when it
+    # pushed one, so remove any code here!
     add $0xc, %esp
-    .else
-    add $0x8, %esp
-    .endif
     iret
     .endif
 ._x86_isr_end\num:

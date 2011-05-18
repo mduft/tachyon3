@@ -32,7 +32,7 @@ void test_thr() {
     static int level = 0;
     char test[1024];
     test[0] = 'a' + level++;
-    info("hello thread %s\n", test);
+    info("hello thread %d\n", level, test);
 
     test_thr();
 }

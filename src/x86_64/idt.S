@@ -76,11 +76,9 @@ _x86_64_isr\num:
 
     # TODO: kernel call return value?
 
-    .if !\has_err
+    # ATTENTION: the cpu does _not_ pop an error code, even when it
+    # pushed one, so remove any code here!
     addq $0x18, %rsp
-    .else
-    addq $0x10, %rsp
-    .endif
     iretq
     .endif
 ._x86_64_isr_end\num:
