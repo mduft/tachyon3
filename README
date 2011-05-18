@@ -46,3 +46,7 @@ Now you can do this in the source tachyon root directory:
     make qemu-cd-dbg        # same as above but with debugger, run make gdb to debug
 
     make bochs-cd           # boot with bochs from GRUB2 cd (bochs must be installed)
+
+To build the documentation, you need doxygen installed on the
+host. Simply call "doxygen" in the top-level source dir, which
+will create the documentation in the .doc subdirectory.
