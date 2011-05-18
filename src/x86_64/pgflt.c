@@ -26,14 +26,14 @@ static void pgflt_install() {
 
 bool pgflt_handler(interrupt_t* state) {
     ksym_t const* sym = ksym_get((void*)state->ip);
-    info("page-fault at %p <%s> while %s %p\n",
+    trace("page-fault at %p <%s> while %s %p\n",
         state->ip, sym ? sym->name : "unknown", ((state->code & ERRC_INSTR_FETCH) ? 
             "fetching instructions from" : ((state->code & ERRC_ACC_WRITE) ? 
                 "writing to" : "reading from")), state->ctx->state.cr2);
 
     if(state->code & ERRC_TRANS_AVAILABLE) {
         if(state->code & ERRC_TRANS_RESVD_BIT) {
-            error("a translation for the page was available, but a reserved\n"
+            fatal("a translation for the page was available, but a reserved\n"
                   "bit was set in one of the paging structures!\n");
         }
     } else {
@@ -64,8 +64,11 @@ bool pgflt_handler(interrupt_t* state) {
                     context->thread->id, context->thread->parent->id, stk->top - stk->mapped);
             }
         }
+
+        // nothing more to do.
+        thr_abort(context->thread);
+        return true;
     }
 
-    // no resolution found for the actual problem.
-    return false;
+    fatal("unexpectedly reached end of page fault handler\n");
 }

@@ -14,7 +14,9 @@ typedef enum {
     Runnable,   /**< state while thread is waiting to run */
     Running,    /**< state while thread is running */
     Waiting,    /**< thread is waiting for something */
-    Done        /**< thread has exited, waiting for cleanup */
+    Aborting,   /**< thread still running, but aborting at the next chance */
+    Aborted,    /**< thread has been forcefully aborted */
+    Exited      /**< thread has exited, waiting for cleanup */
 } thread_state_t;
 
 /**
@@ -72,3 +74,20 @@ thread_t* thr_delete(thread_t* thread);
  * @return          the previously running thread.
  */
 thread_t* thr_switch(thread_t* target);
+
+/**
+ * Marks a thread for abortion at the next
+ * scheduling round.
+ *
+ * @param thread    the thread to abort forcefully.
+ */
+void thr_abort(thread_t* thread);
+
+/**
+ * Starts a thread, and after it returns, cleans
+ * up after it.
+ *
+ * @param thread    the thread about to start.
+ * @param entry     the threads entry point.
+ */
+void thr_trampoline(thread_t* thread, thread_start_t entry);

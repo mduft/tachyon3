@@ -30,7 +30,10 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
 
     // TODO: error checking
 
-    thr->context->state.rip = (uintptr_t)entry;
+    // TODO: user mode trampoline!
+    thr->context->state.rip = (uintptr_t)thr_trampoline;
+    thr->context->state.rdi = (uintptr_t)thr;
+    thr->context->state.rsi = (uintptr_t)entry;
     thr->context->state.rsp = thr->stack->top - (sizeof(uintptr_t) * 2);
     thr->context->thread = thr;
 
@@ -38,6 +41,8 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
         thr->context->state.ss = GDT_KDATA64;
         thr->context->state.cs = GDT_KCODE64;
     } // TODO: else
+
+    thr->state = Runnable;
 
     return thr;
 }
@@ -76,3 +81,18 @@ thread_t* thr_switch(thread_t* target) {
     return old->thread;
 }
 
+void thr_abort(thread_t* target) {
+    target->state = Aborting;
+
+    // TODO: switch threads.
+    fatal("thread aborting - need a scheduler :)\n");
+}
+
+void thr_trampoline(thread_t* thread, thread_start_t entry) {
+    entry();
+
+    thread->state = Exited;
+    
+    // TODO: switch to another thread.
+    fatal("thread exited - need a scheduler :)\n");
+}

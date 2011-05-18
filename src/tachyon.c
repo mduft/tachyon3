@@ -34,7 +34,9 @@ void test_thr() {
     test[0] = 'a' + level++;
     info("hello thread %d\n", level, test);
 
-    test_thr();
+    if(level < 20) {
+        test_thr();
+    }
 }
 
 bool handle_int32(interrupt_t* state) {
