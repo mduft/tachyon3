@@ -32,6 +32,7 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
 
     thr->context->state.rip = (uintptr_t)entry;
     thr->context->state.rsp = thr->stack->top - (sizeof(uintptr_t) * 2);
+    thr->context->thread = thr;
 
     if(parent->ring == 0) {
         thr->context->state.ss = GDT_KDATA64;

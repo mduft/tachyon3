@@ -94,7 +94,9 @@ void dyngdt_activate_and_unlock() {
         "\t1:\n"
         "\tmovq %2, %%rax\n"
         "\tmovq %%rax, %%ss\n"
-        :: "m"(gdt_ptr), "i"(GDT_KCODE64), "i"(GDT_KDATA64) : "rax");
+        "\tmov %3, %%ax\n"
+        "\tltr %%ax\n"
+        :: "m"(gdt_ptr), "i"(GDT_KCODE64), "i"(GDT_KDATA64), "i"(GDT_KTSS) : "rax");
 
     vmem_unmap(spc_current(), (void*)GDT_VIRTUAL);
     spl_unlock(&global_gdt_init_lock);

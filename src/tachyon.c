@@ -29,7 +29,12 @@ process_t* core;
 // -- TESTTEST
 thread_t* thr;
 void test_thr() {
-    info("hello thread\n");
+    static int level = 0;
+    char test[1024];
+    test[0] = 'a' + level++;
+    info("hello thread %s\n", test);
+
+    test_thr();
 }
 
 bool handle_int32(interrupt_t* state) {

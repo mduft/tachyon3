@@ -7,7 +7,7 @@
 #include "spl.h"
 
 #define MAX_LOG_DESTINATIONS     32
-#define MAX_LOG_WRITE_BUFFER     4096
+#define MAX_LOG_WRITE_BUFFER     1024       /*< max log buffer, ATTENTION, this creates a large stack frame!! */
 #define LOG_DEFAULT_LEVEL        Warning
 
 /**

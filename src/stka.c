@@ -12,7 +12,10 @@
 #define STK_PAGESIZE    0x1000
 
 /** initial size of new stacks */
-#define STK_INITSIZE    (STK_PAGESIZE * 4)
+#define STK_INITSIZE    (STK_PAGESIZE * 2)
+
+/** fixed stack size (kernel interrupt stacks) */
+#define STK_FIXEDSIZE   (STK_PAGESIZE * 4)
 
 /** size of reserved "guard" space into which the stack may grow. */
 #define STK_GUARDSIZE   (STK_PAGESIZE * 256)
@@ -93,9 +96,8 @@ stack_t* stka_alloc(stack_allocator_t* allocator) {
 
     stack->top = allocator->next_stk;
     stack->mapped = stack->top;
-    stack->guard = stack->top - (allocator->desc.fixed ? STK_INITSIZE : STK_GUARDSIZE);
-
-    stka_grow(allocator, stack, STK_INITSIZE);
+    stack->guard = stack->top - (allocator->desc.fixed ? STK_FIXEDSIZE : STK_GUARDSIZE);
+    stka_grow(allocator, stack, (allocator->desc.fixed ? STK_FIXEDSIZE : STK_INITSIZE));
 
     // leave an additional page room for the next stack, so a stack overflow
     // does not doom another thread, but rather causes a page fault.
@@ -122,4 +124,13 @@ void stka_free(stack_allocator_t* allocator, stack_t* stack) {
     list_remove(allocator->stacks, stack);
 
     kheap_free(stack);
+}
+
+bool stka_pgflt(stack_allocator_t* allocator, stack_t* stack, uintptr_t fault) {
+    if(fault <= stack->guard || fault >= stack->top)
+        return false;
+
+    size_t amount = ALIGN_UP(stack->mapped - fault, STK_PAGESIZE);
+
+    return stka_grow(allocator, stack, amount);
 }

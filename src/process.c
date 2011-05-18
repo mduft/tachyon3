@@ -59,7 +59,7 @@ process_t* prc_new(spc_t space, uint8_t priority, uint8_t ring) {
         // TODO: see above - swap to correct location.
         // TODO: no execute on stack...?
         .pg_fl = (PG_WRITABLE | PG_USER),
-        .fixed = (ring == RING_USERSPACE ? false : true)
+        .fixed = false
     };
 
     prc->stka = stka_new(&desc);

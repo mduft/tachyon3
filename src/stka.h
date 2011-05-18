@@ -59,7 +59,7 @@ stack_allocator_t* stka_new(stack_allocator_desc_t* desc);
 stack_allocator_t* stka_delete(stack_allocator_t* allocator);
 
 /**
- * Allocates a new stack and returns the top (!) address.
+ * Allocates a new stack and returns the descriptor.
  *
  * @param allocator the allocator to allocate from.
  * @return          the top address of the new stack.
@@ -70,6 +70,16 @@ stack_t* stka_alloc(stack_allocator_t* allocator);
  * Frees a given stack.
  *
  * @param allocator     the allocator to return the stack to.
- * @param stack_base    the top (!) address of the stack.
+ * @param stack         the stack descriptor
  */
 void stka_free(stack_allocator_t* allocator, stack_t* stack);
+
+/**
+ * Tries to handle a pagefault inside the given stack's region.
+ *
+ * @param allocator     the stack's parent allocator.
+ * @param stack         the stack in which the fault occured.
+ * @param fault         the faulting address within the stack space.
+ * @return              whether the page fault was handled.
+ */
+bool stka_pgflt(stack_allocator_t* allocator, stack_t* stack, uintptr_t fault);

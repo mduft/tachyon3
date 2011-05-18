@@ -4,6 +4,8 @@
 #include "intr.h"
 #include <log.h>
 #include <extp.h>
+#include <stka.h>
+#include <ksym.h>
 
 #include <x86/idt.h>
 
@@ -23,12 +25,11 @@ static void pgflt_install() {
 }
 
 static bool pgflt_handler(interrupt_t* state) {
-    error("page-fault at %p while %s %p\n",
-        state->ip, ((state->code & ERRC_INSTR_FETCH) ? 
-            "fetching instructions from" :
-            ((state->code & ERRC_ACC_WRITE) ? 
-                "writing to" : "reading from")), 
-        state->ctx->state.cr2);
+    ksym_t const* sym = ksym_get((void*)state->ip);
+    info("page-fault at %p <%s> while %s %p\n",
+        state->ip, sym ? sym->name : "unknown", ((state->code & ERRC_INSTR_FETCH) ? 
+            "fetching instructions from" : ((state->code & ERRC_ACC_WRITE) ? 
+                "writing to" : "reading from")), state->ctx->state.cr2);
 
     if(state->code & ERRC_TRANS_AVAILABLE) {
         if(state->code & ERRC_TRANS_RESVD_BIT) {
@@ -36,7 +37,25 @@ static bool pgflt_handler(interrupt_t* state) {
                   "bit was set in one of the paging structures!\n");
         }
     } else {
-        error("no translation for the given page was available!\n");
+        info("no translation for the given page was available!\n");
+
+        thr_context_t* context = state->ctx;
+
+        if(!context->thread)
+            fatal("no thread associated with current execution context!\n");
+
+        if(!context->thread->parent)
+            fatal("no process associated with current thread!\n");
+
+        stack_allocator_t* stka = context->thread->parent->stka;
+        stack_t* stk = context->thread->stack;
+
+        if(stka_pgflt(stka, stk, context->state.cr2)) {
+            info("page fault handled by growing the stack for thread %d in process %d\n",
+                context->thread->id, context->thread->parent->id);
+
+            return true;
+        }
     }
 
     /* at the moment, we're not "handling" this, but only
