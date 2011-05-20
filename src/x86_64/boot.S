@@ -92,7 +92,7 @@ bootstrap_x86_64:
     mov %eax, %cr0              # and write it back
 
     mov %cr4, %eax              # again, load CR4
-    bts $CR4_GLOBAL_PAGES, %eax # must be done after setting CR0_PAGING!
+    or $CR4_GLOBAL_PAGES, %eax  # must be done after setting CR0_PAGING!
     mov %eax, %cr4              # and do it.
 
     ljmp $0x18,$bootstrap_x86_64_x64
@@ -108,6 +108,13 @@ bootstrap_x86_64_x64:
     movq $bootstrap_x86_64_stack_top, %rsp
     movq $CORE_VMA_X86_64, %rax
     addq %rax, %rsp
+
+    mov $0x20, %ax              # set propper data segment selectors.
+    mov %ax, %ds
+    mov %ax, %es
+    mov %ax, %fs
+    mov %ax, %gs
+    mov %ax, %ss
 
     pushq $0x0
     pushq $0x0
