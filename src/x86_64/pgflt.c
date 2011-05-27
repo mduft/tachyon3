@@ -37,7 +37,7 @@ bool pgflt_handler(interrupt_t* state) {
                   "bit was set in one of the paging structures!\n");
         }
     } else {
-        info("no translation for the given page was available!\n");
+        trace("no translation for the given page was available!\n");
 
         thr_context_t* context = state->ctx;
 
@@ -55,7 +55,7 @@ bool pgflt_handler(interrupt_t* state) {
             stack_allocator_t* stka = context->thread->parent->stka;
 
             if(stka_pgflt(stka, stk, context->state.cr2)) {
-                info("page fault handled by growing the stack for thread %d in process %d\n",
+                trace("page fault handled by growing the stack for thread %d in process %d\n",
                     context->thread->id, context->thread->parent->id);
 
                 return true;

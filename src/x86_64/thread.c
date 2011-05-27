@@ -8,6 +8,7 @@
 #include <spl.h>
 #include <mem.h>
 #include <x86/gdt.h>
+#include <sched.h>
 
 #include "intr.h"
 #include <log.h>
@@ -84,8 +85,10 @@ thread_t* thr_switch(thread_t* target) {
 void thr_abort(thread_t* target) {
     target->state = Aborting;
 
-    // TODO: switch threads.
-    fatal("thread aborting - need a scheduler :)\n");
+    error("thread %d in process %d aborted!\n", target->id, target->parent->id);
+    sched_schedule();
+
+    /* never reached - as the thread is aborting, it will never be re-scheduled */
 }
 
 void thr_trampoline(thread_t* thread, thread_start_t entry) {
@@ -93,6 +96,8 @@ void thr_trampoline(thread_t* thread, thread_start_t entry) {
 
     thread->state = Exited;
     
-    // TODO: switch to another thread.
-    fatal("thread exited - need a scheduler :)\n");
+    trace("thread %d in process %d exited\n", thread->id, thread->parent->id);
+    sched_schedule();
+
+    /* never reached - as the thread is aborting, it will never be re-scheduled */
 }

@@ -35,9 +35,17 @@ typedef void (*log_writer_t)(char const* msg);
 #define fatal(...)  { LOG0(Fatal,   "fatal: ", __VA_ARGS__); abort(); }
 #define error(...)  { LOG0(Error,   "error: ", __VA_ARGS__); }
 #define warn(...)   { LOG0(Warning, "warn:  ", __VA_ARGS__); }
-#define info(...)   { LOG0(Info,    "info:  ", __VA_ARGS__); }
-#define debug(...)  { LOG0(Debug,   "debug: ", __VA_ARGS__); }
-#define trace(...)  { LOG0(Trace,   "trace: ", __VA_ARGS__); }
+#if !defined(LOG_SILENT)
+# define info(...)   { LOG0(Info,    "info:  ", __VA_ARGS__); }
+# define debug(...)  { LOG0(Debug,   "debug: ", __VA_ARGS__); }
+# define trace(...)  { LOG0(Trace,   "trace: ", __VA_ARGS__); }
+#else /* LOG_SILENT */
+# define info(...)
+# define debug(...)
+# define trace(...)
+#endif /* LOG_SILENT */
+
+#define NOT_IMPLEMENTED(x) { fatal("%s not implemented!\n", x); }
 
 /**
  * Initializes the logging subsystem. This gathers log writers from

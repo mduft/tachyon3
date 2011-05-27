@@ -5,6 +5,8 @@
 ARCH			:= x86_64
 VERBOSE			:= 0
 
+KERNEL_SILENT	:= 0
+
 SHELL			:= bash
 
 SOURCEDIR		:= $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
@@ -26,6 +28,11 @@ include $(ARCH_MAKEFILE)
 GDB				:= x86_64-pc-linux-gnu-gdb
 
 BASE_CPPFLAGS   := -Wall -Wextra -I$(SOURCEDIR)/src
+
+ifeq ($(KERNEL_SILENT),1)
+BASE_CPPFLAGS	+= -DLOG_SILENT -Wno-error=unused-but-set-variable -Wno-error=unused-variable
+endif
+
 BASE_CFLAGS		:= $(BASE_CPPFLAGS) -Werror -ffreestanding -nostartfiles -nostdlib -Wno-unused-parameter -std=gnu99
 BASE_CXXFLAGS	:= $(BASE_CFLAGS) -fno-rtti -fno-exceptions -Wold-style-cast
 BASE_LDFLAGS	 = -T $(ARCH_PPLSCRIPT) -Map=$(KERNEL).map
