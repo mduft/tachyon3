@@ -86,17 +86,21 @@ void thr_abort(thread_t* target) {
     target->state = Aborting;
 
     error("thread %d in process %d aborted!\n", target->id, target->parent->id);
+    sched_remove(target);
     sched_schedule();
 
     /* never reached - as the thread is aborting, it will never be re-scheduled */
 }
 
 void thr_trampoline(thread_t* thread, thread_start_t entry) {
+    sched_add(thread);
+
     entry();
 
     thread->state = Exited;
     
     trace("thread %d in process %d exited\n", thread->id, thread->parent->id);
+    sched_remove(thread);
     sched_schedule();
 
     /* never reached - as the thread is aborting, it will never be re-scheduled */
