@@ -81,19 +81,12 @@ bootstrap_x86_64:
     bts  $8, %eax               # set the LME bit.
     wrmsr                       # and write it back.
 
-    # We're in x86_64 compatability mode now. We now have to
-    # enable paging, and activate a 64 bit gdt.
-
     mov $x86_64_pg_pml4, %eax   # load the boot paging PML4
     mov %eax, %cr3              # set the new PML4
     mov %cr0, %eax              # read CR0
     or $CR0_PAGING, %eax        # set the paging enabled bit.
     or $CR0_WRITE_PROTECT, %eax # enable write protection system wide for W/P pages.
     mov %eax, %cr0              # and write it back
-
-    mov %cr4, %eax              # again, load CR4
-    or $CR4_GLOBAL_PAGES, %eax  # must be done after setting CR0_PAGING!
-    mov %eax, %cr4              # and do it.
 
     ljmp $0x18,$bootstrap_x86_64_x64
 
@@ -105,6 +98,10 @@ bootstrap_x86_64:
 
 .code64
 bootstrap_x86_64_x64:
+    mov %cr4, %rax              # again, load CR4
+    or $CR4_GLOBAL_PAGES, %rax  # must be done after setting CR0_PAGING!
+    mov %rax, %cr4              # and do it.
+
     movq $bootstrap_x86_64_stack_top, %rsp
     movq $CORE_VMA_X86_64, %rax
     addq %rax, %rsp

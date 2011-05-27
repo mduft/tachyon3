@@ -88,11 +88,13 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
         return false;
     }
 
+    uintptr_t ng_flags = (PG_KFLAGS & ~PG_GLOBAL);
+
     memset(pml4, 0, PAGE_SIZE_4K);
-    pml4[511] = (uintptr_t)&x86_64_pg_kernel_pdpt | PG_KFLAGS;
+    pml4[511] = (uintptr_t)&x86_64_pg_kernel_pdpt | ng_flags;
 
     phys_addr_t phys_pdpt_low = pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
-    pml4[0] = phys_pdpt_low | PG_KFLAGS;
+    pml4[0] = phys_pdpt_low | ng_flags;
 
     uintptr_t* pdpt = (uintptr_t*)vmem_mgmt_map(phys_pdpt_low);
     
@@ -104,7 +106,7 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
     memset(pdpt, 0, PAGE_SIZE_4K);
 
     phys_addr_t phys_pd_low = pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
-    pdpt[0] = phys_pd_low | PG_KFLAGS;
+    pdpt[0] = phys_pd_low | ng_flags;
 
     uintptr_t* pd = (uintptr_t*)vmem_mgmt_map(phys_pd_low);
 
@@ -114,8 +116,8 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
     }
 
     memset(pd, 0, PAGE_SIZE_4K);
-    pd[0] = (phys_addr_t)&x86_64_pg_pt_low | PG_KFLAGS;
-    pd[1] = 0x200000 | PG_KFLAGS | PG_LARGE;
+    pd[0] = (phys_addr_t)&x86_64_pg_pt_low | ng_flags;
+    pd[1] = 0x200000 | ng_flags | PG_LARGE;
 
     vmem_mgmt_unmap(pd);
     vmem_mgmt_unmap(pdpt);

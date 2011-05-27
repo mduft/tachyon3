@@ -12,7 +12,7 @@ SECTION_BOOT_DATA
 .global x86_64_pg_kernel_pdpt
 .global x86_64_pg_pt_low
 
-#define PG_BASE_KFLAGS (PG_PRESENT | PG_WRITABLE | PG_GLOBAL)
+#define PG_BASE_KFLAGS (PG_PRESENT | PG_WRITABLE)
 
 # .----------------------------------------.
 # | PT's, currently only for low memory,   |
@@ -22,7 +22,7 @@ SECTION_BOOT_DATA
 
 .macro x86_64_pte cnt addr
 .if \cnt
-    .quad \addr + (PG_BASE_KFLAGS)
+    .quad \addr + (PG_BASE_KFLAGS | PG_GLOBAL)
     x86_64_pte "(\cnt - 1)", "(\addr + 0x1000)"
 .endif
 .endm
@@ -51,13 +51,13 @@ x86_64_pg_pt_temp:
 .align 0x1000
 x86_64_pg_pd_low:
     .quad x86_64_pg_pt_low + ( PG_BASE_KFLAGS )               # 0 - 2MB
-    .quad 0x200000         + ( PG_BASE_KFLAGS | PG_LARGE )   # 2 - 4MB
+    .quad 0x200000         + ( PG_BASE_KFLAGS | PG_LARGE | PG_GLOBAL )   # 2 - 4MB
     .fill 0x1FE, 0x8, 0x0 # 510 not present entries.          # 4MB - 1GB unmap.
 
 .align 0x1000
 x86_64_pg_pd_high:
-    .quad 0x000000        + ( PG_BASE_KFLAGS | PG_LARGE )   # 0 - 2MB (-2GB)
-    .quad 0x200000        + ( PG_BASE_KFLAGS | PG_LARGE )   # 2 - 4MB (-2GB)
+    .quad 0x000000        + ( PG_BASE_KFLAGS | PG_LARGE | PG_GLOBAL )   # 0 - 2MB (-2GB)
+    .quad 0x200000        + ( PG_BASE_KFLAGS | PG_LARGE | PG_GLOBAL )   # 2 - 4MB (-2GB)
     .fill 0x1FE, 0x8, 0x0                                     # 4MB - -1GB unm.
 
 .align 0x1000

@@ -73,10 +73,12 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
         return false;
     }
 
+    uintptr_t ng_flags = (PG_KFLAGS & ~PG_GLOBAL);
+
     memset(pd, 0, PAGE_SIZE_4K);
-    pd[0] = (uintptr_t)&x86_pg_pt | PG_KFLAGS;
-    pd[0x300] = (uintptr_t)&x86_pg_pt_high | PG_KFLAGS;
-    pd[0x3FF] = (uintptr_t)&x86_pg_tmap | PG_KFLAGS;
+    pd[0] = (uintptr_t)&x86_pg_pt | ng_flags;
+    pd[0x300] = (uintptr_t)&x86_pg_pt_high | ng_flags;
+    pd[0x3FF] = (uintptr_t)&x86_pg_tmap | ng_flags;
 
     vmem_mgmt_unmap(pd);
     return true;

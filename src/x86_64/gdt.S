@@ -15,6 +15,7 @@ SECTION_BOOT_DATA
 # | 64 kernel gdt code and data segments   |
 # '----------------------------------------'
 
+.align 0x10
 x86_64_gdt:
     .quad 0x0
 
