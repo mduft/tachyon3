@@ -7,6 +7,7 @@
 #include "list.h"
 #include "thread.h"
 #include "spl.h"
+#include "syscall.h"
 
 static list_t* _sched_queue = NULL;
 static spinlock_t _sched_lock;
@@ -29,13 +30,23 @@ INSTALL_EXTENSION(EXTP_KINIT, sched_init, "simple scheduler");
 void sched_schedule() {
     // find a thread to schedule. the scheduled thread is removed from the
     // queue, and the currently-run thread is re-added to the queue.
+    spl_lock(&_sched_lock);
+
     thread_t* old = thr_current();
 
-    if(old->state == Runnable) {
-        // TODO: check timeslice!
+    if(old) {
+        switch(old->state) {
+        case Runnable:
+            // TODO: check timeslice, and maybe not switch
+            break;
+        case Yielded:
+            old->state = Runnable;
+            break;
+        default:
+            // not relevant here.
+            break;
+        }
     }
-
-    spl_lock(&_sched_lock);
 
     list_node_t* node = list_begin(_sched_queue);
 
@@ -48,7 +59,7 @@ void sched_schedule() {
 
             list_remove(_sched_queue, thr);
 
-            if(old != NULL)
+            if(old)
                 list_add(_sched_queue, old);
 
             goto done;
@@ -56,6 +67,10 @@ void sched_schedule() {
 
         node = node->next;
     }
+
+    // let things stay as they are if only one thread exists.
+    if(old->state == Runnable)
+        goto done;
 
     fatal("no thread left to schedule - this is bad!\n");
 
@@ -67,11 +82,7 @@ void sched_yield() {
     thread_t * thr = thr_current();
     thr->state = Yielded;
 
-    // -- pseudo:
-    // if(in_interrupt || in_syscall)
-    //  sched_schedule();
-    // else
-    //  syscall(sched_schedule);
+    sysc_call(SysSchedule, 0, 0);
 
     return;
 }

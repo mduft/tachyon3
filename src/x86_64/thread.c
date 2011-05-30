@@ -9,6 +9,7 @@
 #include <mem.h>
 #include <x86/gdt.h>
 #include <sched.h>
+#include <syscall.h>
 
 #include "intr.h"
 #include <log.h>
@@ -83,15 +84,17 @@ thread_t* thr_switch(thread_t* target) {
 }
 
 thread_t* thr_current() {
-    return x86_64_ctx_get()->thread;
+    thr_context_t* ctx = x86_64_ctx_get();
+
+    return ctx->thread;
 }
 
 void thr_abort(thread_t* target) {
     target->state = Aborting;
 
     error("thread %d in process %d aborted!\n", target->id, target->parent->id);
-    sched_remove(target);
-    sched_schedule();
+
+    sysc_call(SysSchedule, 0, 0);
 
     /* never reached - as the thread is aborting, it will never be re-scheduled */
 }
@@ -102,8 +105,8 @@ void thr_trampoline(thread_t* thread, thread_start_t entry) {
     thread->state = Exited;
     
     trace("thread %d in process %d exited\n", thread->id, thread->parent->id);
-    sched_remove(thread);
-    sched_schedule();
+
+    sysc_call(SysSchedule, 0, 0);
 
     /* never reached - as the thread is aborting, it will never be re-scheduled */
 }

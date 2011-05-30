@@ -56,31 +56,31 @@ void list_remove(list_t* list, void const* item) {
         return;
     }
 
+    list_node_t* prev = NULL;
     list_node_t* node = list->head;
 
-    // check first, the rest always checks on the next node.
-    if(node && node->data == item) {
-        list->head = node->next;
-        list->size--;
+    while(node) {
+        if(node->data == item) {
+            if(prev) {
+                prev->next = node->next;
+            } else {
+                list->head = node->next;
+            }
 
-        kheap_free(node);
-        return;
-    }
+            if(list->tail == node) {
+                list->tail = prev ? prev : list->head;
+            }
 
-    while(node != NULL) {
-        if(node->next && node->next->data == item) {
-            list_node_t* nn = node->next;
-            node->next = nn->next;
+            kheap_free(node);
             list->size--;
-
-            kheap_free(nn);
             return;
         }
 
+        prev = node;
         node = node->next;
     }
 
-    error("failed to remove item from list\n");
+    warn("failed to remove item from list\n");
 }
 
 list_node_t* list_begin(list_t* list) {

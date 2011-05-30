@@ -12,14 +12,11 @@
 static void idle_thread() {
     while(true) {
 
-        trace("idling ...\n");
+        info("idling ...\n");
 
         // endless... :)
         for(int i = 0; i < IDLE_LOOPCNT; ++i) ;
         sched_yield();
-
-        // TESTTEST
-        asm volatile ( "int $0x20" );
 
     }
 }

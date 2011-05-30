@@ -15,6 +15,7 @@
 #include "intr.h"
 #include "kheap.h"
 #include "sched.h"
+#include "syscall.h"
 
 /**
  * the initial state at boot. contains various boot relevant data,
@@ -23,7 +24,6 @@
 init_state_t const boot_state;
 
 // -- TESTTEST
-thread_t* thr;
 void test_thr() {
     static int level = 0;
     char test[1024];
@@ -33,11 +33,6 @@ void test_thr() {
     if(level < 20) {
         test_thr();
     }
-}
-
-bool handle_int32(interrupt_t* state) {
-    sched_schedule();
-    return true;
 }
 // -- TESTTEST
 
@@ -67,28 +62,25 @@ void boot() {
     if(!core)
         fatal("failed to create core process\n");
 
+    /* initial thread. it is marked as exited, as this should
+     * never return here. */
+    thread_t* init = thr_create(core, NULL);
+    init->state = Exited;
+    thr_switch(init);
+
     /* initialize kernel internals registered as extension
      * points in no specific order */
     extp_iterate(EXTP_KINIT, init_subsys);
 
-    /*
-    rm_state_t state;
-    memset(&state, 0, sizeof(state));
-    state.ax.word = 0x4F00;
-
-    if(!rm_int(0x10, &state))
-        warn("failed calling int 0x15\n");
-    */
-
     info("kernel heap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
 
     // -- TESTTEST
-    thr = thr_create(core, test_thr);
+    thread_t* thr = thr_create(core, test_thr);
     sched_add(thr);
-    intr_add(0x20, handle_int32);
-
-    asm volatile("int $0x20");
     // -- TESTTEST
+    
+    // and schedule the next available thread.
+    sysc_call(SysSchedule, 0, 0);
 
     fatal("kernel ended unexpectedly.\n");
 }
