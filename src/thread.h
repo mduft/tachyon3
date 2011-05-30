@@ -13,6 +13,7 @@ typedef enum {
     Initial,    /**< initial state while creating the thread. */
     Runnable,   /**< state while thread is waiting to run */
     Running,    /**< state while thread is running */
+    Yielded,    /**< thread has been yielded, and should not continue to run this round */
     Waiting,    /**< thread is waiting for something */
     Aborting,   /**< thread still running, but aborting at the next chance */
     Aborted,    /**< thread has been forcefully aborted */

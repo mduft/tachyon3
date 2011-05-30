@@ -76,6 +76,8 @@ void list_remove(list_t* list, void const* item) {
             kheap_free(nn);
             return;
         }
+
+        node = node->next;
     }
 
     error("failed to remove item from list\n");

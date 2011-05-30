@@ -8,11 +8,11 @@
 #include "thread.h"
 #include "spl.h"
 
-list_t* _sched_queue = NULL;
-spinlock_t _sched_lock;
+static list_t* _sched_queue = NULL;
+static spinlock_t _sched_lock;
 
 static void sched_init_ext(char const* tag, extp_func_t cb, char const* descr) {
-    trace("initializing scheduler dependant: %s\n", descr);
+    info("initializing scheduler dependant: %s\n", descr);
     cb();
 }
 
@@ -24,19 +24,22 @@ static void sched_init() {
     extp_iterate(EXTP_SCHEDINIT, sched_init_ext);
 }
 
-INSTALL_EXTENSION(EXTP_KINIT, sched_init, "simple non-priority scheduler");
+INSTALL_EXTENSION(EXTP_KINIT, sched_init, "simple scheduler");
 
 void sched_schedule() {
     // find a thread to schedule. the scheduled thread is removed from the
     // queue, and the currently-run thread is re-added to the queue.
     thread_t* old = thr_current();
 
-    // TODO: check timeslice!
+    if(old->state == Runnable) {
+        // TODO: check timeslice!
+    }
 
     spl_lock(&_sched_lock);
 
     list_node_t* node = list_begin(_sched_queue);
 
+    // TODO: check priorities!
     while(node) {
         thread_t* thr = (thread_t*)node->data;
 
@@ -44,7 +47,9 @@ void sched_schedule() {
             thr_switch(thr);
 
             list_remove(_sched_queue, thr);
-            list_add(_sched_queue, old);
+
+            if(old != NULL)
+                list_add(_sched_queue, old);
 
             goto done;
         }
@@ -59,7 +64,16 @@ void sched_schedule() {
 }
 
 void sched_yield() {
-    NOT_IMPLEMENTED(__func__)
+    thread_t * thr = thr_current();
+    thr->state = Yielded;
+
+    // -- pseudo:
+    // if(in_interrupt || in_syscall)
+    //  sched_schedule();
+    // else
+    //  syscall(sched_schedule);
+
+    return;
 }
 
 void sched_add(thread_t* thread) {

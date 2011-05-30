@@ -5,15 +5,21 @@
 #include "sched.h"
 #include "thread.h"
 #include "process.h"
+#include "log.h"
 
 #define IDLE_LOOPCNT    0xFFFF
 
 static void idle_thread() {
     while(true) {
 
+        trace("idling ...\n");
+
         // endless... :)
         for(int i = 0; i < IDLE_LOOPCNT; ++i) ;
         sched_yield();
+
+        // TESTTEST
+        asm volatile ( "int $0x20" );
 
     }
 }
