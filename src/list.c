@@ -58,6 +58,15 @@ void list_remove(list_t* list, void const* item) {
 
     list_node_t* node = list->head;
 
+    // check first, the rest always checks on the next node.
+    if(node && node->data == item) {
+        list->head = node->next;
+        list->size--;
+
+        kheap_free(node);
+        return;
+    }
+
     while(node != NULL) {
         if(node->next && node->next->data == item) {
             list_node_t* nn = node->next;
@@ -65,7 +74,6 @@ void list_remove(list_t* list, void const* item) {
             list->size--;
 
             kheap_free(nn);
-
             return;
         }
     }

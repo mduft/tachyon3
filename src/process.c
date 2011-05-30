@@ -14,6 +14,11 @@
 // TODO: hack: swap platform specific intialization of process to correct location.
 #include <x86/paging.h>
 
+/**
+ * The kernel process.
+ */
+process_t* const core;
+
 process_t* prc_new(spc_t space, uint8_t priority, uint8_t ring) {
     process_t* prc = kheap_alloc(sizeof(process_t));
 

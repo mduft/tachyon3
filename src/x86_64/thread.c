@@ -82,6 +82,10 @@ thread_t* thr_switch(thread_t* target) {
     return old->thread;
 }
 
+thread_t* thr_current() {
+    return x86_64_ctx_get()->thread;
+}
+
 void thr_abort(thread_t* target) {
     target->state = Aborting;
 
@@ -93,8 +97,6 @@ void thr_abort(thread_t* target) {
 }
 
 void thr_trampoline(thread_t* thread, thread_start_t entry) {
-    sched_add(thread);
-
     entry();
 
     thread->state = Exited;

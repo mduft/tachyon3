@@ -14,17 +14,13 @@
 #include "ksym.h"
 #include "intr.h"
 #include "kheap.h"
+#include "sched.h"
 
 /**
  * the initial state at boot. contains various boot relevant data,
  * saved by the early entry routine
  */
 init_state_t const boot_state;
-
-/**
- * The kernel process.
- */
-process_t* core;
 
 // -- TESTTEST
 thread_t* thr;
@@ -40,7 +36,7 @@ void test_thr() {
 }
 
 bool handle_int32(interrupt_t* state) {
-    thr_switch(thr);
+    sched_schedule();
     return true;
 }
 // -- TESTTEST
@@ -65,7 +61,8 @@ void boot() {
 
     /* initialize the core process with the current address
      * space, and other relevant data. */
-    core = prc_new(spc_current(), PRIO_NORMAL, RING_KERNEL);
+    process_t** pcore = (process_t**)&core;
+    *pcore = prc_new(spc_current(), PRIO_NORMAL, RING_KERNEL);
 
     if(!core)
         fatal("failed to create core process\n");
@@ -83,10 +80,11 @@ void boot() {
         warn("failed calling int 0x15\n");
     */
 
-    info("kheap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
+    info("kernel heap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
 
     // -- TESTTEST
     thr = thr_create(core, test_thr);
+    sched_add(thr);
     intr_add(0x20, handle_int32);
 
     asm volatile("int $0x20");

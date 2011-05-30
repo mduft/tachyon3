@@ -35,6 +35,11 @@ typedef struct _tag_process_t {
 } process_t;
 
 /**
+ * The core process. This is the kernel's one and only process
+ */
+extern process_t* const core;
+
+/**
  * Creates a new process descriptor within the given
  * address space, and initializes memory management
  * for it.

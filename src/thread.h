@@ -76,6 +76,13 @@ thread_t* thr_delete(thread_t* thread);
 thread_t* thr_switch(thread_t* target);
 
 /**
+ * Retrieves the currently running thread for the current CPU.
+ *
+ * @return          the currently running thread.
+ */
+thread_t* thr_current();
+
+/**
  * Marks a thread for abortion at the next
  * scheduling round.
  *
