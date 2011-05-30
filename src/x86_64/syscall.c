@@ -42,6 +42,8 @@ bool sysc_active() {
 uintptr_t sysc_call(syscall_t call, uintptr_t param0, uintptr_t param1) {
     if(!sysc_active()) {
         uintptr_t res;
+
+        // TODO: sysenter, etc.?
         
         asm volatile(
             "\tint %1\n"
