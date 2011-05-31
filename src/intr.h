@@ -5,6 +5,11 @@
 
 #include "tachyon.h"
 
+typedef enum {
+    GateModeSingleHandler = 0x1,
+    GateModeMultiHandler  = 0x2
+} gatemode_t;
+
 typedef struct _tag_interrupt_t interrupt_t;
 
 typedef bool (*intr_handler_t)(interrupt_t* info);
@@ -45,3 +50,12 @@ void intr_add(uint16_t gate, intr_handler_t handler);
  * @param handler   the handler callback.
  */
 void intr_remove(uint16_t gate, intr_handler_t handler);
+
+/**
+ * Sets the mode for a gate. Any already registered handler
+ * will be lost on mode switch!
+ *
+ * @param gate      the gate to modify.
+ * @param mode      the new gate mode to set. default is GateModeSingleHandler
+ */
+void intr_set_mode(uint16_t gate, gatemode_t mode);

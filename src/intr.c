@@ -16,7 +16,7 @@
  * Describes an entry in the interrupt handler tabel.
  */
 typedef struct {
-    bool list;  /**< determines whether the entry is a single handler or a list of handlers. */
+    gatemode_t mode;            /**< the gates trigger mode */
     union {
         intr_handler_t handler; /**< the single handler. */
         list_t* list;           /**< the list of handlers. */
@@ -36,11 +36,11 @@ intr_gate_desc_t intr_gate_table[MAX_INTR];
  */
 void intr_dispatch(interrupt_t* state, uint16_t num) {
     if(num >= MAX_INTR)
-        fatal("cannot handle out of bounds gate: %d\n", num);
+        fatal("gate %d not available\n", num);
 
     intr_gate_desc_t* gate = &intr_gate_table[num];
 
-    if(gate->list) {
+    if(gate->mode == GateModeMultiHandler) {
         list_t* handlers = gate->h.list;
         list_node_t* node = list_begin(handlers);
 
@@ -65,11 +65,11 @@ void intr_dispatch(interrupt_t* state, uint16_t num) {
 
 void intr_add(uint16_t num, intr_handler_t handler) {
     if(num >= MAX_INTR)
-        fatal("gate not available!\n");
+        fatal("gate %d not available\n", num);
 
     intr_gate_desc_t* gate = &intr_gate_table[num];
 
-    if(gate->list) {
+    if(gate->mode == GateModeMultiHandler) {
         list_t* list = gate->h.list;
         if(!list) {
             list = list_new();
@@ -85,11 +85,11 @@ void intr_add(uint16_t num, intr_handler_t handler) {
 
 void intr_remove(uint16_t num, intr_handler_t handler) {
     if(num >= MAX_INTR)
-        fatal("gate not available!\n");
+        fatal("gate %d not available\n", num);
 
     intr_gate_desc_t* gate = &intr_gate_table[num];
 
-    if(gate->list) {
+    if(gate->mode == GateModeMultiHandler) {
         list_t* list = gate->h.list;
         if(list) {
             list_remove(list, handler);
@@ -101,4 +101,25 @@ void intr_remove(uint16_t num, intr_handler_t handler) {
 
         gate->h.handler = NULL;
     }
+}
+
+void intr_set_mode(uint16_t num, gatemode_t mode) {
+    if(num >= MAX_INTR)
+        fatal("gate %d not available\n", num);
+
+    intr_gate_desc_t* gate = &intr_gate_table[num];
+
+    if(gate->mode == mode)
+        return;
+
+    gate->mode = mode;
+
+    if(gate->h.list) {
+        list_clear(gate->h.list);
+
+        if(mode != GateModeMultiHandler)
+            gate->h.list = list_delete(gate->h.list);
+    }
+
+    gate->h.handler = NULL;
 }

@@ -25,13 +25,13 @@ init_state_t const boot_state;
 
 // -- TESTTEST
 void test_thr() {
-    static int level = 0;
-    char test[1024];
-    test[0] = 'a' + level++;
-    info("hello thread %d\n", level, test);
+    int level = 0;
+    thread_t* thr = thr_current();
 
-    if(level < 20) {
-        test_thr();
+    while(true) {
+        for(int i = 0; i < 0x8FFFFF; ++i);
+
+        info("%d: hello thread %d\n", thr->id, level++);
     }
 }
 // -- TESTTEST
@@ -75,12 +75,15 @@ void boot() {
     info("kernel heap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
 
     // -- TESTTEST
-    thread_t* thr = thr_create(core, test_thr);
-    sched_add(thr);
+    thread_t* thr1 = thr_create(core, test_thr);
+    sched_add(thr1);
+
+    thread_t* thr2 = thr_create(core, test_thr);
+    sched_add(thr2);
     // -- TESTTEST
     
-    // and schedule the next available thread.
-    sysc_call(SysSchedule, 0, 0);
+    // and start the scheduler.
+    sched_start();
 
     fatal("kernel ended unexpectedly.\n");
 }

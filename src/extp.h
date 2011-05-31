@@ -18,6 +18,7 @@
 #define EXTP_KINIT          "k.init"
 #define EXTP_CPUINIT        "cpu.init"
 #define EXTP_SCHEDINIT      "sched.init"
+#define EXTP_TIMESOURCE     "time.source"
 
 /**
  * Dummy extension point callback type. The real type depends

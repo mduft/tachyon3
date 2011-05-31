@@ -8,6 +8,8 @@
 #include "thread.h"
 #include "spl.h"
 #include "syscall.h"
+#include "intr.h"
+#include "tsrc.h"
 
 static list_t* _sched_queue = NULL;
 static spinlock_t _sched_lock;
@@ -25,6 +27,19 @@ static void sched_init() {
     extp_iterate(EXTP_SCHEDINIT, sched_init_ext);
 }
 
+void sched_start() {
+    // intialize heartbeat timer.
+    tsrc_schedule(sched_schedule, SCHED_TIMESLICE, false);
+
+    info("waiting for scheduler to take over ...\n");
+
+    // enable hardware interrupts, so the timesource fires.
+    intr_enable();
+
+    // wait for the timer to take over. this thread is now stopped.
+    asm volatile("hlt");
+}
+
 INSTALL_EXTENSION(EXTP_KINIT, sched_init, "simple scheduler");
 
 void sched_schedule() {
@@ -37,7 +52,8 @@ void sched_schedule() {
     if(old) {
         switch(old->state) {
         case Runnable:
-            // TODO: check timeslice, and maybe not switch
+            // TODO: check timeslice, and maybe not switch? timers are
+            // set up to fire at timeslice boundaries anyway...
             break;
         case Yielded:
             old->state = Runnable;

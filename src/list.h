@@ -50,6 +50,16 @@ list_t* list_delete(list_t* list);
 void list_add(list_t* list, void const* data);
 
 /**
+ * Inserts a new node at the given position or the beginning
+ * of the list.
+ *
+ * @param list  the list to add a node to.
+ * @param after the preceeding node (is NULL, inserted at the head).
+ * @param data  the data for the new node.
+ */
+void list_insert(list_t* list, list_node_t* after, void const* data);
+
+/**
  * Removes a given item from the list.
  *
  * @param list  the list to remove the item from.
@@ -72,3 +82,10 @@ list_node_t* list_begin(list_t* list);
  * @return      the size of the list.
  */
 size_t list_size(list_t* list);
+
+/**
+ * Removes all items from the given list.
+ *
+ * @param list  the list to clear.
+ */
+void list_clear(list_t* list);

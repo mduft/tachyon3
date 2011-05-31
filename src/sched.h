@@ -6,6 +6,8 @@
 #include "tachyon.h"
 #include "thread.h"
 
+#define SCHED_TIMESLICE 10
+
 /**
  * Does the real scheduling work. For all registered threads,
  * find one that is runnable, and make it current.
@@ -20,6 +22,13 @@ void sched_schedule();
  * Calls sched_schedule() to make another thread current.
  */
 void sched_yield();
+
+/**
+ * Starts the scheduler by setting up timers, etc. The calling
+ * thread is halted. Make sure that the calling thread is either
+ * in a non-runable state, or deals with this returning.
+ */
+void sched_start();
 
 /**
  * Register a thread with the scheduler. The thread must be in

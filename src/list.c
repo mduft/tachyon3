@@ -30,6 +30,10 @@ list_t* list_delete(list_t* list) {
 }
 
 void list_add(list_t* list, void const* data) {
+    list_insert(list, list->tail, data);
+}
+
+void list_insert(list_t* list, list_node_t* node, void const* data) {
     if(!list) {
         error("NULL list to add to.\n");
         return;
@@ -40,13 +44,19 @@ void list_add(list_t* list, void const* data) {
 
     new_node->data = data;
 
-    if(!list->head) {
+    if(!node) {
         list->head = new_node;
+
+        if(!list->tail)
+            list->tail = new_node;
     } else {
-        list->tail->next = new_node;
+        if(list->tail == node)
+            list->tail = new_node;
+
+        new_node->next = node->next;
+        node->next = new_node;
     }
 
-    list->tail = new_node;
     list->size++;
 }
 
@@ -95,4 +105,10 @@ size_t list_size(list_t* list) {
         return 0;
 
     return list->size;
+}
+
+void list_clear(list_t* list) {
+    while(list && list->size > 0) {
+        list_remove(list, list->head->data);
+    }
 }
