@@ -10,6 +10,7 @@
 #include "syscall.h"
 #include "intr.h"
 #include "tsrc.h"
+#include "process.h"
 
 static list_t* _sched_queue = NULL;
 static spinlock_t _sched_lock;
@@ -71,6 +72,8 @@ void sched_schedule() {
         thread_t* thr = (thread_t*)node->data;
 
         if(thr && thr->state == Runnable) {
+            trace("chosen thread: %p in process %d\n", thr->id, thr->parent->id);
+
             thr_switch(thr);
 
             list_remove(_sched_queue, thr);

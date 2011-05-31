@@ -3,8 +3,9 @@
 
 #pragma once
 
-#define IA32_APIC_BASE  0x0000001B
-#define IA32_EFER       0xC0000080
+#define IA32_APIC_BASE              0x0000001B
+#define IA32_TSC_DEADLINE           0x000006E0
+#define IA32_EFER                   0xC0000080
 
 #ifndef __ASM__
 

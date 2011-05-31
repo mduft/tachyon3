@@ -6,6 +6,8 @@
 #include <spl.h>
 #include <thread.h>
 
+#include <x86/cpu.h>
+
 typedef struct {
     uintptr_t rip;
     uintptr_t cs;

@@ -37,7 +37,7 @@ static void tsrc_init_handler(char const* tag, extp_func_t cb, char const* descr
         return;
     }
 
-    info("chosen %s time source\n");
+    info("chosen %s time source\n", descr);
     _tsrc = p;
 }
 
@@ -85,10 +85,12 @@ static void tsrc_handle_expired(tmr_t* tmr) {
 
 static void tsrc_do_handle_tick() {
     list_node_t* node = list_begin(_timers);
-    millis_t current = _tsrc->current_ticks();
+    millis_t current = _tsrc->current_millis();
 
     while(node) {
         tmr_t* tmr = (tmr_t*)node->data;
+
+        trace("checking timer for expiration: current: %d, timer: %d\n", current, tmr->expire);
 
         if(tmr->expire <= current) {
             tsrc_handle_expired(tmr);
@@ -111,7 +113,7 @@ static void tsrc_set_next_tick() {
         tmr_t* tmr = (tmr_t*)node->data;
         _tsrc->schedule(tmr->expire);
     } else {
-        _tsrc->schedule(_tsrc->current_ticks() + TSRC_MAX_TICK);
+        _tsrc->schedule(_tsrc->current_millis() + TSRC_MAX_TICK);
     }
 }
 
@@ -123,7 +125,7 @@ bool tsrc_schedule(tsrc_cb_t callback, millis_t ms, bool oneshot) {
         return false;
     }
 
-    pt->expire = _tsrc->current_ticks() + ms;
+    pt->expire = _tsrc->current_millis() + ms;
     pt->callback = callback;
     pt->period = (oneshot ? ms : 0);
 

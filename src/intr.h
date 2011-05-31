@@ -5,6 +5,9 @@
 
 #include "tachyon.h"
 
+#define IRQ_BASE    0x20
+#define IRQ_NUM(x)  (IRQ_BASE + x)
+
 typedef enum {
     GateModeSingleHandler = 0x1,
     GateModeMultiHandler  = 0x2

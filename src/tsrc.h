@@ -17,7 +17,7 @@ typedef struct {
     bool supported;                         /**< indicated whether timesource is supported. */
     bool (*init)(tsrc_cb_t callback);       /**< intialize the timesource for the given callback */
     bool (*schedule)(millis_t ms);          /**< schedule an interrupt when count reaches ms (absolute!) */
-    millis_t (*current_ticks)();            /**< retrieve an arbitrary value of current ticks.
+    millis_t (*current_millis)();           /**< retrieve an arbitrary value of current ticks.
                                              * this is not related to "real time". */
 } tsrc_t;
 

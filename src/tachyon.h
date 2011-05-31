@@ -68,6 +68,7 @@ typedef phys_addr_t spc_t;
 typedef uint8_t     bool;
 
 typedef size_t      millis_t;
+typedef uint32_t    cpuid_t;
 
 /**
  * Describes the initial state when tachyon takes control. At the

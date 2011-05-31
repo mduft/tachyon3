@@ -83,6 +83,8 @@
 
 /** virtual location of the current cpu's local APIC */
 #define APIC_VIRTUAL        (CORE_VMA_X86_64_END)
+/** relocate all local APICS to a high physical address */
+#define APIC_PHYS           0xFFFFFFFFFFFE0000
 /** size of the region reserved at the APIC location */
 #define APIC_VSZ            0x1000
 
