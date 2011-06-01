@@ -54,8 +54,8 @@ void lapic_init() {
     intr_add(IRQ_SPURIOUS, lapic_handle_spurious);
     intr_add(IRQ_ERROR, lapic_handle_error);
 
-    APIC_REG(APIC_REG_LVT_LINT0)    |= APIC_LVT_MASKED;
-    APIC_REG(APIC_REG_LVT_LINT1)    |= APIC_LVT_MASKED;
+    APIC_REG(APIC_REG_LVT_LINT0)    = (APIC_DM_FIXED | IRQ_NUM(0));
+    APIC_REG(APIC_REG_LVT_LINT1)    = (APIC_DM_NMI);
     APIC_REG(APIC_REG_LVT_THERMAL)  |= APIC_LVT_MASKED;
     APIC_REG(APIC_REG_LVT_PERF)     |= APIC_LVT_MASKED;
 

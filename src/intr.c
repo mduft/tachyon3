@@ -40,14 +40,14 @@ void intr_dispatch(interrupt_t* state, uint16_t num) {
 
     intr_gate_desc_t* gate = &intr_gate_table[num];
 
-    if(gate->mode == GateModeMultiHandler) {
+    if(gate->mode & GateModeMultiHandler) {
         list_t* handlers = gate->h.list;
         list_node_t* node = list_begin(handlers);
 
         while(node) {
             intr_handler_t handler = node->data;
 
-            if(handler && handler(state))
+            if(handler && handler(state) && !(gate->mode & GateModeNotifyAll))
                 return;
 
             node = node->next;
@@ -69,7 +69,7 @@ void intr_add(uint16_t num, intr_handler_t handler) {
 
     intr_gate_desc_t* gate = &intr_gate_table[num];
 
-    if(gate->mode == GateModeMultiHandler) {
+    if(gate->mode & GateModeMultiHandler) {
         list_t* list = gate->h.list;
         if(!list) {
             list = list_new();
@@ -89,7 +89,7 @@ void intr_remove(uint16_t num, intr_handler_t handler) {
 
     intr_gate_desc_t* gate = &intr_gate_table[num];
 
-    if(gate->mode == GateModeMultiHandler) {
+    if(gate->mode & GateModeMultiHandler) {
         list_t* list = gate->h.list;
         if(list) {
             list_remove(list, handler);
@@ -109,7 +109,7 @@ void intr_set_mode(uint16_t num, gatemode_t mode) {
 
     intr_gate_desc_t* gate = &intr_gate_table[num];
 
-    if(gate->mode == mode)
+    if(gate->mode & mode)
         return;
 
     gate->mode = mode;

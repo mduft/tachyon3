@@ -9,8 +9,9 @@
 #define IRQ_NUM(x)  (IRQ_BASE + x)
 
 typedef enum {
-    GateModeSingleHandler = 0x1,
-    GateModeMultiHandler  = 0x2
+    GateModeSingleHandler   = 0x1,
+    GateModeMultiHandler    = 0x2,
+    GateModeNotifyAll       = 0x4
 } gatemode_t;
 
 typedef struct _tag_interrupt_t interrupt_t;

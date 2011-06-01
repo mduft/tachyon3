@@ -83,13 +83,15 @@
 
 /** virtual location of the current cpu's local APIC */
 #define APIC_VIRTUAL        (CORE_VMA_X86_64_END)
-/** relocate all local APICS to a high physical address */
-#define APIC_PHYS           0xFFFFFFFFFFFE0000
 /** size of the region reserved at the APIC location */
 #define APIC_VSZ            0x1000
 
+#define IOAPIC_VIRTUAL      (APIC_VIRTUAL + APIC_VSZ)
+#define IOAPIC_VSZ          0x1000
+#define IOAPIC_MAX_CNT      0x10
+
 /** virtual location of the CGA screen buffer */
-#define CGA_VIRTUAL         (APIC_VIRTUAL + APIC_VSZ)
+#define CGA_VIRTUAL         (IOAPIC_VIRTUAL + (IOAPIC_VSZ * IOAPIC_MAX_CNT))
 /** size of the region reserved at the CGA location */
 #define CGA_VSZ             0x1000
 

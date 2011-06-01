@@ -4,58 +4,58 @@
 #include "tachyon.h"
 #include "extp.h"
 #include "log.h"
-#include "tsrc.h"
+#include "tmr.h"
 #include "list.h"
 #include "kheap.h"
 
 // TODO: per CPU?
-static tsrc_t* _tsrc = NULL;
+static tmr_gen_t* _generator = NULL;
 static list_t* _timers = NULL;
 
 typedef struct {
-    millis_t expire;    /**< timer expiration target time */
-    millis_t period;    /**< timer period, or zero if oneshot */
-    tsrc_cb_t callback; /**< callback to call on timer expiration */
+    uint64_t expire;    /**< timer expiration target time */
+    uint64_t period;    /**< timer period, or zero if oneshot */
+    tmr_cb_t callback;  /**< callback to call on timer expiration */
 } tmr_t;
 
-static void tsrc_handle_tick();
+static void tmr_handle_tick();
 
-static void tsrc_init_handler(char const* tag, extp_func_t cb, char const* descr) {
+static void tmr_init_handler(char const* tag, extp_func_t cb, char const* descr) {
     // TODO: choose best, for now, take first.
-    if(_tsrc)
+    if(_generator)
         return;
 
-    tsrc_t* p = ((tsrc_extp_t)cb)();
+    tmr_gen_t* p = ((tmr_extp_t)cb)();
 
     if(!p || (p && !p->supported)) {
-        trace("timesource %s not available!\n", descr);
+        trace("timer generator %s not available!\n", descr);
         return;
     }
 
-    if(!p->init(tsrc_handle_tick)) {
-        warn("failed to initialize timesource %s\n", descr);
+    if(!p->init(tmr_handle_tick)) {
+        warn("failed to initialize timer generator %s\n", descr);
         return;
     }
 
-    info("chosen %s time source\n", descr);
-    _tsrc = p;
+    info("chosen %s timer generator\n", descr);
+    _generator = p;
 }
 
-static void tsrc_init() {
+static void tmr_init() {
     // find all timesource extensions, and choose one of them!
     // maybe make this configurable somehow? kernel command line?
     // config file?
-    extp_iterate(EXTP_TIMESOURCE, tsrc_init_handler);
+    extp_iterate(EXTP_TIMERGEN, tmr_init_handler);
 
-    if(!_tsrc)
-        fatal("no timesource found!\n");
+    if(!_generator)
+        fatal("no timer generator found!\n");
 
     _timers = list_new();
 }
 
-INSTALL_EXTENSION(EXTP_KINIT, tsrc_init, "time source");
+INSTALL_EXTENSION(EXTP_KINIT, tmr_init, "timer generator");
 
-static void tsrc_resched_sorted(tmr_t* tmr) {
+static void tmr_resched_sorted(tmr_t* tmr) {
     list_node_t* preceeding = list_begin(_timers);
 
     while(preceeding) {
@@ -70,22 +70,22 @@ static void tsrc_resched_sorted(tmr_t* tmr) {
     list_insert(_timers, preceeding, tmr);
 }
 
-static void tsrc_handle_expired(tmr_t* tmr) {
+static void tmr_handle_expired(tmr_t* tmr) {
     tmr->callback();
 
     list_remove(_timers, tmr);
 
     if(tmr->period) {
         tmr->expire += tmr->period;
-        tsrc_resched_sorted(tmr);
+        tmr_resched_sorted(tmr);
     } else {
         kheap_free(tmr);
     }
 }
 
-static void tsrc_do_handle_tick() {
+static void tmr_do_handle_tick() {
     list_node_t* node = list_begin(_timers);
-    millis_t current = _tsrc->current_millis();
+    uint64_t current = 0; /* TODO: current (uptime?) nanoseconds */
 
     while(node) {
         tmr_t* tmr = (tmr_t*)node->data;
@@ -93,7 +93,7 @@ static void tsrc_do_handle_tick() {
         trace("checking timer for expiration: current: %d, timer: %d\n", current, tmr->expire);
 
         if(tmr->expire <= current) {
-            tsrc_handle_expired(tmr);
+            tmr_handle_expired(tmr);
         } else {
             break;
         }
@@ -103,21 +103,21 @@ static void tsrc_do_handle_tick() {
     }
 }
 
-static void tsrc_set_next_tick() {
+static void tmr_set_next_tick() {
     // first handle all that are due already to save reprogramming
-    tsrc_do_handle_tick();
+    tmr_do_handle_tick();
 
     list_node_t* node = list_begin(_timers);
 
     if(node) {
         tmr_t* tmr = (tmr_t*)node->data;
-        _tsrc->schedule(tmr->expire);
+        _generator->schedule(tmr->expire /* TODO: - current (uptime?) nanoseconds */);
     } else {
-        _tsrc->schedule(_tsrc->current_millis() + TSRC_MAX_TICK);
+        _generator->schedule(TMR_MAX_TIMEOUT);
     }
 }
 
-bool tsrc_schedule(tsrc_cb_t callback, millis_t ms, bool oneshot) {
+bool tmr_schedule(tmr_cb_t callback, uint64_t ns, bool oneshot) {
     tmr_t* pt = kheap_alloc(sizeof(tmr_t));
 
     if(!callback) {
@@ -125,17 +125,17 @@ bool tsrc_schedule(tsrc_cb_t callback, millis_t ms, bool oneshot) {
         return false;
     }
 
-    pt->expire = _tsrc->current_millis() + ms;
+    pt->expire = ns /* TODO: + current (uptime?) nanoseconds */;
     pt->callback = callback;
-    pt->period = (oneshot ? ms : 0);
+    pt->period = (oneshot ? ns : 0);
 
-    tsrc_resched_sorted(pt);
-    tsrc_set_next_tick();
+    tmr_resched_sorted(pt);
+    tmr_set_next_tick();
 
     return true;
 }
 
-static void tsrc_handle_tick() {
-    tsrc_set_next_tick();
+static void tmr_handle_tick() {
+    tmr_set_next_tick();
 }
 

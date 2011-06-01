@@ -9,7 +9,7 @@
 #include "spl.h"
 #include "syscall.h"
 #include "intr.h"
-#include "tsrc.h"
+#include "tmr.h"
 #include "process.h"
 
 static list_t* _sched_queue = NULL;
@@ -30,7 +30,7 @@ static void sched_init() {
 
 void sched_start() {
     // intialize heartbeat timer.
-    tsrc_schedule(sched_schedule, SCHED_TIMESLICE, false);
+    tmr_schedule(sched_schedule, SCHED_TIMESLICE, false);
 
     info("waiting for scheduler to take over ...\n");
 

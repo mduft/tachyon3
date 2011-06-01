@@ -19,6 +19,7 @@
 #define EXTP_CPUINIT        "cpu.init"
 #define EXTP_SCHEDINIT      "sched.init"
 #define EXTP_TIMESOURCE     "time.source"
+#define EXTP_TIMERGEN       "timer.gen"
 
 /**
  * Dummy extension point callback type. The real type depends

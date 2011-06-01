@@ -6,30 +6,28 @@
 #include "tachyon.h"
 #include "extp.h"
 
-/** defines the maximum clock timeout milliseconds if no timer is present */
-#define TSRC_MAX_TICK    10
+/** defines the maximum timeout nanoseconds if no timer is present */
+#define TMR_MAX_TIMEOUT    (10 * 1000 * 1000)
 
 /** Signature of a callback to be called on every timer iteration */
-typedef void (*tsrc_cb_t)();
+typedef void (*tmr_cb_t)();
 
 /** Describes a timesource, and how to handle it */
 typedef struct {
     bool supported;                         /**< indicated whether timesource is supported. */
-    bool (*init)(tsrc_cb_t callback);       /**< intialize the timesource for the given callback */
-    bool (*schedule)(millis_t ms);          /**< schedule an interrupt when count reaches ms (absolute!) */
-    millis_t (*current_millis)();           /**< retrieve an arbitrary value of current ticks.
-                                             * this is not related to "real time". */
-} tsrc_t;
+    bool (*init)(tmr_cb_t callback);        /**< intialize the timesource for the given callback */
+    bool (*schedule)(uint64_t ns);          /**< schedule an interrupt when count reaches ms (absolute!) */
+} tmr_gen_t;
 
 /** Signature of the timesource extension point function */
-typedef tsrc_t* (*tsrc_extp_t)();
+typedef tmr_gen_t* (*tmr_extp_t)();
 
 /**
  * Schedule a timer callback to be called once or periodically.
  *
  * @param callback  the function which will be called when the timeout expires.
- * @param ms        timeout in milliseconds.
+ * @param ns        timeout in nanoseconds.
  * @param oneshot   whether oneshot is requested, or periodic.
  */
-bool tsrc_schedule(tsrc_cb_t callback, millis_t ms, bool oneshot);
+bool tmr_schedule(tmr_cb_t callback, uint64_t ns, bool oneshot);
 

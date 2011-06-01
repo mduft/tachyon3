@@ -6,9 +6,10 @@
 #include <tachyon.h>
 #include <intr.h>
 
-#define IRQ_SPURIOUS    IRQ_NUM(0)
-#define IRQ_ERROR       IRQ_NUM(1)
-#define IRQ_LAPIC_TIMER IRQ_NUM(2)
+// -2 for the local APIC interrupts, which are not "real" IRQs
+#define IRQ_SPURIOUS    (IRQ_NUM(0) - 2)
+#define IRQ_ERROR       (IRQ_NUM(1) - 2)
+#define IRQ_LAPIC_TIMER (IRQ_NUM(2) - 2)
 
 #define APIC_GLOBAL_ENABLE      (1 << 11)
 #define APIC_BSP                (1 << 8)
