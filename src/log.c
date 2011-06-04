@@ -5,6 +5,7 @@
 #include "extp.h"
 #include "string.h"
 #include "spl.h"
+#include "intr.h"
 
 #define MAX_LOG_DESTINATIONS     32
 #define MAX_LOG_WRITE_BUFFER     1024       /*< max log buffer, ATTENTION, this creates a large stack frame!! */
@@ -258,6 +259,8 @@ void log_write(log_level_t lvl, char const* fmt, ...) {
     log_format_message(buf, sizeof(buf), fmt, lst);
     va_end(lst);
 
+    bool intr = intr_state();
+    intr_disable();
     spl_lock(&log_lock);
 
     for(register size_t idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
@@ -267,5 +270,7 @@ void log_write(log_level_t lvl, char const* fmt, ...) {
     }
 
     spl_unlock(&log_lock);
+    if(intr)
+        intr_enable();
 }
 

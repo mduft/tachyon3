@@ -66,6 +66,8 @@ static bool rtc_tick_handler(interrupt_t* state) {
             _calibrate = NULL;
     }
 
+    lapic_eoi();
+
     return true;
 }
 

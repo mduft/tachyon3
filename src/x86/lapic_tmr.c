@@ -19,10 +19,16 @@
 
 // TODO: per CPU?
 static tmr_cb_t _master;
-static uint64_t _apic_ticks_per_us = 0;
+static uint64_t _apic_ticks_per_us = 10000;
 
 static bool lapic_tmr_handler(interrupt_t* state) {
-    _master();
+    trace("local apic timer: calling %p\n", _master);
+
+    if(_master)
+        _master();
+
+    lapic_eoi();
+
     return true;
 }
 

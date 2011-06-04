@@ -38,7 +38,7 @@ void sched_start() {
     intr_enable();
 
     // wait for the timer to take over. this thread is now stopped.
-    asm volatile("hlt");
+    asm volatile("1: hlt; jmp 1b;");
 }
 
 INSTALL_EXTENSION(EXTP_KINIT, sched_init, "simple scheduler");
