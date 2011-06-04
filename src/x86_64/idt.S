@@ -32,6 +32,11 @@ x86_64_idt_ptr:
 # | 64 bit ISRs that delegate              |
 # '----------------------------------------'
 
+.section .data
+
+_x86_64_isr_res_error:
+    .asciz "reserved interrupt %d!\n"
+
 .section .text
 
 .macro x86_64_isr num, has_err, res=0
@@ -44,6 +49,14 @@ _x86_64_isr\num:
     push $\num
 
     subq $0x8, %rsp      # reserve space for the context address on the stack
+
+    .if \res
+    mov $0x1, %rdi                      # Level = Error
+    mov $_x86_64_isr_res_error, %rsi    # message (above)
+    mov $\num, %rdx                     # the number.
+    call log_write
+    call abort
+    .else
     push %rax            # save the current RAX
     call x86_64_ctx_get  # retrieve the current context.
     mov %rax, 0x08(%rsp) # save the pointer to the reserved stack space.
@@ -60,9 +73,6 @@ _x86_64_isr\num:
     push %rbp               # new frame to ease tracing.
     mov %rsp, %rbp          # ...
 
-    .if \res
-    call abort
-    .else
     callq intr_dispatch
 
     pop %rbp             # restore old frame
@@ -76,11 +86,11 @@ _x86_64_isr\num:
 
     # TODO: kernel call return value?
 
+    .endif
     # ATTENTION: the cpu does _not_ pop an error code, even when it
     # pushed one, so remove any code here!
     addq $0x18, %rsp
     iretq
-    .endif
 ._x86_64_isr_end\num:
 .endm
 

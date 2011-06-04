@@ -55,8 +55,6 @@ static rtc_calibrate_cb_t _calibrate = NULL;
 static bool rtc_tick_handler(interrupt_t* state) {
     _systime += _increment;
 
-    info("system time: %d ns\n", _systime);
-
     uint64_t cur_tsc = tsc_read();
     _tsc_per_increment = ((_tsc_per_increment + (cur_tsc - _ltsc)) / 2);
     _ltsc = cur_tsc;
@@ -77,22 +75,22 @@ static void rtc_init() {
 
     intr_add(IRQ_NUM(8), rtc_tick_handler);
 
-    rtc_set_rate(RTC_RATE_8HZ);
+    rtc_set_rate(RTC_RATE_64HZ);
 
-    outb(RTC_ADDR, RTC_REG_STATE_B);
+    outb(RTC_REG_STATE_B, RTC_ADDR);
     uint8_t b = inb(RTC_DATA);
-    outb(RTC_ADDR, RTC_REG_STATE_B);
-    outb(RTC_DATA, b | RTC_B_INT_PERIODIC);
+    outb(RTC_REG_STATE_B, RTC_ADDR);
+    outb(b | RTC_B_INT_PERIODIC, RTC_DATA);
 
     _rtc_bin = (b & RTC_B_BINARY);
     _rtc_24  = (b & RTC_B_24_HRS);
 
-    info("realtime clock at %d ns per tick\n", _increment);
+    info("realtime clock at %d ns per tick, bin: %d, 24h: %d\n", _increment, _rtc_bin, _rtc_24);
 
     ioapic_enable(8, lapic_cpuid());
 }
 
-INSTALL_EXTENSION(EXTP_KINIT, rtc_init, "realtime clock");
+INSTALL_EXTENSION(EXTP_PLATFORM_INIT, rtc_init, "realtime clock");
 
 uint64_t rtc_systime() {
     return _systime;
@@ -102,10 +100,10 @@ uint8_t rtc_set_rate(uint8_t rate) {
     if(rate < RTC_RATE_8192HZ || rate > RTC_RATE_2HZ)
         fatal("RTC rate out of range: 0x%x!\n", rate);
 
-    outb(RTC_ADDR, RTC_REG_STATE_A);
+    outb(RTC_REG_STATE_A, RTC_ADDR);
     uint8_t old = inb(RTC_DATA);
-    outb(RTC_ADDR, RTC_REG_STATE_A);
-    outb(RTC_DATA, RTC_A_DIVIDER_32768 | rate);
+    outb(RTC_REG_STATE_A, RTC_ADDR);
+    outb(RTC_A_DIVIDER_32768 | rate, RTC_DATA);
 
     _increment = RTC_INCREMENT_NS(rate);
 

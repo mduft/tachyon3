@@ -287,7 +287,7 @@ BOCHS_RC	:= $(BUILDDIR)/bochsrc.txt
 
 $(BOCHS_RC): $(SOURCEDIR)/config/misc/bochsrc.in $(GRUB2_ISO)
 	@-$(MAKE_BDIR)
-	@sed -e "s,@GRUB2_ISO@,$(GRUB2_ISO),g" -e "s,@SERIAL_FILE@,$(BUILDDIR)/serial-bochs.log,g" < "$<" > "$@"
+	@sed -e "s,@GRUB2_ISO@,$(GRUB2_ISO),g" -e "s,@SERIAL_FILE@,$(BUILDDIR)/serial-bochs.log,g" -e "s,@LOG_FILE@,$(BUILDDIR)/debug-bochs.log,g" < "$<" > "$@"
 
 bochs-cd: $(BOCHS_RC) $(GRUB2_ISO)
 	@bochs="$$(type -p bochs)"; test -x "$${bochs}" || { echo "bochs not found!"; exit 1; }; \

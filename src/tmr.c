@@ -8,6 +8,9 @@
 #include "list.h"
 #include "kheap.h"
 
+// TODO: abstraction of platform!
+#include <x86/rtc.h>
+
 // TODO: per CPU?
 static tmr_gen_t* _generator = NULL;
 static list_t* _timers = NULL;
@@ -53,7 +56,7 @@ static void tmr_init() {
     _timers = list_new();
 }
 
-INSTALL_EXTENSION(EXTP_KINIT, tmr_init, "timer generator");
+INSTALL_EXTENSION(EXTP_TIMER_INIT, tmr_init, "timer generator");
 
 static void tmr_resched_sorted(tmr_t* tmr) {
     list_node_t* preceeding = list_begin(_timers);
@@ -85,7 +88,7 @@ static void tmr_handle_expired(tmr_t* tmr) {
 
 static void tmr_do_handle_tick() {
     list_node_t* node = list_begin(_timers);
-    uint64_t current = 0; /* TODO: current (uptime?) nanoseconds */
+    uint64_t current = rtc_systime();
 
     while(node) {
         tmr_t* tmr = (tmr_t*)node->data;
@@ -105,13 +108,14 @@ static void tmr_do_handle_tick() {
 
 static void tmr_set_next_tick() {
     // first handle all that are due already to save reprogramming
+    uint64_t current = rtc_systime();
     tmr_do_handle_tick();
 
     list_node_t* node = list_begin(_timers);
 
     if(node) {
         tmr_t* tmr = (tmr_t*)node->data;
-        _generator->schedule(tmr->expire /* TODO: - current (uptime?) nanoseconds */);
+        _generator->schedule(tmr->expire - current);
     } else {
         _generator->schedule(TMR_MAX_TIMEOUT);
     }
@@ -125,7 +129,7 @@ bool tmr_schedule(tmr_cb_t callback, uint64_t ns, bool oneshot) {
         return false;
     }
 
-    pt->expire = ns /* TODO: + current (uptime?) nanoseconds */;
+    pt->expire = ns + rtc_systime();
     pt->callback = callback;
     pt->period = (oneshot ? ns : 0);
 

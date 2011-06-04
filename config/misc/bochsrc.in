@@ -7,4 +7,6 @@ com1: enabled=1, mode=file, dev=@SERIAL_FILE@
 
 boot: cdrom
 
-info: action=report
+#debug: action=report
+#info: action=report
+#log: @LOG_FILE@

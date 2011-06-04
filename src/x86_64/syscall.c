@@ -28,7 +28,7 @@ static void sysc_init() {
     intr_add(SYSC_INTERRUPT, sysc_handler);
 }
 
-INSTALL_EXTENSION(EXTP_KINIT, sysc_init, "system call handler");
+INSTALL_EXTENSION(EXTP_PLATFORM_INIT, sysc_init, "system call handler");
 
 bool sysc_active() {
     thread_t* thr = x86_64_ctx_get()->thread;

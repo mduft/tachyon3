@@ -41,7 +41,7 @@ void sched_start() {
     asm volatile("1: hlt; jmp 1b;");
 }
 
-INSTALL_EXTENSION(EXTP_KINIT, sched_init, "simple scheduler");
+INSTALL_EXTENSION(EXTP_PLATFORM_INIT, sched_init, "simple scheduler");
 
 void sched_schedule() {
     // find a thread to schedule. the scheduled thread is removed from the

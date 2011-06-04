@@ -19,7 +19,7 @@
 
 // TODO: per CPU?
 static tmr_cb_t _master;
-static uint64_t _apic_ticks_per_us = 10000;
+static uint64_t _apic_ticks_per_us = 0;
 
 static bool lapic_tmr_handler(interrupt_t* state) {
     trace("local apic timer: calling %p\n", _master);
@@ -32,13 +32,41 @@ static bool lapic_tmr_handler(interrupt_t* state) {
     return true;
 }
 
+static bool lapic_tmr_calibrate(uint64_t systime, uint64_t increment) {
+    static uint8_t ccount = 0;
+    static uint64_t accu = 0;
+
+    accu += increment;
+
+    ccount++;
+    info("lapic timer calibration after %d runs: %d t/usec\n", ccount, (accu / ccount));
+
+    if(ccount == 2) {
+        _apic_ticks_per_us = (accu / ccount);
+
+        return false; // accurate enough. stop.
+    }
+
+    return true; // keep calibrating.
+}
+
 static bool lapic_tmr_init(tmr_cb_t master) {
     _master = master;
 
     APIC_REG(APIC_REG_INITIAL_COUNT) = 0;
     APIC_REG(APIC_REG_DIVIDE_CONFIG) = 0x1;
 
-    // TODO: calibrate!
+    bool enabled = intr_state();
+    intr_enable();
+
+    rtc_calibrate(lapic_tmr_calibrate);
+
+    while(!_apic_ticks_per_us);
+
+    if(!enabled)
+        intr_disable();
+
+    info("local apic calibrated to %ld ticks per micro-second\n", _apic_ticks_per_us);
 
     intr_add(IRQ_LAPIC_TIMER, lapic_tmr_handler);
     APIC_REG(APIC_REG_LVT_TIMER) = IRQ_LAPIC_TIMER;

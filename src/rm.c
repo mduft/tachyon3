@@ -12,7 +12,7 @@
 
 #include <contrib/rme2/rme.h>
 
-INSTALL_EXTENSION(EXTP_KINIT, rm_init, "real mode emulator");
+INSTALL_EXTENSION(EXTP_PLATFORM_INIT, rm_init, "real mode emulator");
 
 /** convert rme state to our state */
 #define RME2OURS(rme, ours) \

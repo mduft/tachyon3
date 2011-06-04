@@ -7,6 +7,7 @@
 #include <spc.h>
 #include <log.h>
 #include <mem.h>
+#include <io.h>
 #include "paging.h"
 
 INSTALL_EXTENSION(EXTP_VMEM_INIT, cga_init, "screen")
@@ -26,16 +27,8 @@ void cga_init() {
         );
 
     /* hide the cursor */
-    asm("outb %%al, %%dx;"
-        :   /* no output */
-        :   "a"(0xA),
-            "d"(0x3D4)
-        );
-    asm("outb %%al, %%dx;"
-        :   /* no output */
-        :   "a"(0x20),
-            "d"(0x3D5)
-        );
+    outb(0xA, 0x3D4);
+    outb(0x20, 0x3D5);
 
     __cga_x = __cga_y = 0;
 

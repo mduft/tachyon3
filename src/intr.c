@@ -40,8 +40,6 @@ void intr_dispatch(interrupt_t* state, uint16_t num) {
 
     intr_gate_desc_t* gate = &intr_gate_table[num];
 
-    trace("intr: %d\n", num);
-
     if(gate->mode & GateModeMultiHandler) {
         list_t* handlers = gate->h.list;
         list_node_t* node = list_begin(handlers);

@@ -70,7 +70,8 @@ void boot() {
 
     /* initialize kernel internals registered as extension
      * points in no specific order */
-    extp_iterate(EXTP_KINIT, init_subsys);
+    extp_iterate(EXTP_PLATFORM_INIT, init_subsys);
+    extp_iterate(EXTP_TIMER_INIT, init_subsys);
 
     info("kernel heap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
 

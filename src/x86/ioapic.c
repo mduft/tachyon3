@@ -54,14 +54,16 @@ static void ioapic_init() {
         IOAPIC_ID(idreg), IOAPIC_VER(vreg), IOAPIC_MAX_REDIR(vreg));
 }
 
-INSTALL_EXTENSION(EXTP_KINIT, ioapic_init, "i/o apic");
+INSTALL_EXTENSION(EXTP_PLATFORM_INIT, ioapic_init, "i/o apic");
 
 void ioapic_enable(uint8_t num, uint32_t cpuid) {
+    info("enable %d (%d) on cpu %d\n", num, IRQ_NUM(num), cpuid);
     ioapic_write(_the_ioapic, IOAPIC_REG_TABLE + (2 * num), (IRQ_NUM(num)));
     ioapic_write(_the_ioapic, IOAPIC_REG_TABLE + ((2 * num) + 1), cpuid << 24);
 }
 
 void ioapic_disable(uint8_t num, uint32_t cpuid) {
+    info("disable %d on cpu %d\n", num, cpuid);
     ioapic_write(_the_ioapic, IOAPIC_REG_TABLE + (2 * num), IOAPIC_INT_MASKED | (IRQ_NUM(num)));
     ioapic_write(_the_ioapic, IOAPIC_REG_TABLE + ((2 * num) + 1), 0);
 }

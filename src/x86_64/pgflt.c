@@ -18,7 +18,7 @@
 static void pgflt_install();
 bool pgflt_handler(interrupt_t* state);
 
-INSTALL_EXTENSION(EXTP_KINIT, pgflt_install, "page fault handler");
+INSTALL_EXTENSION(EXTP_PLATFORM_INIT, pgflt_install, "page fault handler");
 
 static void pgflt_install() {
     intr_add(EX_PAGE_FAULT, pgflt_handler);
