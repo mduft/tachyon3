@@ -7,7 +7,7 @@
 #include "extp.h"
 
 /** defines the maximum timeout nanoseconds if no timer is present */
-#define TMR_MAX_TIMEOUT    (10 * 1000 * 1000)
+#define TMR_MAX_TIMEOUT    (10 * 1000)
 
 /** Signature of a callback to be called on every timer iteration */
 typedef void (*tmr_cb_t)();

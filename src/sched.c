@@ -30,7 +30,7 @@ static void sched_init() {
 
 void sched_start() {
     // intialize heartbeat timer.
-    tmr_schedule(sched_schedule, SCHED_TIMESLICE, false);
+    tmr_schedule(sched_schedule, SCHED_TIMESLICE_US * 1000, false);
 
     info("waiting for scheduler to take over ...\n");
 
@@ -72,7 +72,7 @@ void sched_schedule() {
         thread_t* thr = (thread_t*)node->data;
 
         if(thr && thr->state == Runnable) {
-            trace("chosen thread: %p in process %d\n", thr->id, thr->parent->id);
+            trace("chosen thread: %d in process %d\n", thr->id, thr->parent->id);
 
             thr_switch(thr);
 

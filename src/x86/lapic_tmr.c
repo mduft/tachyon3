@@ -16,55 +16,61 @@
 
 #define MAX_INIT_RETRIES    10000
 #define CALIBRATE_COUNT     0xFFFFFFFF
+#define CALIBRATE_TURNS     0xFF
 
 // TODO: per CPU?
 static tmr_cb_t _master;
-static uint64_t _apic_ticks_per_us = 0;
+static volatile uint64_t _apic_ticks_per_us = 0;
 
 static bool lapic_tmr_handler(interrupt_t* state) {
-    trace("local apic timer: calling %p\n", _master);
-
     if(_master)
         _master();
 
     lapic_eoi();
-
     return true;
 }
 
 static bool lapic_tmr_calibrate(uint64_t systime, uint64_t increment) {
     static uint8_t ccount = 0;
-    static uint64_t accu = 0;
+    static uint64_t accu_ticks = 0;
+    static uint64_t accu_ns = 0;
+    uint64_t ticks;
 
-    accu += increment;
+    ticks = (CALIBRATE_COUNT - APIC_REG(APIC_REG_CURRENT_COUNT));
+    accu_ticks += ticks;
+    accu_ns += increment;
 
     ccount++;
-    info("lapic timer calibration after %d runs: %d t/usec\n", ccount, (accu / ccount));
+    if(ccount == CALIBRATE_TURNS) {
+        _apic_ticks_per_us = accu_ticks / (accu_ns / 1000);
 
-    if(ccount == 2) {
-        _apic_ticks_per_us = (accu / ccount);
+        info("lapic timer after %d runs (%d ns, %ld ticks): %d ticks pers us\n", 
+            ccount, accu_ns, ticks, _apic_ticks_per_us);
 
         return false; // accurate enough. stop.
     }
 
+    APIC_REG(APIC_REG_INITIAL_COUNT) = CALIBRATE_COUNT;
     return true; // keep calibrating.
 }
 
 static bool lapic_tmr_init(tmr_cb_t master) {
     _master = master;
 
-    APIC_REG(APIC_REG_INITIAL_COUNT) = 0;
     APIC_REG(APIC_REG_DIVIDE_CONFIG) = 0x1;
+    APIC_REG(APIC_REG_INITIAL_COUNT) = CALIBRATE_COUNT;
+    uint8_t old_rate = rtc_set_rate(RTC_RATE_1024HZ);
+    rtc_calibrate(lapic_tmr_calibrate);
 
     bool enabled = intr_state();
     intr_enable();
-
-    rtc_calibrate(lapic_tmr_calibrate);
 
     while(!_apic_ticks_per_us);
 
     if(!enabled)
         intr_disable();
+
+    rtc_set_rate(old_rate);
 
     info("local apic calibrated to %ld ticks per micro-second\n", _apic_ticks_per_us);
 
@@ -75,8 +81,10 @@ static bool lapic_tmr_init(tmr_cb_t master) {
 }
 
 static bool lapic_tmr_sched(uint64_t ns) {
-    APIC_REG(APIC_REG_INITIAL_COUNT) = 
-        ((ns - (rtc_systime())) * ((_apic_ticks_per_us / 1000) + 1));
+    uint64_t cnt = ((ns * (_apic_ticks_per_us)) / 1000);
+    APIC_REG(APIC_REG_INITIAL_COUNT) = cnt;
+
+    trace("lapic timer set to %ld\n", cnt);
     return true;
 }
 
