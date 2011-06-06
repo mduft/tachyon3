@@ -10,6 +10,7 @@
 #include <vmem.h>
 #include <intr.h>
 #include <spc.h>
+#include <intr.h>
 
 static phys_addr_t lapic_phys() {
     uint64_t apic = msr_read(IA32_APIC_BASE);
@@ -54,11 +55,6 @@ void lapic_init() {
     intr_add(IRQ_SPURIOUS, lapic_handle_spurious);
     intr_add(IRQ_ERROR, lapic_handle_error);
 
-    APIC_REG(APIC_REG_LVT_LINT0)    |= APIC_LVT_MASKED;
-    APIC_REG(APIC_REG_LVT_LINT1)    |= APIC_LVT_MASKED;
-    APIC_REG(APIC_REG_LVT_THERMAL)  |= APIC_LVT_MASKED;
-    APIC_REG(APIC_REG_LVT_PERF)     |= APIC_LVT_MASKED;
-
     APIC_REG(APIC_REG_SV)           |= IRQ_SPURIOUS | APIC_SV_ENABLE;
     APIC_REG(APIC_REG_LVT_ERROR)    |= IRQ_ERROR;
 
@@ -75,6 +71,8 @@ void lapic_init() {
         fatal("failed to enable the local APIC on CPU %d\n", lapic_cpuid());
 
     info("local APIC 0x%x on CPU %d enabled at physical %p\n", (APIC_REG(APIC_REG_VERSION) & 0x7F), lapic_cpuid(), lapic_phys());
+
+    intr_enable();
 }
 
 cpuid_t lapic_cpuid() {

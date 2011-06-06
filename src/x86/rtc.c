@@ -10,6 +10,7 @@
 #include <intr.h>
 #include <io.h>
 #include <log.h>
+#include <intr.h>
 
 #define RTC_ADDR    0x70
 #define RTC_DATA    0x71
@@ -27,6 +28,7 @@
 
 #define RTC_REG_STATE_A     0xA
 #define RTC_REG_STATE_B     0xB
+#define RTC_REG_STATE_C     0xC
 
 #define RTC_A_DIVIDER_32768 (2 << 4)    /**< default divider, only stable time source */
 #define RTC_A_UPD_PROGRESS  (1 << 7)    /**< time update in progress */
@@ -47,22 +49,25 @@ static uint64_t _systime = 0;
 static bool _rtc_bin;
 static bool _rtc_24;
 static uint32_t _increment;
-static uint64_t _ltsc = 0;
-static uint64_t _tsc_per_increment = 0;
+static uint64_t _tsc;
 
 static rtc_calibrate_cb_t _calibrate = NULL;
 
 static bool rtc_tick_handler(interrupt_t* state) {
     _systime += _increment;
 
-    uint64_t cur_tsc = tsc_read();
-    _tsc_per_increment = ((_tsc_per_increment + (cur_tsc - _ltsc)) / 2);
-    _ltsc = cur_tsc;
+    _tsc = tsc_read();
 
     if(_calibrate) {
         if(!_calibrate(_systime, _increment))
             _calibrate = NULL;
     }
+
+    // need to read/discard register C, which gives information about the type
+    // of interrupt (which only can be periodic for now), to get another
+    // one from the chip. otherwise, IRQ8 will be inhibited.
+    outb(RTC_REG_STATE_C, RTC_ADDR);
+    (void)inb(RTC_DATA);
 
     lapic_eoi();
 
@@ -70,12 +75,9 @@ static bool rtc_tick_handler(interrupt_t* state) {
 }
 
 static void rtc_init() {
-    if(intr_state())
-        fatal("RTC init must be called with interrupts still disabled!\n");
-
     intr_add(IRQ_NUM(8), rtc_tick_handler);
 
-    rtc_set_rate(RTC_RATE_64HZ);
+    rtc_set_rate(RTC_RATE_32HZ);
 
     outb(RTC_REG_STATE_B, RTC_ADDR);
     uint8_t b = inb(RTC_DATA);
@@ -93,7 +95,8 @@ static void rtc_init() {
 INSTALL_EXTENSION(EXTP_PLATFORM_INIT, rtc_init, "realtime clock");
 
 uint64_t rtc_systime() {
-    return _systime;
+    uint64_t _nsoff = (tsc_read() - _tsc) / tsc_rate();
+    return _systime + _nsoff;
 }
 
 uint8_t rtc_set_rate(uint8_t rate) {

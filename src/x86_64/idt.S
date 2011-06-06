@@ -35,7 +35,7 @@ x86_64_idt_ptr:
 .section .data
 
 _x86_64_isr_res_error:
-    .asciz "reserved interrupt %d!\n"
+    .asciz "warn: ignoring reserved interrupt %d!\n"
 
 .section .text
 
@@ -51,17 +51,17 @@ _x86_64_isr\num:
     subq $0x8, %rsp      # reserve space for the context address on the stack
 
     .if \res
-    mov $0x1, %rdi                      # Level = Error
+    mov $0x2, %rdi                      # Level = Error
     mov $_x86_64_isr_res_error, %rsi    # message (above)
     mov $\num, %rdx                     # the number.
     call log_write
-    call abort
     .else
     push %rax            # save the current RAX
     call x86_64_ctx_get  # retrieve the current context.
     mov %rax, 0x08(%rsp) # save the pointer to the reserved stack space.
     pop %rax             # restore the original RAX
 
+    call intr_disable    # disable interrupts
     call x86_64_isr_state_save
 
     mov 0x08(%rsp), %rsi    # pass in the interrupt number
@@ -83,6 +83,7 @@ _x86_64_isr\num:
     mov %rax, (%rsp)        # save new context ptr to stack.
 
     call x86_64_isr_state_restore
+    call intr_enable        # re-enable interrupts
 
     # TODO: kernel call return value?
 

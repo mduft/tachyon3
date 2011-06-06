@@ -34,9 +34,6 @@ void sched_start() {
 
     info("waiting for scheduler to take over ...\n");
 
-    // enable hardware interrupts, so the timesource fires.
-    intr_enable();
-
     // wait for the timer to take over. this thread is now stopped.
     asm volatile("1: hlt; jmp 1b;");
 }

@@ -20,3 +20,8 @@ uint64_t tsc_read();
  * @param [out] cpuid   the current CPUs ID.
  */
 void tsc_read_p(uint64_t* timer, uint32_t* cpuid);
+
+/**
+ * returns the TSC ticks per nanosecond.
+ */
+uint64_t tsc_rate();

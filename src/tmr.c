@@ -79,8 +79,9 @@ static void tmr_init_handler(char const* tag, extp_func_t cb, char const* descr)
         list_remove(_timers, tmr);
 
         if(tmr->period) {
-            tmr->expire += tmr->period;
-            info("rescheduling timer to %ld, current: %ld\n", tmr->expire, rtc_systime());
+            uint64_t current = rtc_systime();
+            tmr->expire = current + tmr->period;
+            info("rescheduling timer to %ld, current: %ld\n", tmr->expire, current);
             tmr_resched_sorted(tmr);
         } else {
             kheap_free(tmr);
@@ -116,10 +117,8 @@ static void tmr_init_handler(char const* tag, extp_func_t cb, char const* descr)
 
         if(node) {
             tmr_t* tmr = (tmr_t*)node->data;
-            info("next timer: %ld (now: %ld)\n", tmr->expire, current);
             _generator->schedule(tmr->expire - current);
         } else {
-            info("no next timer node... scheduling minimum time...\n");
             _generator->schedule(TMR_MAX_TIMEOUT);
         }
     }
@@ -134,7 +133,7 @@ static void tmr_init_handler(char const* tag, extp_func_t cb, char const* descr)
 
         pt->expire = ns + rtc_systime();
         pt->callback = callback;
-        pt->period = (oneshot ? ns : 0);
+        pt->period = (oneshot ? 0 : ns);
 
         tmr_resched_sorted(pt);
         tmr_set_next_tick();
@@ -143,7 +142,6 @@ static void tmr_init_handler(char const* tag, extp_func_t cb, char const* descr)
     }
 
 static void tmr_handle_tick() {
-    trace ("timer tick...\n");
     tmr_set_next_tick();
 }
 

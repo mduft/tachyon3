@@ -24,14 +24,14 @@
 init_state_t const boot_state;
 
 // -- TESTTEST
+        extern uint32_t lapic_tmr_current();
 void test_thr() {
-    int level = 0;
     thread_t* thr = thr_current();
 
     while(true) {
-        for(int i = 0; i < 0x8FFFFF; ++i);
+        for(int i = 0; i < 0xFFFFFF; ++i);
 
-        info("%d: hello thread %d\n", thr->id, level++);
+        info("%d: hello thread %d\n", thr->id, lapic_tmr_current());
     }
 }
 // -- TESTTEST
@@ -65,7 +65,7 @@ void boot() {
     /* initial thread. it is marked as exited, as this should
      * never return here. */
     thread_t* init = thr_create(core, NULL);
-    init->state = Exited;
+    init->state = Runnable;
     thr_switch(init);
 
     /* initialize kernel internals registered as extension
@@ -84,6 +84,7 @@ void boot() {
     // -- TESTTEST
     
     // and start the scheduler.
+    init->state = Exited;
     sched_start();
 
     fatal("kernel ended unexpectedly.\n");
