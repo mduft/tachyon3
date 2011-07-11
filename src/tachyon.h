@@ -17,6 +17,9 @@
 #define true    1
 #define false   0
 
+#define min(x, y) ((x) < (y) ? (x) : (y))
+#define max(x, y) ((x) > (y) ? (x) : (y))
+
 /** stringize the given argument */
 #define stringize(x) #x
 

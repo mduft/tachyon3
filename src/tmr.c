@@ -7,9 +7,7 @@
 #include "tmr.h"
 #include "list.h"
 #include "kheap.h"
-
-// TODO: abstraction of platform!
-#include <x86/rtc.h>
+#include "systime.h"
 
 // TODO: per CPU?
 static tmr_gen_t* _generator = NULL;
@@ -44,102 +42,100 @@ static void tmr_init_handler(char const* tag, extp_func_t cb, char const* descr)
         _generator = p;
     }
 
-    static void tmr_init() {
-        // find all timesource extensions, and choose one of them!
-        // maybe make this configurable somehow? kernel command line?
-        // config file?
-        extp_iterate(EXTP_TIMERGEN, tmr_init_handler);
+static void tmr_init() {
+    // find all timesource extensions, and choose one of them!
+    // maybe make this configurable somehow? kernel command line?
+    // config file?
+    extp_iterate(EXTP_TIMERGEN, tmr_init_handler);
 
-        if(!_generator)
-            fatal("no timer generator found!\n");
+    if(!_generator)
+        fatal("no timer generator found!\n");
 
-        _timers = list_new();
+    _timers = list_new();
+}
+
+INSTALL_EXTENSION(EXTP_TIMER_INIT, tmr_init, "timer generator");
+
+static void tmr_resched_sorted(tmr_t* tmr) {
+    list_node_t* preceeding = list_begin(_timers);
+
+    while(preceeding) {
+        tmr_t* other = (tmr_t*)preceeding->data;
+
+        if(other->expire >= tmr->expire)
+            break;
+
+        preceeding = preceeding->next;
     }
 
-    INSTALL_EXTENSION(EXTP_TIMER_INIT, tmr_init, "timer generator");
+    list_insert(_timers, preceeding, tmr);
+}
 
-    static void tmr_resched_sorted(tmr_t* tmr) {
-        list_node_t* preceeding = list_begin(_timers);
+static void tmr_handle_expired(tmr_t* tmr) {
+    tmr->callback();
 
-        while(preceeding) {
-            tmr_t* other = (tmr_t*)preceeding->data;
+    list_remove(_timers, tmr);
 
-            if(other->expire >= tmr->expire)
-                break;
-
-            preceeding = preceeding->next;
-        }
-
-        list_insert(_timers, preceeding, tmr);
+    if(tmr->period) {
+        uint64_t current = systime();
+        tmr->expire = current + tmr->period;
+        //trace("rescheduling timer to %ld, current: %ld\n", tmr->expire, current);
+        tmr_resched_sorted(tmr);
+    } else {
+        kheap_free(tmr);
     }
+}
 
-    static void tmr_handle_expired(tmr_t* tmr) {
-        tmr->callback();
+static void tmr_do_handle_tick() {
+    list_node_t* node = list_begin(_timers);
+    uint64_t current = systime();
 
-        list_remove(_timers, tmr);
+    while(node) {
+        tmr_t* tmr = (tmr_t*)node->data;
+        node = node->next;
 
-        if(tmr->period) {
-            uint64_t current = rtc_systime();
-            tmr->expire = current + tmr->period;
-            info("rescheduling timer to %ld, current: %ld\n", tmr->expire, current);
-            tmr_resched_sorted(tmr);
+        trace("checking timer for expiration: current: %ld, timer: %ld\n", current, tmr->expire);
+
+        if(tmr->expire <= current) {
+            tmr_handle_expired(tmr);
         } else {
-            kheap_free(tmr);
+            break;
         }
     }
+}
 
-    static void tmr_do_handle_tick() {
-        list_node_t* node = list_begin(_timers);
-        uint64_t current = rtc_systime();
+static void tmr_set_next_tick() {
+    // first handle all that are due already to save reprogramming
+    uint64_t current = systime();
+    tmr_do_handle_tick();
 
-        while(node) {
-            tmr_t* tmr = (tmr_t*)node->data;
+    list_node_t* node = list_begin(_timers);
 
-            trace("checking timer for expiration: current: %ld, timer: %ld\n", current, tmr->expire);
+    if(node) {
+        tmr_t* tmr = (tmr_t*)node->data;
+        _generator->schedule(tmr->expire - current);
+    } else {
+        _generator->schedule(TMR_MAX_TIMEOUT);
+    }
+}
 
-            if(tmr->expire <= current) {
-                tmr_handle_expired(tmr);
-            } else {
-                break;
-            }
+bool tmr_schedule(tmr_cb_t callback, uint64_t ns, bool oneshot) {
+    tmr_t* pt = kheap_alloc(sizeof(tmr_t));
 
-            // beware of in-loop-modification (expired timers are removed)
-            node = list_begin(_timers);
-        }
+    if(!callback) {
+        warn("timer without callback!\n");
+        return false;
     }
 
-    static void tmr_set_next_tick() {
-        // first handle all that are due already to save reprogramming
-        uint64_t current = rtc_systime();
-        tmr_do_handle_tick();
+    pt->expire = ns + systime();
+    pt->callback = callback;
+    pt->period = (oneshot ? 0 : ns);
 
-        list_node_t* node = list_begin(_timers);
+    tmr_resched_sorted(pt);
+    tmr_set_next_tick();
 
-        if(node) {
-            tmr_t* tmr = (tmr_t*)node->data;
-            _generator->schedule(tmr->expire - current);
-        } else {
-            _generator->schedule(TMR_MAX_TIMEOUT);
-        }
-    }
-
-    bool tmr_schedule(tmr_cb_t callback, uint64_t ns, bool oneshot) {
-        tmr_t* pt = kheap_alloc(sizeof(tmr_t));
-
-        if(!callback) {
-            warn("timer without callback!\n");
-            return false;
-        }
-
-        pt->expire = ns + rtc_systime();
-        pt->callback = callback;
-        pt->period = (oneshot ? 0 : ns);
-
-        tmr_resched_sorted(pt);
-        tmr_set_next_tick();
-
-        return true;
-    }
+    return true;
+}
 
 static void tmr_handle_tick() {
     tmr_set_next_tick();

@@ -22,8 +22,9 @@
 static tmr_cb_t _master;
 static volatile uint64_t _apic_ticks_per_us = 0;
 
-    static bool lapic_tmr_sched(uint64_t ns);
 static bool lapic_tmr_handler(interrupt_t* state) {
+    debug("lapic_tmr!\n");
+
     if(_master)
         _master();
 

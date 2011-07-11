@@ -100,6 +100,8 @@ void thr_abort(thread_t* target) {
 }
 
 void thr_trampoline(thread_t* thread, thread_start_t entry) {
+    intr_enable();
+
     entry();
 
     thread->state = Exited;

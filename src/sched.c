@@ -11,6 +11,7 @@
 #include "intr.h"
 #include "tmr.h"
 #include "process.h"
+#include "systime.h"
 
 static list_t* _sched_queue = NULL;
 static spinlock_t _sched_lock;
@@ -30,7 +31,7 @@ static void sched_init() {
 
 void sched_start() {
     // intialize heartbeat timer.
-    tmr_schedule(sched_schedule, SCHED_TIMESLICE_US * 1000, false);
+    tmr_schedule(sched_schedule, SCHED_TIMESLICE_US, false);
 
     info("waiting for scheduler to take over ...\n");
 
@@ -50,8 +51,11 @@ void sched_schedule() {
     if(old) {
         switch(old->state) {
         case Runnable:
-            // TODO: check timeslice, and maybe not switch? timers are
-            // set up to fire at timeslice boundaries anyway...
+            // don't stop if the thread still has time!
+            if(old->preempt_at > systime()) {
+                trace("thread not done, continuing (%ld -> %ld)\n", old->preempt_at, systime());
+                goto done;
+            }
             break;
         case Yielded:
             old->state = Runnable;
@@ -70,6 +74,8 @@ void sched_schedule() {
 
         if(thr && thr->state == Runnable) {
             trace("chosen thread: %d in process %d\n", thr->id, thr->parent->id);
+
+            thr->preempt_at = systime() + SCHED_TIMESLICE_US;
 
             thr_switch(thr);
 

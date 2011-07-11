@@ -44,6 +44,7 @@ typedef struct {
     struct _tag_process_t* parent;      /**< the threads parent process */
     struct _tag_thr_context_t* context; /**< the threads associated cpu context */
     uint8_t syscall;                    /**< indicates whether the thread is in a syscall */
+    uint64_t preempt_at;                /**< absolute point in system time to interrupt thread at latest */
 } thread_t;
 
 

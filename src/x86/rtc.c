@@ -11,6 +11,7 @@
 #include <io.h>
 #include <log.h>
 #include <intr.h>
+#include <systime.h>
 
 #define RTC_ADDR    0x70
 #define RTC_DATA    0x71
@@ -49,14 +50,15 @@ static uint64_t _systime = 0;
 static bool _rtc_bin;
 static bool _rtc_24;
 static uint32_t _increment;
-static uint64_t _tsc;
+//static uint64_t _tsc;
 
 static rtc_calibrate_cb_t _calibrate = NULL;
 
 static bool rtc_tick_handler(interrupt_t* state) {
     _systime += _increment;
 
-    _tsc = tsc_read();
+    // TODO: doesn't work too well... :*(
+    /* _tsc = tsc_read(); */
 
     if(_calibrate) {
         if(!_calibrate(_systime, _increment))
@@ -92,11 +94,31 @@ static void rtc_init() {
     ioapic_enable(8, lapic_cpuid());
 }
 
-INSTALL_EXTENSION(EXTP_PLATFORM_INIT, rtc_init, "realtime clock");
+static systime_desc_t const* rtc_ext() {
+    static systime_desc_t _desc = {
+        .systime_init_func = rtc_init,
+        .systime_ns_func = rtc_systime,
+        .accuracy = Good
+    };
+
+    return &_desc;
+}
+
+INSTALL_EXTENSION(EXTP_SYSTIME, rtc_ext, "realtime clock");
 
 uint64_t rtc_systime() {
+    /*
     uint64_t _nsoff = (tsc_read() - _tsc) / tsc_rate();
+
+    if(_nsoff > _increment) {
+        debug("uh oh - TSC running too fast!\n");
+        _nsoff = _increment -1;
+    }
+
     return _systime + _nsoff;
+    */
+    // this needs to be more accurate, we need to estimate how much time went by until the next interrupt will occour...
+    return _systime;
 }
 
 uint8_t rtc_set_rate(uint8_t rate) {

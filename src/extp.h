@@ -21,6 +21,7 @@
 #define EXTP_SCHEDINIT      "sched.init"
 #define EXTP_TIMESOURCE     "time.source"
 #define EXTP_TIMERGEN       "timer.gen"
+#define EXTP_SYSTIME        "sys.time"
 
 /**
  * Dummy extension point callback type. The real type depends

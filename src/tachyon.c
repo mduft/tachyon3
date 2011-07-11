@@ -16,6 +16,7 @@
 #include "kheap.h"
 #include "sched.h"
 #include "syscall.h"
+#include "systime.h"
 
 /**
  * the initial state at boot. contains various boot relevant data,
@@ -24,14 +25,13 @@
 init_state_t const boot_state;
 
 // -- TESTTEST
-        extern uint32_t lapic_tmr_current();
 void test_thr() {
     thread_t* thr = thr_current();
 
     while(true) {
         for(int i = 0; i < 0xFFFFFF; ++i);
 
-        info("%d: hello thread %d\n", thr->id, lapic_tmr_current());
+        info("%d: hello thread %ld\n", thr->id, systime());
     }
 }
 // -- TESTTEST
@@ -71,6 +71,13 @@ void boot() {
     /* initialize kernel internals registered as extension
      * points in no specific order */
     extp_iterate(EXTP_PLATFORM_INIT, init_subsys);
+
+    /* initialize the kernels system timer. this may rely on
+     * platform components (fex. i/o apic)! */
+    systime_init();
+
+    /* initialize timer related subsystems. those may rely on
+     * the kernel system timesource beeing initialized */
     extp_iterate(EXTP_TIMER_INIT, init_subsys);
 
     info("kernel heap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
@@ -81,6 +88,9 @@ void boot() {
 
     thread_t* thr2 = thr_create(core, test_thr);
     sched_add(thr2);
+
+    thread_t* thr3 = thr_create(core, test_thr);
+    sched_add(thr3);
     // -- TESTTEST
     
     // and start the scheduler.
