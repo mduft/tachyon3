@@ -50,15 +50,20 @@ static uint64_t _systime = 0;
 static bool _rtc_bin;
 static bool _rtc_24;
 static uint32_t _increment;
-//static uint64_t _tsc;
+static uint64_t _tsc;
+static uint64_t _tsc_rate;
 
 static rtc_calibrate_cb_t _calibrate = NULL;
 
 static bool rtc_tick_handler(interrupt_t* state) {
+    intr_disable();
     _systime += _increment;
 
-    // TODO: doesn't work too well... :*(
-    /* _tsc = tsc_read(); */
+    uint64_t _ltsc = _tsc;
+    _tsc = tsc_read();
+
+    /* average tsc rate per clock tick */
+    _tsc_rate = (_tsc_rate + (_tsc - _ltsc)) / 2;
 
     if(_calibrate) {
         if(!_calibrate(_systime, _increment))
@@ -72,6 +77,7 @@ static bool rtc_tick_handler(interrupt_t* state) {
     (void)inb(RTC_DATA);
 
     lapic_eoi();
+    intr_enable();
 
     return true;
 }
@@ -107,18 +113,16 @@ static systime_desc_t const* rtc_ext() {
 INSTALL_EXTENSION(EXTP_SYSTIME, rtc_ext, "realtime clock");
 
 uint64_t rtc_systime() {
-    /*
-    uint64_t _nsoff = (tsc_read() - _tsc) / tsc_rate();
+    uint64_t _nsoff = (_tsc_rate / _increment) * (tsc_read() - _tsc);
+
+    trace("tsc would report %ld ns offset: rate: %ld, incr: %ld, tsc: %ld, now: %ld\n", _nsoff, _tsc_rate, _increment, _tsc, tsc_read());
 
     if(_nsoff > _increment) {
         debug("uh oh - TSC running too fast!\n");
-        _nsoff = _increment -1;
+        _nsoff = 0;
     }
 
     return _systime + _nsoff;
-    */
-    // this needs to be more accurate, we need to estimate how much time went by until the next interrupt will occour...
-    return _systime;
 }
 
 uint8_t rtc_set_rate(uint8_t rate) {

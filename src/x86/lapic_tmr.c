@@ -13,6 +13,7 @@
 #include <extp.h>
 #include <intr.h>
 #include <log.h>
+#include <systime.h>
 
 #define MAX_INIT_RETRIES    10000
 #define CALIBRATE_COUNT     0xFFFFFFFF
@@ -23,8 +24,6 @@ static tmr_cb_t _master;
 static volatile uint64_t _apic_ticks_per_us = 0;
 
 static bool lapic_tmr_handler(interrupt_t* state) {
-    debug("lapic_tmr!\n");
-
     if(_master)
         _master();
 

@@ -18,6 +18,8 @@
 #include "syscall.h"
 #include "systime.h"
 
+#include <x86/tsc.h>
+
 /**
  * the initial state at boot. contains various boot relevant data,
  * saved by the early entry routine
@@ -92,6 +94,9 @@ void boot() {
     thread_t* thr3 = thr_create(core, test_thr);
     sched_add(thr3);
     // -- TESTTEST
+    
+    while(true)
+        info("tsc: %ld\n", tsc_read());
     
     // and start the scheduler.
     init->state = Exited;
