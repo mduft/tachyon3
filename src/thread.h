@@ -21,6 +21,19 @@ typedef enum {
 } thread_state_t;
 
 /**
+ * Priority of a thread or a process.
+ */
+typedef enum {
+    Kernel,
+    Highest,
+    High,
+    Normal,
+    Low,
+    Lowest,
+    Idle
+} priority_t;
+
+/**
  * Describes a process, forward declared to avoid circular
  * includes process <-> thread
  */
@@ -32,13 +45,14 @@ struct _tag_process_t;
  */
 struct _tag_thr_context_t;
 
+
 /**
  * Describes a thread and its state (both CPU and thread state)
  */
 typedef struct {
     tid_t id;                           /**< the threads id within it's process */
     thread_state_t state;               /**< the threads execution state */
-    uint8_t priority;                   /**< the threads priority, inherited from 
+    priority_t priority;                /**< the threads priority, inherited from 
                                          *   the parent process, may be overridden. */
     stack_t* stack;                     /**< the threads stack */
     struct _tag_process_t* parent;      /**< the threads parent process */

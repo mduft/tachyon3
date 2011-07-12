@@ -43,6 +43,8 @@ _x86_64_isr_res_error:
 .type _x86_64_isr\num, @function
 .size _x86_64_isr\num, ._x86_64_isr_end\num - _x86_64_isr\num
 _x86_64_isr\num:
+    call intr_disable
+
     .if !\has_err
     push $0x0
     .endif
@@ -61,7 +63,6 @@ _x86_64_isr\num:
     mov %rax, 0x08(%rsp) # save the pointer to the reserved stack space.
     pop %rax             # restore the original RAX
 
-    call intr_disable    # disable interrupts
     call x86_64_isr_state_save
 
     mov 0x08(%rsp), %rsi    # pass in the interrupt number
@@ -83,7 +84,6 @@ _x86_64_isr\num:
     mov %rax, (%rsp)        # save new context ptr to stack.
 
     call x86_64_isr_state_restore
-    call intr_enable        # re-enable interrupts
 
     # TODO: kernel call return value?
 
@@ -91,6 +91,9 @@ _x86_64_isr\num:
     # ATTENTION: the cpu does _not_ pop an error code, even when it
     # pushed one, so remove any code here!
     addq $0x18, %rsp
+
+    call intr_enable
+
     iretq
 ._x86_64_isr_end\num:
 .endm

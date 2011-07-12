@@ -94,8 +94,6 @@ static void tmr_do_handle_tick() {
         tmr_t* tmr = (tmr_t*)node->data;
         node = node->next;
 
-        trace("checking timer for expiration: current: %ld, timer: %ld\n", current, tmr->expire);
-
         if(tmr->expire <= current) {
             tmr_handle_expired(tmr);
         } else {

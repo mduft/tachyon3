@@ -259,7 +259,6 @@ void log_write(log_level_t lvl, char const* fmt, ...) {
     log_format_message(buf, sizeof(buf), fmt, lst);
     va_end(lst);
 
-    bool intr = intr_state();
     intr_disable();
     spl_lock(&log_lock);
 
@@ -270,7 +269,6 @@ void log_write(log_level_t lvl, char const* fmt, ...) {
     }
 
     spl_unlock(&log_lock);
-    if(intr)
-        intr_enable();
+    intr_enable();
 }
 

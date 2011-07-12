@@ -8,6 +8,9 @@
 
 #include <x86/cpu.h>
 
+/**
+ * Describes the current state of the cpu associated with a thread's context
+ */
 typedef struct {
     uintptr_t rip;
     uintptr_t cs;
@@ -39,5 +42,4 @@ typedef struct {
     uintptr_t cr4;
     uintptr_t cr8;
 } x86_64_cpu_state_t;
-
 

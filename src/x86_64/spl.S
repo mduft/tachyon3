@@ -23,7 +23,9 @@
 
 spl_lock:
     push %rbx
-    mov $0x1, %rbx              # target value (TODO: use current cpu's id)
+    call cpu_current_id
+    add $1, %rax                # argl... cpu with id 0...?
+    mov %rax, %rbx              # target value (current cpu's id)
 
     1:                          # TODO: limit loop count and sleep on every N iterations
     mov $0x0, %rax              # check whether lock is free.
@@ -39,8 +41,10 @@ spl_lock:
 
 spl_try_lock:
     push %rbx
+    call cpu_current_id
+    add $1, %rax                # see above.
+    mov %rax, %rbx              # target value (current cpu's id)
     mov $0x0, %rax              # check whether lock is free.
-    mov $0x1, %rbx              # target value (TODO: use current cpu's id)
     lock cmpxchg %rbx, (%rdi)   # compare and exchange locked
     mov $0x0, %rax              # reset, old value is not used.
     jnz 1f                      # is not zero, lock was not free.
@@ -65,5 +69,14 @@ spl_locked:
 .spl_locked_end:
     
 spl_mine:
-    jmp spl_locked              # TODO: check lock value for current cpu id.
+    call cpu_current_id
+    add $1, %rax                # see above.
+    cmp %rax, (%rdi)            # check whether our ID is in there...
+    je 1f                       # we have it! return true;
+    mov $0x0, %rax              # it's somebody else's
+    ret
+    1:
+    mov $0x1, %rax              # it's ours.
+    ret
+
 .spl_mine_end:

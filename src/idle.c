@@ -24,7 +24,7 @@ static void idle_thread() {
 static void idle_init() {
     thread_t* idle_thr = thr_create(core, idle_thread);
 
-    idle_thr->priority = PRIO_IDLE;
+    idle_thr->priority = Idle;
 
     sched_add(idle_thr);
 }

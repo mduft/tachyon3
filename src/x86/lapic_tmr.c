@@ -58,7 +58,13 @@ static bool lapic_tmr_calibrate(uint64_t systime, uint64_t increment) {
 }
 
 static bool lapic_tmr_init(tmr_cb_t master) {
+    if(intr_state())
+        fatal("interrupts may not be enabled in lapic_tmr_init()!\n");
+
     _master = master;
+
+    // enable interrupts for this to work, disable the again afterwards.
+    intr_enable();
 
     // fastest possible rate: 0xB (1011) -> FSB tick rate. on modern
     // systems, this should allow near nanoseconds resolution.
@@ -67,9 +73,11 @@ static bool lapic_tmr_init(tmr_cb_t master) {
     rtc_calibrate(lapic_tmr_calibrate);
 
     // wait for calibration to finish.
-    while(!_apic_ticks_per_us);
+    while(!_apic_ticks_per_us)
+        asm volatile("hlt");
 
     rtc_set_rate(old_rate);
+    intr_disable();
 
     info("local apic calibrated to %ld ticks per micro-second\n", _apic_ticks_per_us);
 

@@ -59,7 +59,7 @@ void boot() {
     /* initialize the core process with the current address
      * space, and other relevant data. */
     process_t** pcore = (process_t**)&core;
-    *pcore = prc_new(spc_current(), PRIO_NORMAL, RING_KERNEL);
+    *pcore = prc_new(spc_current(), Kernel, RING_KERNEL);
 
     if(!core)
         fatal("failed to create core process\n");
@@ -94,9 +94,6 @@ void boot() {
     thread_t* thr3 = thr_create(core, test_thr);
     sched_add(thr3);
     // -- TESTTEST
-    
-    while(true)
-        info("tsc: %ld\n", tsc_read());
     
     // and start the scheduler.
     init->state = Exited;

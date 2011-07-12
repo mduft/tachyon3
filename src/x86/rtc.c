@@ -52,6 +52,7 @@ static bool _rtc_24;
 static uint32_t _increment;
 static uint64_t _tsc;
 static uint64_t _tsc_rate;
+static uint64_t _tsc_dur;
 
 static rtc_calibrate_cb_t _calibrate = NULL;
 
@@ -61,9 +62,8 @@ static bool rtc_tick_handler(interrupt_t* state) {
 
     uint64_t _ltsc = _tsc;
     _tsc = tsc_read();
-
-    /* average tsc rate per clock tick */
-    _tsc_rate = (_tsc_rate + (_tsc - _ltsc)) / 2;
+    _tsc_rate = (_tsc_dur + (_tsc - _ltsc)) / 2;
+    _tsc_dur = (_tsc - _ltsc);
 
     if(_calibrate) {
         if(!_calibrate(_systime, _increment))
@@ -113,13 +113,11 @@ static systime_desc_t const* rtc_ext() {
 INSTALL_EXTENSION(EXTP_SYSTIME, rtc_ext, "realtime clock");
 
 uint64_t rtc_systime() {
-    uint64_t _nsoff = (_tsc_rate / _increment) * (tsc_read() - _tsc);
-
-    trace("tsc would report %ld ns offset: rate: %ld, incr: %ld, tsc: %ld, now: %ld\n", _nsoff, _tsc_rate, _increment, _tsc, tsc_read());
+    uint64_t current = tsc_read();
+    uint64_t _nsoff = (_tsc_rate / _increment) * (current - _tsc);
 
     if(_nsoff > _increment) {
-        debug("uh oh - TSC running too fast!\n");
-        _nsoff = 0;
+        _nsoff = _increment;
     }
 
     return _systime + _nsoff;

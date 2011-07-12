@@ -10,6 +10,10 @@ typedef struct {
     // TODO ..
 } x86_cpu_state_t;
 
+typedef struct {
+    uintmax_t ifda_cnt;     /**< interrupt disable count. */
+} cpu_locals_t;
+
 #define CPUID_0H                    0x00
 #define CPUID_0H_MAX_CPUID(l)       (l.ax)
 
@@ -105,4 +109,19 @@ typedef struct {
  * @return      a structure filled with information.
  */
 cpuid_leaf_t cpuid(uint32_t leaf);
+
+/**
+ * Retrieves the locals for a cpu with the given ID.
+ *
+ * @param id    the id of the cpu to retrieve locals for.
+ * @return      the cpus local variables.
+ */
+cpu_locals_t* cpu_locals(uint32_t id);
+
+/**
+ * Retrieves the ID of the current CPU.
+ *
+ * @return  the current cpus ID.
+ */
+uint32_t cpu_current_id();
 

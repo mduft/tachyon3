@@ -15,10 +15,20 @@
 #include <x86/gdt.h>
 #include <x86/lapic.h>
 
+static uint32_t _cpumaxid = 0;
+static cpu_locals_t* _cpulcl = NULL;
+static spinlock_t _cpulck;
+static bool _cpuinit = false;
+static cpu_locals_t _dummy_bsplocals = { .ifda_cnt = 1 };
+
 void cpu_init() {
+    if(intr_state())
+        fatal("interrupts shall not be enabled in cpu_init!\n");
+
     /* create and set an initial dummy context, which will be 
        released on the first context switch. */
     x86_64_ctx_set(kheap_alloc(sizeof(thr_context_t)));
+    x86_64_ctx_get()->thread = NULL;
 
     dyngdt_init_and_lock();
 
@@ -34,13 +44,23 @@ void cpu_init() {
     /* finally, activate the local APIC */
     lapic_init();
 
+    uint32_t id = lapic_cpuid();
+
+    /* allocate room for the CPUs locals. */
+    _cpumaxid = max(_cpumaxid, id);
+    _cpulcl = kheap_realloc(_cpulcl, sizeof(cpu_locals_t) * _cpumaxid); // TODO: naive; could be better
+    memset(&_cpulcl[id], 0, sizeof(cpu_locals_t));
+    _cpulcl[id].ifda_cnt = 1; // initially start with interrupts disabled!
+
+    trace("cpu %d: locals at %p\n", id, &_cpulcl[id]);
+
     /* give some information on what we're on. */
     cpuid_leaf_t leaf;
 
     leaf = cpuid(CPUID_01H);
-    info("cpu %d: family: %d, model: %d, stepping: %d\n", lapic_cpuid(),
+    info("cpu %d: family: %d, model: %d, stepping: %d\n", id,
         CPUID_01H_V_FAMILY(leaf), CPUID_01H_V_MODEL(leaf), CPUID_01H_V_STEPPING(leaf));
-    info("cpu %d: extended family: %d, extended model: %d\n", lapic_cpuid(),
+    info("cpu %d: extended family: %d, extended model: %d\n", id,
         CPUID_01H_V_EX_FAMILY(leaf), CPUID_01H_V_EX_MODEL(leaf));
 
     leaf = cpuid(CPUID_8_0H);
@@ -67,9 +87,18 @@ void cpu_init() {
         leaf = cpuid(CPUID_8_04H);
         set_leaf
 
-        info("cpu %d: %s\n", lapic_cpuid(), u.buf);
+        info("cpu %d: %s\n", id, u.buf);
     }
 }
+
+void cpu_bsp_init() {
+    spl_init(&_cpulck);
+    cpu_init();
+
+    _cpuinit = true;
+}
+
+INSTALL_EXTENSION(EXTP_CPUINIT, cpu_bsp_init, "cpu state");
 
 cpuid_leaf_t cpuid(uint32_t leaf) {
     cpuid_leaf_t res;
@@ -79,5 +108,19 @@ cpuid_leaf_t cpuid(uint32_t leaf) {
     return res;
 }
 
-INSTALL_EXTENSION(EXTP_CPUINIT, cpu_init, "cpu state");
+cpu_locals_t* cpu_locals(uint32_t id) {
+    if(!_cpuinit)
+        return &_dummy_bsplocals;
 
+    if(id > _cpumaxid)
+        fatal("invalid cpu id: %u\n", id);
+
+    return &_cpulcl[id];
+}
+
+uint32_t cpu_current_id() {
+    if(!_cpuinit)
+        return 0;
+
+    return lapic_cpuid();
+}

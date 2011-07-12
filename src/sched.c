@@ -35,11 +35,38 @@ void sched_start() {
 
     info("waiting for scheduler to take over ...\n");
 
+    intr_enable();
+
     // wait for the timer to take over. this thread is now stopped.
     asm volatile("1: hlt; jmp 1b;");
 }
 
 INSTALL_EXTENSION(EXTP_PLATFORM_INIT, sched_init, "simple scheduler");
+
+static void sched_add_unlocked(thread_t* thread) {
+    list_add(_sched_queue, thread);
+}
+
+static void sched_remove_unlocked(thread_t* thread) {
+    list_remove(_sched_queue, thread);
+}
+
+static thread_t* sched_choose() {
+     list_node_t* node = list_begin(_sched_queue);
+
+    // TODO: check priorities!
+    while(node) {
+        thread_t* thr = (thread_t*)node->data;
+
+        if(thr && thr->state == Runnable) {
+            return thr;
+        }
+
+        node = node->next;
+    }
+
+    return NULL;
+}
 
 void sched_schedule() {
     // find a thread to schedule. the scheduled thread is removed from the
@@ -53,11 +80,11 @@ void sched_schedule() {
         case Runnable:
             // don't stop if the thread still has time!
             if(old->preempt_at > systime()) {
-                trace("thread not done, continuing (%ld -> %ld)\n", old->preempt_at, systime());
                 goto done;
             }
             break;
         case Yielded:
+            // timeslice is given up.
             old->state = Runnable;
             break;
         default:
@@ -66,28 +93,18 @@ void sched_schedule() {
         }
     }
 
-    list_node_t* node = list_begin(_sched_queue);
+    thread_t* thr = sched_choose();
 
-    // TODO: check priorities!
-    while(node) {
-        thread_t* thr = (thread_t*)node->data;
+    if(thr) {
+        thr->preempt_at = systime() + SCHED_TIMESLICE_US;
 
-        if(thr && thr->state == Runnable) {
-            trace("chosen thread: %d in process %d\n", thr->id, thr->parent->id);
+        thr_switch(thr);
+        sched_remove_unlocked(thr);
 
-            thr->preempt_at = systime() + SCHED_TIMESLICE_US;
+        if(old)
+            sched_add_unlocked(old);
 
-            thr_switch(thr);
-
-            list_remove(_sched_queue, thr);
-
-            if(old)
-                list_add(_sched_queue, old);
-
-            goto done;
-        }
-
-        node = node->next;
+        goto done;
     }
 
     // let things stay as they are if only one thread exists.
@@ -111,13 +128,13 @@ void sched_yield() {
 
 void sched_add(thread_t* thread) {
     spl_lock(&_sched_lock);
-    list_add(_sched_queue, thread);
+    sched_add_unlocked(thread);
     spl_unlock(&_sched_lock);
 }
 
 void sched_remove(thread_t* thread) {
     spl_lock(&_sched_lock);
-    list_remove(_sched_queue, thread);
+    sched_remove_unlocked(thread);
     spl_unlock(&_sched_lock);
 }
 

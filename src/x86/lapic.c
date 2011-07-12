@@ -36,6 +36,9 @@ static bool lapic_handle_spurious(interrupt_t* state) {
 }
 
 void lapic_init() {
+    if(intr_state())
+        fatal("interrupts may not be enabled in lapic_init()\n");
+
     // another CPU may have done this already!
     phys_addr_t mapping = vmem_resolve(spc_current(), (void*)APIC_VIRTUAL);
     if(mapping != 0 && mapping != lapic_phys())
@@ -71,8 +74,6 @@ void lapic_init() {
         fatal("failed to enable the local APIC on CPU %d\n", lapic_cpuid());
 
     info("local APIC 0x%x on CPU %d enabled at physical %p\n", (APIC_REG(APIC_REG_VERSION) & 0x7F), lapic_cpuid(), lapic_phys());
-
-    intr_enable();
 }
 
 cpuid_t lapic_cpuid() {

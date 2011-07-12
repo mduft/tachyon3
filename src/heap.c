@@ -286,6 +286,10 @@ void heap_free(heap_t* heap, void* mem) {
 }
 
 void* heap_realloc(heap_t* heap, void* mem, size_t bytes) {
+    if(mem == NULL) {
+        return heap_alloc(heap, bytes);
+    }
+
     HEAP_CHECK(heap);
 
     if(!heap_validate(heap, mem)) {
