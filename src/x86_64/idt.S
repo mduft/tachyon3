@@ -55,7 +55,7 @@ _x86_64_isr\num:
 
     subq $0x8, %rsp      # reserve space for the context address on the stack
 
-        .if \res
+    .if \res
     push %rdi
     push %rsi
     push %rdx
