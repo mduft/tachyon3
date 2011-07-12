@@ -11,7 +11,7 @@ void abort(void) {
 
     list_t* trace = ksym_trace();
     ksym_write_trace(Error, trace);
-    list_delete(trace);
+    ksym_delete(trace);
 
     stop:
         asm("cli; hlt;");

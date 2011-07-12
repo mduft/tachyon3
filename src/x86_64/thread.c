@@ -11,6 +11,7 @@
 #include <x86/reg.h>
 #include <sched.h>
 #include <syscall.h>
+#include <ksym.h>
 
 #include "intr.h"
 #include <log.h>
@@ -72,9 +73,6 @@ thread_t* thr_switch(thread_t* target) {
     if(old->thread == NULL) {
         // this is a dummy context, as the cpu context may never
         // be NULL. This is only created when initializing a CPU.
-        // Since there is always at least the idle thread for the
-        // CPU, release it now.
-        kheap_free(old);
 
         // to avoid having to check whether there was a running
         // thread, return the new thread as old one. This saves
@@ -95,6 +93,10 @@ void thr_abort(thread_t* target) {
     target->state = Aborting;
 
     error("thread %d in process %d aborted!\n", target->id, target->parent->id);
+
+    list_t* trace = ksym_trace();
+    ksym_write_trace(Error, trace);
+    ksym_delete(trace);
 
     sysc_call(SysSchedule, 0, 0);
 

@@ -7,7 +7,7 @@
 #include <process.h>
 #include "cpu.h"
 
-typedef struct {
+typedef struct _tag_thr_context_t {
     cpu_state_t state;
 
     spinlock_t lock;

@@ -10,8 +10,10 @@ typedef struct {
     // TODO ..
 } x86_cpu_state_t;
 
+struct _tag_thr_context_t;
+
 typedef struct {
-    uintmax_t ifda_cnt;     /**< interrupt disable count. */
+    struct _tag_thr_context_t* context;
 } cpu_locals_t;
 
 #define CPUID_0H                    0x00

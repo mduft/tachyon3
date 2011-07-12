@@ -10,6 +10,8 @@
 typedef struct _tag_thr_context_t {
     x86_64_cpu_state_t state;
 
+    uint8_t ifda_cnt;
+
     spinlock_t lock;
     thread_t* thread;
 } thr_context_t;

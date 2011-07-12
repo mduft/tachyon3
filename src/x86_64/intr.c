@@ -5,6 +5,8 @@
 
 #include <x86/reg.h>
 #include "cpu.h"
+#include "thread.h"
+#include <log.h>
 
 bool intr_state() {
     register uint64_t rflags = 0;
@@ -16,17 +18,16 @@ bool intr_state() {
 
 void intr_disable() {
     asm volatile("cli");
-    cpu_locals_t* lcls = cpu_locals(cpu_current_id());
-    lcls->ifda_cnt++;
+    x86_64_ctx_get()->ifda_cnt++;
 }
 
 void intr_enable() {
-    cpu_locals_t* lcls = cpu_locals(cpu_current_id());
+    register thr_context_t* ctx = x86_64_ctx_get();
 
-    if(lcls->ifda_cnt > 0)
-        lcls->ifda_cnt--;
+    if(ctx->ifda_cnt > 0)
+        ctx->ifda_cnt--;
 
-    if(lcls->ifda_cnt == 0)
+    if(ctx->ifda_cnt == 0)
         asm volatile("sti");
 }
 

@@ -3,6 +3,9 @@
 
 #include "ksym.h"
 #include "log.h"
+#include "kheap.h"
+
+#define KSYM_TRACE_MAX_LEN  1024
 
 // this is an array, but flat.
 extern ksym_t const ksym_table;
@@ -32,20 +35,21 @@ void ksym_write_trace_top(log_level_t level, list_t* trace, int16_t limit) {
     int16_t num = 0;
 
     while(node) {
-        ksym_t* current = (ksym_t*)node->data;
+        ksym_node_t* snode = (ksym_node_t*)node->data;
 
-        if(!current) {
-            log_write(level, "\t[%p] <unknown>\n", 0);
+        if(!snode->sym) {
+            log_write(level, "\t[%p] <unknown>\n", snode->real_addr);
         } else {
-            if(current->addr == INTR_MAGIC_FRAME) {
+            if(snode->sym->addr == INTR_MAGIC_FRAME) {
                 if(sizeof(uintptr_t) == 4)
                     log_write(level, "\t[-- intr --]\n");
                 else if(sizeof(uintptr_t) == 8)
                     log_write(level, "\t[------ intr ------]\n");
             } else {
-                log_write(level, "\t[%p] %s\n", 
-                    current ? current->addr : 0x0, 
-                    current ? current->name : "<unknown>");
+                log_write(level, "\t[%p] %s + 0x%x\n", 
+                    snode->real_addr, 
+                    snode->sym ? snode->sym->name : "<unknown>", 
+                    snode->sym ? (snode->real_addr - snode->sym->addr) : 0);
             }
         }
 
@@ -61,16 +65,43 @@ list_t* ksym_trace() {
     register uintptr_t* basep = ksym_get_bp();
 
     while(basep && basep[0] && basep[1]) {
-        ksym_t const* current;
+        ksym_node_t* node = kheap_alloc(sizeof(ksym_node_t));
+
         if(basep[1] == INTR_MAGIC_FRAME) {
-            list_add(trace, &intr_magic_frame);
-            current = ksym_get((void*)basep[2]);
+            ksym_node_t* ifnode = kheap_alloc(sizeof(ksym_node_t));
+            ifnode->sym = &intr_magic_frame;
+            ifnode->real_addr = 0;
+            list_add(trace, ifnode);
+            node->real_addr = ((void*)basep[2]);
         } else {
-            current = ksym_get((void*)basep[1]);
+            node->real_addr = ((void*)basep[1]);
         }
-        list_add(trace, current);
+
+        node->sym = ksym_get(node->real_addr);
+        list_add(trace, node);
+
         basep = (uintptr_t*)basep[0];
+
+        if(list_size(trace) >= KSYM_TRACE_MAX_LEN) {
+            warn("trace too long, limiting\n");
+            return trace;
+        }
     }
 
     return trace;
+}
+
+void ksym_delete(list_t* trace) {
+    list_node_t* node = list_begin(trace);
+
+    while(node) {
+        ksym_node_t* n = (ksym_node_t*)node->data;
+
+        if(n)
+            kheap_free(n);
+
+        node = node->next;
+    }
+
+    list_delete(trace);
 }

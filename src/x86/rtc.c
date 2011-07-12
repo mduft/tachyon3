@@ -116,6 +116,8 @@ uint64_t rtc_systime() {
     uint64_t current = tsc_read();
     uint64_t _nsoff = (_tsc_rate / _increment) * (current - _tsc);
 
+    trace("nsoff: %lu, rate: %lu, (%lu ticks p/us, %lu ticks)\n", _nsoff, _tsc_rate, (_tsc_rate / _increment), (current - _tsc));
+
     if(_nsoff > _increment) {
         _nsoff = _increment;
     }

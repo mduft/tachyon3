@@ -37,6 +37,9 @@ x86_64_idt_ptr:
 _x86_64_isr_res_error:
     .asciz "warn: ignoring reserved interrupt %d!\n"
 
+_x86_64_isr_reg_dmp:
+    .asciz "regs: %x %x %x\n"
+
 .section .text
 
 .macro x86_64_isr num, has_err, res=0
@@ -52,11 +55,19 @@ _x86_64_isr\num:
 
     subq $0x8, %rsp      # reserve space for the context address on the stack
 
-    .if \res
+        .if \res
+    push %rdi
+    push %rsi
+    push %rdx
+
     mov $0x2, %rdi                      # Level = Error
     mov $_x86_64_isr_res_error, %rsi    # message (above)
     mov $\num, %rdx                     # the number.
     call log_write
+
+    pop %rdx
+    pop %rsi
+    pop %rdi
     .else
     push %rax            # save the current RAX
     call x86_64_ctx_get  # retrieve the current context.

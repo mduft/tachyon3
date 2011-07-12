@@ -60,6 +60,9 @@ static void log_extp_add_writer(char const* tag, extp_func_t writer, char const*
 static void log_format_u(char* buf, uintmax_t number, uint8_t base, char fill, size_t width) {
     register char* p = buf;
 
+    if(base == 0)
+        fatal("log format with base 0!\n");
+
     do {
         register uintmax_t rem = number % base;
         *p++ = (rem < 10) ? rem + '0' : rem + 'a' - 10;
@@ -137,6 +140,9 @@ static void log_format_message(char* buf, size_t len, char const* fmt, va_list a
     char c;
     char* p = buf;
 
+    if(!fmt)
+        fatal("null format in log_format_message!\n");
+
     #define CHECKED_APPEND(c) { if((size_t)(p - buf) < len) *p++ = (c); }
 
     while((c = *fmt++) != 0) {
@@ -174,8 +180,8 @@ static void log_format_message(char* buf, size_t len, char const* fmt, va_list a
             case 'i':
             case 'd':   if(lng) { DO_NUMBER(s, int64_t, 10, ' ', width);   }
                         else    { DO_NUMBER(s, int32_t, 10, ' ', width);  }
-            case 'u':   if(lng) { DO_NUMBER(s, uint64_t, 10, ' ', width);  }
-                        else    { DO_NUMBER(s, uint32_t, 10, ' ', width); }
+            case 'u':   if(lng) { DO_NUMBER(u, uint64_t, 10, ' ', width);  }
+                        else    { DO_NUMBER(u, uint32_t, 10, ' ', width); }
             case 'x':   if(lng) { DO_NUMBER(u, uint64_t, 16, '0', width);  }
                         else    { DO_NUMBER(u, uint32_t, 16, '0', width); }
             case 'p':   *ptemp++ = '0'; *ptemp++ = 'x'; DO_NUMBER(u, uintmax_t, 16, '0', sizeof(uintmax_t) * 2);

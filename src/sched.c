@@ -12,8 +12,9 @@
 #include "tmr.h"
 #include "process.h"
 #include "systime.h"
+#include "mem.h"
 
-static list_t* _sched_queue = NULL;
+static list_t* _sched_queues[MaxPrio];
 static spinlock_t _sched_lock;
 
 static void sched_init_ext(char const* tag, extp_func_t cb, char const* descr) {
@@ -22,8 +23,12 @@ static void sched_init_ext(char const* tag, extp_func_t cb, char const* descr) {
 }
 
 static void sched_init() {
-    _sched_queue = list_new();
+    if(intr_state())
+        fatal("interrupts may not be enabled in sched_init()\n");
+
     spl_init(&_sched_lock);
+
+    memset(_sched_queues, 0, sizeof(_sched_queues));
 
     // now initialize all things that depend on the scheduler being present
     extp_iterate(EXTP_SCHEDINIT, sched_init_ext);
@@ -44,25 +49,30 @@ void sched_start() {
 INSTALL_EXTENSION(EXTP_PLATFORM_INIT, sched_init, "simple scheduler");
 
 static void sched_add_unlocked(thread_t* thread) {
-    list_add(_sched_queue, thread);
+    if(!_sched_queues[thread->priority])
+        _sched_queues[thread->priority] = list_new();
+
+    list_add(_sched_queues[thread->priority], thread);
 }
 
 static void sched_remove_unlocked(thread_t* thread) {
-    list_remove(_sched_queue, thread);
+    list_remove(_sched_queues[thread->priority], thread);
 }
 
 static thread_t* sched_choose() {
-     list_node_t* node = list_begin(_sched_queue);
+    for(priority_t i = Kernel; i < MaxPrio; --i) {
+        list_node_t* node = list_begin(_sched_queues[i]);
 
-    // TODO: check priorities!
-    while(node) {
-        thread_t* thr = (thread_t*)node->data;
+        // TODO: check priorities!
+        while(node) {
+            thread_t* thr = (thread_t*)node->data;
 
-        if(thr && thr->state == Runnable) {
-            return thr;
+            if(thr && thr->state == Runnable) {
+                return thr;
+            }
+
+            node = node->next;
         }
-
-        node = node->next;
     }
 
     return NULL;
@@ -93,6 +103,9 @@ void sched_schedule() {
         }
     }
 
+    // BUG: this algorithm will start to choose the idle thread when
+    // only one other thread is remaining runnable.
+
     thread_t* thr = sched_choose();
 
     if(thr) {
@@ -108,8 +121,9 @@ void sched_schedule() {
     }
 
     // let things stay as they are if only one thread exists.
-    if(old->state == Runnable)
+    if(old->state == Runnable) {
         goto done;
+    }
 
     fatal("no thread left to schedule - this is bad!\n");
 

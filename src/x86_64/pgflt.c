@@ -26,8 +26,9 @@ static void pgflt_install() {
 
 bool pgflt_handler(interrupt_t* state) {
     ksym_t const* sym = ksym_get((void*)state->ip);
-    trace("page-fault at %p <%s> while %s %p\n",
-        state->ip, sym ? sym->name : "unknown", ((state->code & ERRC_INSTR_FETCH) ? 
+    trace("page-fault at %p <%p:%s + 0x%x> while %s %p\n",
+        state->ip,sym ? sym->addr : 0x0, sym ? sym->name : "unknown",
+        sym ? (state->ip - sym->addr) : 0, ((state->code & ERRC_INSTR_FETCH) ? 
             "fetching instructions from" : ((state->code & ERRC_ACC_WRITE) ? 
                 "writing to" : "reading from")), state->ctx->state.cr2);
 

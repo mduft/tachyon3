@@ -24,13 +24,14 @@ typedef enum {
  * Priority of a thread or a process.
  */
 typedef enum {
-    Kernel,
-    Highest,
-    High,
-    Normal,
-    Low,
+    Idle,
     Lowest,
-    Idle
+    Low,
+    Normal,
+    High,
+    Highest,
+    Kernel,
+    MaxPrio
 } priority_t;
 
 /**

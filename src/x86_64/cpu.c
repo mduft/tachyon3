@@ -19,16 +19,13 @@ static uint32_t _cpumaxid = 0;
 static cpu_locals_t* _cpulcl = NULL;
 static spinlock_t _cpulck;
 static bool _cpuinit = false;
-static cpu_locals_t _dummy_bsplocals = { .ifda_cnt = 1 };
+
+static thr_context_t _dummy_context;
+static cpu_locals_t _dummy_bsplocals = { .context = &_dummy_context };
 
 void cpu_init() {
     if(intr_state())
         fatal("interrupts shall not be enabled in cpu_init!\n");
-
-    /* create and set an initial dummy context, which will be 
-       released on the first context switch. */
-    x86_64_ctx_set(kheap_alloc(sizeof(thr_context_t)));
-    x86_64_ctx_get()->thread = NULL;
 
     dyngdt_init_and_lock();
 
@@ -50,7 +47,8 @@ void cpu_init() {
     _cpumaxid = max(_cpumaxid, id);
     _cpulcl = kheap_realloc(_cpulcl, sizeof(cpu_locals_t) * _cpumaxid); // TODO: naive; could be better
     memset(&_cpulcl[id], 0, sizeof(cpu_locals_t));
-    _cpulcl[id].ifda_cnt = 1; // initially start with interrupts disabled!
+
+    _cpulcl[id].context = &_dummy_context;
 
     trace("cpu %d: locals at %p\n", id, &_cpulcl[id]);
 

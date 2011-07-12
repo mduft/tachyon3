@@ -18,8 +18,6 @@
 #include "syscall.h"
 #include "systime.h"
 
-#include <x86/tsc.h>
-
 /**
  * the initial state at boot. contains various boot relevant data,
  * saved by the early entry routine
@@ -27,13 +25,13 @@
 init_state_t const boot_state;
 
 // -- TESTTEST
+#include "intr.h"
+
 void test_thr() {
     thread_t* thr = thr_current();
 
     while(true) {
-        for(int i = 0; i < 0xFFFFFF; ++i);
-
-        info("%d: hello thread %ld\n", thr->id, systime());
+        info("%d: (intr: %d) hello thread %ld\n", thr->id, intr_state(), systime());
     }
 }
 // -- TESTTEST
@@ -85,14 +83,10 @@ void boot() {
     info("kernel heap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
 
     // -- TESTTEST
-    thread_t* thr1 = thr_create(core, test_thr);
-    sched_add(thr1);
-
-    thread_t* thr2 = thr_create(core, test_thr);
-    sched_add(thr2);
-
-    thread_t* thr3 = thr_create(core, test_thr);
-    sched_add(thr3);
+    for(uint32_t i = 0; i < 4; ++i) {
+        thread_t* thr = thr_create(core, test_thr);
+        sched_add(thr);
+    }
     // -- TESTTEST
     
     // and start the scheduler.

@@ -16,6 +16,11 @@ typedef struct {
     char const* name;   /**< the name of the found symbol */
 } ksym_t;
 
+typedef struct {
+    ksym_t const* sym;
+    void* real_addr;
+} ksym_node_t;
+
 /**
  * Look up the given symbols name. This searches for the 
  * nearest upper bound symbol that is known in the sorted 
@@ -53,6 +58,13 @@ void ksym_write_trace_top(log_level_t level, list_t* trace, int16_t limit);
  * @return a list containing ksym_t*
  */
 list_t* ksym_trace();
+
+/**
+ * Destroy a previously retrieved trace.
+ *
+ * @param trace the trace, retrieved via ksym_trace()
+ */
+void ksym_delete(list_t* trace);
 
 /**
  * Helper to get the current base pointer of the calling function.
