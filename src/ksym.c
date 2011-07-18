@@ -5,7 +5,7 @@
 #include "log.h"
 #include "kheap.h"
 
-#define KSYM_TRACE_MAX_LEN  1024
+#define KSYM_TRACE_MAX_LEN  256
 
 // this is an array, but flat.
 extern ksym_t const ksym_table;

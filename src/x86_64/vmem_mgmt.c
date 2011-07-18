@@ -38,11 +38,12 @@ bool vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd,
     register size_t idx_pdpt = (virt >> 30) & 0x1FF;
     register size_t idx_pd   = (virt >> 21) & 0x1FF;
 
+    uintptr_t* pdpt = NULL;
     uintptr_t* pml4 = vmem_mgmt_map(space);
     VM_CHECK_MAPPING(pml4);
     VM_CHECK_ENTRY(pml4, idx_pml4);
 
-    uintptr_t* pdpt = vmem_mgmt_map(pml4[idx_pml4] & VM_ENTRY_FLAG_MASK);
+    pdpt = vmem_mgmt_map(pml4[idx_pml4] & VM_ENTRY_FLAG_MASK);
     VM_CHECK_MAPPING(pdpt);
     VM_CHECK_ENTRY(pdpt, idx_pdpt);
 
