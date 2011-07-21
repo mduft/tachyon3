@@ -26,6 +26,7 @@ init_state_t const boot_state;
 
 // -- TESTTEST
 #include "intr.h"
+#include "x86_64/cpu.h"
 
 void test_thr() {
     thread_t* thr = thr_current();
@@ -81,6 +82,32 @@ void boot() {
     extp_iterate(EXTP_TIMER_INIT, init_subsys);
 
     info("kernel heap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
+
+    // -- TESTTEST
+    /*
+    while(true) {
+        // interrupts should be disabled!
+        x86_64_cpu_state_t before;
+        memset(&before, 0, sizeof(before));
+        asm volatile("push $0x10; push $0x010101; pushf; push $0x18; push $0x1234; push $1; push $99; lea %0,%%rax; push %%rax; call x86_64_isr_state_save" :: "m"(before) : "rax");
+
+        uintptr_t bp = before.rbp;
+        memset(&before, 0xAB, sizeof(before));
+        before.rbp = bp;
+
+        asm volatile("call x86_64_isr_state_restore");
+
+        asm volatile("pop %%rax" ::: "rax");
+        asm volatile("pop %%rax" ::: "rax");
+        asm volatile("pop %%rax" ::: "rax");
+        asm volatile("pop %%rax" ::: "rax");
+        asm volatile("pop %%rax" ::: "rax");
+        asm volatile("pop %%rax" ::: "rax");
+        asm volatile("pop %%rax" ::: "rax");
+        asm volatile("pop %%rax" ::: "rax");
+    }
+    */
+    // -- TESTTEST
 
     // -- TESTTEST
     for(uint32_t i = 0; i < 4; ++i) {

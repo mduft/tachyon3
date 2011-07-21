@@ -94,6 +94,9 @@ _x86_64_isr\num:
     call x86_64_ctx_get     # retrieve current (new?) context.
     mov %rax, (%rsp)        # save new context ptr to stack.
 
+    mov $0x0, %rdi      # don't really enable interrupts, fake it.
+    call intr_enable    # decrement interrupt counter.
+
     call x86_64_isr_state_restore
 
     # TODO: kernel call return value?
@@ -103,8 +106,7 @@ _x86_64_isr\num:
     # pushed one, so remove any code here!
     addq $0x18, %rsp
 
-    call intr_enable
-
+    sti
     iretq
 ._x86_64_isr_end\num:
 .endm

@@ -21,8 +21,11 @@ typedef bool (*intr_handler_t)(interrupt_t* info);
 /**
  * Enable interrupts. This decrements a counter until
  * it reaches zero, and then really enables them.
+ *
+ * @param doIt  whether to really enable interrupts
+ * @return      whether interrupts ought to be enabled
  */
-void intr_enable();
+bool intr_enable(bool doIt);
 
 /**
  * Disables interrupts. This increments a counter, and
@@ -63,3 +66,4 @@ void intr_remove(uint16_t gate, intr_handler_t handler);
  * @param mode      the new gate mode to set. default is GateModeSingleHandler
  */
 void intr_set_mode(uint16_t gate, gatemode_t mode);
+

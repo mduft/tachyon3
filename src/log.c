@@ -275,6 +275,6 @@ void log_write(log_level_t lvl, char const* fmt, ...) {
     }
 
     spl_unlock(&log_lock);
-    intr_enable();
+    intr_enable(true);
 }
 

@@ -27,6 +27,8 @@ stack_allocator_t* stka_new(stack_allocator_desc_t* desc) {
     allocator->next_stk = allocator->desc.top;
     allocator->stacks = list_new();
 
+    trace("new stack allocator, starting at %p\n", allocator->desc.top);
+
     spl_init(&allocator->lock);
 
     return allocator;
@@ -102,6 +104,8 @@ stack_t* stka_alloc(stack_allocator_t* allocator) {
     // leave an additional page room for the next stack, so a stack overflow
     // does not doom another thread, but rather causes a page fault.
     allocator->next_stk = stack->guard + (STK_PAGESIZE);
+
+    trace("allocated new stack at %p (%d bytes comm, %d bytes res)\n", stack->top, stack->top - stack->mapped, stack->top - stack->guard);
 
     list_add(allocator->stacks, stack);
 

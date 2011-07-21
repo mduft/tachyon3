@@ -40,7 +40,7 @@ void sched_start() {
 
     info("waiting for scheduler to take over ...\n");
 
-    intr_enable();
+    intr_enable(true);
 
     // wait for the timer to take over. this thread is now stopped.
     asm volatile("1: hlt; jmp 1b;");

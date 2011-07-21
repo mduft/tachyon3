@@ -21,13 +21,19 @@ void intr_disable() {
     x86_64_ctx_get()->ifda_cnt++;
 }
 
-void intr_enable() {
+bool intr_enable(bool doIt) {
     register thr_context_t* ctx = x86_64_ctx_get();
 
     if(ctx->ifda_cnt > 0)
         ctx->ifda_cnt--;
 
-    if(ctx->ifda_cnt == 0)
-        asm volatile("sti");
+    if(ctx->ifda_cnt == 0) {
+        if(doIt)
+            asm volatile("sti");
+
+        return true;
+    }
+
+    return false;
 }
 

@@ -20,7 +20,7 @@ uint64_t tsc_read() {
     asm volatile("rdtsc; shl $31, %%rbx; or %%rbx, %0;"
         : "=a"(c) :: "%rbx");
 
-    intr_enable();
+    intr_enable(true);
 
     return c;
 }
@@ -31,6 +31,6 @@ void tsc_read_p(uint64_t* timer, uint32_t* cpuid) {
     asm volatile("rdtscp; shl $31, %%rbx; or %%rbx, %0;"
         : "=a"(*timer), "=c"(*cpuid));
 
-    intr_enable();
+    intr_enable(true);
 }
 

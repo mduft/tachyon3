@@ -64,7 +64,7 @@ static bool lapic_tmr_init(tmr_cb_t master) {
     _master = master;
 
     // enable interrupts for this to work, disable the again afterwards.
-    intr_enable();
+    intr_enable(true);
 
     // fastest possible rate: 0xB (1011) -> FSB tick rate. on modern
     // systems, this should allow near nanoseconds resolution.

@@ -77,7 +77,7 @@ static bool rtc_tick_handler(interrupt_t* state) {
     (void)inb(RTC_DATA);
 
     lapic_eoi();
-    intr_enable();
+    intr_enable(true);
 
     return true;
 }
