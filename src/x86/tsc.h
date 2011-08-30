@@ -20,3 +20,15 @@ uint64_t tsc_read();
  * @param [out] cpuid   the current CPUs ID.
  */
 void tsc_read_p(uint64_t* timer, uint32_t* cpuid);
+
+/**
+ * retrieves the calibrated speed that the TSC is running at
+ * (estimated)
+ */
+uint64_t tsc_hz();
+
+/**
+ * Initializes the TSC. this is called from the RTC init code,
+ * as the RTC depends on the TSC, and vice versa.
+ */
+void tsc_init();

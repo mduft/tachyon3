@@ -50,9 +50,8 @@ static uint64_t _systime = 0;
 static bool _rtc_bin;
 static bool _rtc_24;
 static uint32_t _increment;
-static uint64_t _tsc;
-static uint64_t _tsc_rate;
-static uint64_t _tsc_dur;
+static uint64_t _tsc_at_tick = 0;
+static uint64_t _tsc_hz = 0;
 
 static rtc_calibrate_cb_t _calibrate = NULL;
 
@@ -60,10 +59,7 @@ static bool rtc_tick_handler(interrupt_t* state) {
     intr_disable();
     _systime += _increment;
 
-    uint64_t _ltsc = _tsc;
-    _tsc = tsc_read();
-    _tsc_rate = (_tsc_dur + (_tsc - _ltsc)) / 2;
-    _tsc_dur = (_tsc - _ltsc);
+    _tsc_at_tick = tsc_read();
 
     if(_calibrate) {
         if(!_calibrate(_systime, _increment))
@@ -85,7 +81,7 @@ static bool rtc_tick_handler(interrupt_t* state) {
 static void rtc_init() {
     intr_add(IRQ_NUM(8), rtc_tick_handler);
 
-    rtc_set_rate(RTC_RATE_32HZ);
+    rtc_set_rate(RTC_RATE_8HZ);
 
     outb(RTC_REG_STATE_B, RTC_ADDR);
     uint8_t b = inb(RTC_DATA);
@@ -98,6 +94,9 @@ static void rtc_init() {
     info("realtime clock at %d ns per tick, bin: %d, 24h: %d\n", _increment, _rtc_bin, _rtc_24);
 
     ioapic_enable(8, lapic_cpuid());
+
+    tsc_init();
+    _tsc_hz = tsc_hz();
 }
 
 static systime_desc_t const* rtc_ext() {
@@ -113,16 +112,16 @@ static systime_desc_t const* rtc_ext() {
 INSTALL_EXTENSION(EXTP_SYSTIME, rtc_ext, "realtime clock");
 
 uint64_t rtc_systime() {
-    uint64_t current = tsc_read();
-    uint64_t _nsoff = (_tsc_rate / _increment) * (current - _tsc);
+    register uint64_t current = tsc_read();
+    register uint64_t tsc_ns = 0;
 
-    trace("nsoff: %lu, rate: %lu, (%lu ticks p/us, %lu ticks)\n", _nsoff, _tsc_rate, (_tsc_rate / _increment), (current - _tsc));
+    register int64_t tsc_diff = current - _tsc_at_tick;
 
-    if(_nsoff > _increment) {
-        _nsoff = _increment;
+    if(_tsc_hz && tsc_diff > 0) {
+        tsc_ns = (tsc_diff * 1000000000) / _tsc_hz;
     }
 
-    return _systime + _nsoff;
+    return _systime + tsc_ns;
 }
 
 uint8_t rtc_set_rate(uint8_t rate) {
