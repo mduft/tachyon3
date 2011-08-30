@@ -6,27 +6,36 @@
 #include <log.h>
 #include <io.h>
 
-INSTALL_EXTENSION(EXTP_EARLY_KINIT, serial_init, "serial-log")
-
-#define PORT_COM1   0x3F8
-
-void serial_init() {
-    outb(0x00, PORT_COM1 + 1);   // Disable all interrupts
-    outb(0x80, PORT_COM1 + 3);   // Enable DLAB (set baud rate divisor)
-    outb(0x03, PORT_COM1 + 0);   // Set divisor to 3 (lo byte) 38400 baud
-    outb(0x00, PORT_COM1 + 1);   //                  (hi byte)
-    outb(0x03, PORT_COM1 + 3);   // 8 bits, no parity, one stop bit
-    outb(0xC7, PORT_COM1 + 2);   // Enable FIFO, clear them, with 14-byte threshold
-    outb(0x0B, PORT_COM1 + 4);   // IRQs enabled, RTS/DSR set
-
-    log_add_writer(serial_write, "serial-log");
-    log_set_level("serial-log", Trace);
+void init_port(uint16_t port) {
+    outb(0x00, port + 1);   // Disable all interrupts
+    outb(0x80, port + 3);   // Enable DLAB (set baud rate divisor)
+    outb(0x03, port + 0);   // Set divisor to 3 (lo byte) 38400 baud
+    outb(0x00, port + 1);   //                  (hi byte)
+    outb(0x03, port + 3);   // 8 bits, no parity, one stop bit
+    outb(0xC7, port + 2);   // Enable FIFO, clear them, with 14-byte threshold
+    outb(0x0B, port + 4);   // IRQs enabled, RTS/DSR set
 }
 
-void serial_write(char const* str) {
+void serial_write(void* buf, size_t len, uint16_t port) {
+    for(size_t bytes = 0; bytes < len; ++bytes) {
+        while ((inb(port + 5) & 0x20) == 0);
+        outb(((char*)buf)[bytes], port);
+    }
+}
+
+static void serial_log_com1(char const* str) {
     while(str && *str) {
         while ((inb(PORT_COM1 + 5) & 0x20) == 0);
         outb(*str++, PORT_COM1);
     }
 }
+
+static void serial_log_init() {
+    init_port(PORT_COM1);
+
+    log_add_writer(serial_log_com1, "serial-log");
+    log_set_level("serial-log", Trace);
+}
+
+INSTALL_EXTENSION(EXTP_EARLY_KINIT, serial_log_init, "serial-log")
 

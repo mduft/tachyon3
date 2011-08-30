@@ -32,7 +32,7 @@ void test_thr() {
     thread_t* thr = thr_current();
 
     while(true) {
-        info("%d: (intr: %d) hello thread %ld\n", thr->id, intr_state(), systime());
+        info("%d: hello thread %ld\n", thr->id, systime());
     }
 }
 // -- TESTTEST
@@ -110,7 +110,7 @@ void boot() {
     // -- TESTTEST
 
     // -- TESTTEST
-    for(uint32_t i = 0; i < 4; ++i) {
+    for(uint32_t i = 0; i < 128; ++i) {
         thread_t* thr = thr_create(core, test_thr);
         sched_add(thr);
     }

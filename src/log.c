@@ -261,11 +261,12 @@ void log_write(log_level_t lvl, char const* fmt, ...) {
     char buf[MAX_LOG_WRITE_BUFFER];
     va_list lst;
 
+    intr_disable();
+
     va_start(lst, fmt);
     log_format_message(buf, sizeof(buf), fmt, lst);
     va_end(lst);
 
-    intr_disable();
     spl_lock(&log_lock);
 
     for(register size_t idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
