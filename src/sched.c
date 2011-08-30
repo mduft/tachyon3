@@ -17,11 +17,6 @@
 static list_t* _sched_queues[MaxPrio];
 static spinlock_t _sched_lock;
 
-static void sched_init_ext(char const* tag, extp_func_t cb, char const* descr) {
-    info("initializing scheduler dependant: %s\n", descr);
-    cb();
-}
-
 void sched_init() {
     if(intr_state())
         fatal("interrupts may not be enabled in sched_init()\n");
@@ -29,9 +24,6 @@ void sched_init() {
     spl_init(&_sched_lock);
 
     memset(_sched_queues, 0, sizeof(_sched_queues));
-
-    // now initialize all things that depend on the scheduler being present
-    extp_iterate(EXTP_SCHEDINIT, sched_init_ext);
 }
 
 void sched_start() {

@@ -107,11 +107,6 @@ void pmem_init() {
         error("failed to protect physical lower and kernel memory\n");
     }
 
-
-    /* initialize virtual memory. this releases the identity
-     * mapping for the physical kernel load address */
-    vmem_init();
-
     /* here we are sufficiently initialized, so virtual memory
      * can allocate physical memory for the initial mappings,
      * required to get the kernel heap working. this in turn

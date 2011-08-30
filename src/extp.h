@@ -12,9 +12,6 @@
  */
 
 #define EXTP_PMEM_REGION    "pmem.region"
-#define EXTP_VMEM_INIT      "vmem.init"
-#define EXTP_SCHEDINIT      "sched.init"
-#define EXTP_TIMESOURCE     "time.source"
 #define EXTP_TIMERGEN       "timer.gen"
 #define EXTP_SYSTIME        "sys.time"
 

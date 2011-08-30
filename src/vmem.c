@@ -48,15 +48,6 @@ static inline phys_addr_t vmem_find_unmap(spc_t spc, void* virt, bool unmap) {
     return result;
 }
 
-static void vmem_extp_init(char const* tag, extp_func_t func, char const* desc) {
-    if(func) func();
-}
-
-void vmem_init() {
-    /* call virtual memory init dependant initializers. */
-    extp_iterate(EXTP_VMEM_INIT, vmem_extp_init);
-}
-
 bool vmem_map(spc_t spc, phys_addr_t phys, void* virt, uint32_t flags) {
     size_t ipd, ipt;
     uintptr_t* pd;

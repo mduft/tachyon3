@@ -6,7 +6,7 @@
 #include <log.h>
 #include <io.h>
 
-void init_port(uint16_t port) {
+void serial_port_init(uint16_t port) {
     outb(0x00, port + 1);   // Disable all interrupts
     outb(0x80, port + 3);   // Enable DLAB (set baud rate divisor)
     outb(0x03, port + 0);   // Set divisor to 3 (lo byte) 38400 baud
@@ -31,7 +31,7 @@ static void serial_log_com1(char const* str) {
 }
 
 void serial_log_init() {
-    init_port(PORT_COM1);
+    serial_port_init(PORT_COM1);
 
     log_add_writer(serial_log_com1, "serial-log");
     log_set_level("serial-log", Trace);

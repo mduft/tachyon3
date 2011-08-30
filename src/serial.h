@@ -20,7 +20,7 @@ void serial_log_init();
  *
  * @param port  the port to initialize
  */
-void init_port(uint16_t port);
+void serial_port_init(uint16_t port);
 
 /**
  * Explicit serial port writing for debugging purposes.

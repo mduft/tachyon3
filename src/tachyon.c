@@ -55,6 +55,7 @@ void boot() {
     /* initialize the serial log early on boot, so we have debug output from
      * nearly the start on */
     serial_log_init();
+    serial_port_init(PORT_COM2);
 
     /* initialize generic pagefault handler */
     pgflt_init();

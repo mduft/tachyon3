@@ -5,7 +5,8 @@
 #include "thread.h"
 
 thr_context_t* thr_ctx_get() {
-    return cpu_locals(cpu_current_id())->context;
+    uint32_t id = cpu_current_id();
+    return cpu_locals(id)->context;
 }
 
 void thr_ctx_set(thr_context_t* ctx) {
