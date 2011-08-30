@@ -3,12 +3,12 @@
 
 #include "thread.h"
 #include "cpu.h"
+#include "gdt.h"
+#include "reg.h"
 #include <process.h>
 #include <kheap.h>
 #include <spl.h>
 #include <mem.h>
-#include <x86/gdt.h>
-#include <x86/reg.h>
 #include <sched.h>
 #include <syscall.h>
 #include <ksym.h>

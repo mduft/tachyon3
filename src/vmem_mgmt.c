@@ -7,7 +7,7 @@
 #include "log.h"
 #include "mem.h"
 
-#include <x86/paging.h>
+#include <x86_64/paging.h>
 
 /** 
  * length of fixed mapspace for paging structures.

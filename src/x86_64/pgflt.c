@@ -7,7 +7,7 @@
 #include <stka.h>
 #include <ksym.h>
 
-#include <x86/idt.h>
+#include "idt.h"
 
 #define ERRC_TRANS_AVAILABLE        0x01
 #define ERRC_ACC_WRITE              0x02

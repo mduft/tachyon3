@@ -2,7 +2,7 @@
 # This file is part of the 'tachyon' operating system.
 
 #include <x86_64/defs.h>
-#include <x86/asm.h>
+#include <x86_64/asm.h>
 
 .global x86_64_isr_state_save
 .global x86_64_isr_state_restore

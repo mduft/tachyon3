@@ -12,8 +12,8 @@
 #include <log.h>
 #include <string.h>
 
-#include <x86/gdt.h>
-#include <x86/lapic.h>
+#include "gdt.h"
+#include "lapic.h"
 
 static uint32_t _cpumaxid = 0;
 static cpu_locals_t* _cpulcl = NULL;

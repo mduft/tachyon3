@@ -10,8 +10,8 @@
 #include <spc.h>
 #include <log.h>
 
-#include <x86/gdt.h>
-#include <x86/paging.h>
+#include "gdt.h"
+#include "paging.h"
 
 static stack_allocator_t* kstack_allocator = NULL;
 

@@ -1,8 +1,8 @@
 /* Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
  * This file is part of the 'tachyon' operating system. */
 
-#include <x86/tsc.h>
-#include <x86/rtc.h>
+#include "tsc.h"
+#include "rtc.h"
 
 #include <extp.h>
 #include <log.h>

@@ -11,8 +11,7 @@
 #include "spl.h"
 #include "heap.h"
 
-// TODO: hack: swap platform specific intialization of process to correct location.
-#include <x86/paging.h>
+#include <x86_64/paging.h>
 
 /**
  * The kernel process.

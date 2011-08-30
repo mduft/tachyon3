@@ -2,8 +2,8 @@
 # This file is part of the 'tachyon' operating system.
 
 #include <x86_64/defs.h>
-#include <x86/asm.h>
-#include <x86/paging.h>
+#include <x86_64/asm.h>
+#include <x86_64/paging.h>
 
 SECTION_BOOT_DATA
 

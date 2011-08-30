@@ -8,7 +8,7 @@
 #include "extp.h"
 #include "log.h"
 #include "mem.h"
-#include "x86/paging.h"
+#include <x86_64/paging.h>
 
 #include <contrib/rme2/rme.h>
 

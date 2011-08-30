@@ -7,7 +7,7 @@
 #include <pmem.h>
 #include <mem.h>
 
-#include <x86/paging.h>
+#include "paging.h"
 
 /* defined in paging.S */
 extern phys_addr_t x86_64_pg_tmap;

@@ -6,7 +6,7 @@
 
 #include <spc.h>
 #include <log.h>
-#include <x86/paging.h>
+#include "paging.h"
 
 heap_t kheap;
 

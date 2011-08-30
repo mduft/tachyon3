@@ -3,7 +3,7 @@
 
 #include <tachyon.h>
 
-#include <x86/reg.h>
+#include "reg.h"
 #include "cpu.h"
 #include "thread.h"
 #include <log.h>

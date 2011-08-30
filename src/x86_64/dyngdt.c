@@ -11,8 +11,8 @@
 #include <extp.h>
 #include <spl.h>
 
-#include <x86/gdt.h>
-#include <x86/paging.h>
+#include "gdt.h"
+#include "paging.h"
 
 spinlock_t global_gdt_init_lock;
 
