@@ -1,7 +1,7 @@
 # Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
 # This file is part of the 'tachyon' operating system.
 
-#include <x86_64/defs.h>
+#include <defs.h>
 
 .global ksym_get_bp
 

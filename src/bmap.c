@@ -74,8 +74,10 @@ void bmap_set(bitmap_t* bmap, size_t bit, uint8_t value) {
 
     if(value) {
         bmap->storage[idx] |= (1 << off);
+        bmap->set_cnt++;
     } else {
         bmap->storage[idx] &= ~(1 << off);
+        bmap->set_cnt--;
     }
 }
 
@@ -84,6 +86,7 @@ void bmap_clear(bitmap_t* bmap, uint8_t value) {
         return;
 
     bmap_fill(bmap, value, 0, bmap->bits - 1);
+    bmap->set_cnt = 0;
 }
 
 bool bmap_fill(bitmap_t* bmap, uint8_t value, size_t start, size_t end) {
@@ -176,3 +179,4 @@ uint8_t bmap_search(bitmap_t* bmap, size_t* index, uint8_t value, size_t cnt, si
 size_t bmap_fdeg(bitmap_t* bmap) {
     return ((bmap->set_cnt * 100) / bmap->bits);
 }
+

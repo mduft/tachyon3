@@ -47,6 +47,11 @@ typedef struct {
 } PACKED selector_ext_t;
 
 /**
+ * Initializes the lock for the dynamic gdt
+ */
+void dyngdt_init_spinlock();
+
+/**
  * Creates a new dyanmic GDT for the current cpu.
  *
  * @attention calling this function globally locks the dynamic gdt lock.

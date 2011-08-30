@@ -22,7 +22,7 @@ static void sched_init_ext(char const* tag, extp_func_t cb, char const* descr) {
     cb();
 }
 
-static void sched_init() {
+void sched_init() {
     if(intr_state())
         fatal("interrupts may not be enabled in sched_init()\n");
 
@@ -45,8 +45,6 @@ void sched_start() {
     // wait for the timer to take over. this thread is now stopped.
     asm volatile("1: hlt; jmp 1b;");
 }
-
-INSTALL_EXTENSION(EXTP_PLATFORM_INIT, sched_init, "simple scheduler");
 
 static void sched_add_unlocked(thread_t* thread) {
     if(!_sched_queues[thread->priority])

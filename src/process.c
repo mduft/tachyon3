@@ -11,7 +11,7 @@
 #include "spl.h"
 #include "heap.h"
 
-#include <x86_64/paging.h>
+#include <paging.h>
 
 /**
  * The kernel process.

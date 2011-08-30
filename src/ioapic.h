@@ -31,6 +31,11 @@
 #define IOAPIC_DM_ExtINT        (7 << 8)
 
 /**
+ * Initializes the I/O APIC(s)
+ */
+void ioapic_init();
+
+/**
  * Enables delivery of a specific interrupt to the given cpu.
  *
  * @param irq   the irq number to set.

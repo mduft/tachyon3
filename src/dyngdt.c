@@ -16,11 +16,9 @@
 
 spinlock_t global_gdt_init_lock;
 
-static void dyngdt_init_spinlock() {
+void dyngdt_init_spinlock() {
     spl_init(&global_gdt_init_lock);
 }
-
-INSTALL_EXTENSION(EXTP_EARLY_KINIT, dyngdt_init_spinlock, "gdt lock");
 
 void dyngdt_init_and_lock() {
     spl_lock(&global_gdt_init_lock);

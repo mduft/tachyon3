@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tachyon.h"
+#include "thread.h"
 
 #define IRQ_BASE    0x20
 #define IRQ_NUM(x)  (IRQ_BASE + x)
@@ -14,7 +15,19 @@ typedef enum {
     GateModeNotifyAll       = 0x4
 } gatemode_t;
 
-typedef struct _tag_interrupt_t interrupt_t;
+typedef struct {
+    thr_context_t* ctx; /**< interrupted threads thread context */
+
+    uintptr_t   num;    /**< the interrupt number */
+    uintptr_t   code;   /**< the error code, or zero if none */
+    uintptr_t   ip;     /**< the interrupted location */
+    uintptr_t   cs;     /**< the code segment of the interrupted location. */
+    uintptr_t   flags;  /**< the eflags/rflags of the interrupted thread. */
+
+    uintptr_t   sp;     /**< the original stack pointer */
+    uintptr_t   ss;     /**< the original stack segment */
+} interrupt_t;
+
 
 typedef bool (*intr_handler_t)(interrupt_t* info);
 

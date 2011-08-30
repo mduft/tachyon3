@@ -13,6 +13,11 @@ typedef enum {
 } syscall_t;
 
 /**
+ * Initializes the system call handlers (interrupt, sysenter, ...)
+ */
+void sysc_init();
+
+/**
  * Returns whether a syscall is currently active.
  *
  * @return true if a syscall is running, false otherwise.

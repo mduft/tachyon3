@@ -4,11 +4,11 @@
 #include "cpu.h"
 #include "thread.h"
 
-thr_context_t* x86_64_ctx_get() {
+thr_context_t* thr_ctx_get() {
     return cpu_locals(cpu_current_id())->context;
 }
 
-void x86_64_ctx_set(thr_context_t* ctx) {
+void thr_ctx_set(thr_context_t* ctx) {
     cpu_locals(cpu_current_id())->context = ctx;
 }
 

@@ -11,6 +11,11 @@
 #define PORT_COM4   0x2E8
 
 /**
+ * initializes the serial port logging on COM1 
+ */
+void serial_log_init();
+
+/**
  * Initializes a specific serial port. use the PORT_COM* constants!
  *
  * @param port  the port to initialize

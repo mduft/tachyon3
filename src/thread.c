@@ -67,8 +67,8 @@ thread_t* thr_delete(thread_t* thr) {
 }
 
 thread_t* thr_switch(thread_t* target) {
-    thr_context_t* old = x86_64_ctx_get();
-    x86_64_ctx_set(target->context);
+    thr_context_t* old = thr_ctx_get();
+    thr_ctx_set(target->context);
 
     if(old->thread == NULL) {
         // this is a dummy context, as the cpu context may never
@@ -84,7 +84,7 @@ thread_t* thr_switch(thread_t* target) {
 }
 
 thread_t* thr_current() {
-    thr_context_t* ctx = x86_64_ctx_get();
+    thr_context_t* ctx = thr_ctx_get();
 
     return ctx->thread;
 }

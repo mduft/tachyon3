@@ -6,7 +6,7 @@ OUTPUT_ARCH(i386:x86-64)
 
 ENTRY(bootstrap_x86_64)
 
-#include <x86_64/defs.h>
+#include <defs.h>
 
 CORE_LMA_START = CORE_LMA_X86_64;
 CORE_VMA_OFF   = CORE_VMA_X86_64;

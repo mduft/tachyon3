@@ -5,6 +5,7 @@
 
 #include "tachyon.h"
 #include "stka.h"
+#include "cpu.h"
 
 /**
  * Describes the different states a thread can be in.
@@ -40,24 +41,33 @@ typedef enum {
  */
 struct _tag_process_t;
 
+/** Defined below, forward for context */
+struct _tag_thread_t;
+
 /**
  * Describes a threads cpu context. Forward declared as the
  * actual structure is platform dependant.
  */
-struct _tag_thr_context_t;
+typedef struct _tag_thr_context_t {
+    cpu_state_t state;
 
+    uint8_t ifda_cnt;
+
+    spinlock_t lock;
+    struct _tag_thread_t* thread;
+} thr_context_t;
 
 /**
  * Describes a thread and its state (both CPU and thread state)
  */
-typedef struct {
+typedef struct _tag_thread_t {
     tid_t id;                           /**< the threads id within it's process */
     thread_state_t state;               /**< the threads execution state */
     priority_t priority;                /**< the threads priority, inherited from 
                                          *   the parent process, may be overridden. */
     stack_t* stack;                     /**< the threads stack */
     struct _tag_process_t* parent;      /**< the threads parent process */
-    struct _tag_thr_context_t* context; /**< the threads associated cpu context */
+    thr_context_t* context;             /**< the threads associated cpu context */
     uint8_t syscall;                    /**< indicates whether the thread is in a syscall */
     uint64_t preempt_at;                /**< absolute point in system time to interrupt thread at latest */
 } thread_t;
@@ -116,3 +126,15 @@ void thr_abort(thread_t* thread);
  * @param entry     the threads entry point.
  */
 void thr_trampoline(thread_t* thread, thread_start_t entry);
+
+/**
+ * Returns the threads current context.
+ * @attention implemented in context.S
+ */
+extern thr_context_t* thr_ctx_get();
+
+/**
+ * Sets the current context for this cpu.
+ * @attention implemented in context.S
+ */
+extern void thr_ctx_set(thr_context_t* ctx);

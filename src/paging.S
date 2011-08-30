@@ -1,9 +1,9 @@
 # Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
 # This file is part of the 'tachyon' operating system.
 
-#include <x86_64/defs.h>
-#include <x86_64/asm.h>
-#include <x86_64/paging.h>
+#include <defs.h>
+#include <asm.h>
+#include <paging.h>
 
 SECTION_BOOT_DATA
 

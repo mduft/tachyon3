@@ -23,6 +23,12 @@ typedef struct {
 typedef tmr_gen_t* (*tmr_extp_t)();
 
 /**
+ * Initializes the timer subsystem by dynamically determining available
+ * timer devices.
+ */
+void tmr_init();
+
+/**
  * Schedule a timer callback to be called once or periodically.
  *
  * @param callback  the function which will be called when the timeout expires.

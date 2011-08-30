@@ -8,7 +8,7 @@
 #include "mem.h"
 #include "log.h"
 
-#include <x86_64/paging.h>
+#include "paging.h"
 
 #define HEAP_PRESENT   0x1 /**< whether a block is allocated or free */
 #define HEAP_FOOTER    0x2 /**< whether the current location is a header or footer */

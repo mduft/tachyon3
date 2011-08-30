@@ -9,6 +9,11 @@
 #define SCHED_TIMESLICE_US (1*1000*1000)
 
 /**
+ * Does some basic initialization for the scheduler.
+ */
+void sched_init();
+
+/**
  * Does the real scheduling work. For all registered threads,
  * find one that is runnable, and make it current.
  *

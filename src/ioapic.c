@@ -28,7 +28,7 @@ static uint32_t ioapic_read(ioapic_t* ioapic, uint32_t reg) {
     return ioapic->iowin;
 }
 
-static void ioapic_init() {
+void ioapic_init() {
     // TODO: multiple ioapics, etc.
     if(!pmem_reserve(IOAPIC_BASE, IOAPIC_VSZ))
         fatal("failed to reserve physical I/O APIC memory!\n");
@@ -53,8 +53,6 @@ static void ioapic_init() {
     info("i/o apic %d version: 0x%x, max irq redirections: %d\n",
         IOAPIC_ID(idreg), IOAPIC_VER(vreg), IOAPIC_MAX_REDIR(vreg));
 }
-
-INSTALL_EXTENSION(EXTP_PLATFORM_INIT, ioapic_init, "i/o apic");
 
 void ioapic_enable(uint8_t num, uint32_t cpuid) {
     info("enable irq %d (int %d) on cpu %d\n", num, IRQ_NUM(num), cpuid);

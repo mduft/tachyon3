@@ -1,9 +1,11 @@
 /* Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
  * This file is part of the 'tachyon' operating system. */
 
-#include "spl.h"
+#pragma once
 
-void spl_init(spinlock_t* lock) {
-    lock->locked = 0;
-}
+#include "tachyon.h"
 
+/**
+ * Initializes the idle thread
+ */
+void idle_init();

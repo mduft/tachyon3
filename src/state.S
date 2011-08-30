@@ -1,8 +1,8 @@
 # Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
 # This file is part of the 'tachyon' operating system.
 
-#include <x86_64/defs.h>
-#include <x86_64/asm.h>
+#include <defs.h>
+#include <asm.h>
 
 .global x86_64_isr_state_save
 .global x86_64_isr_state_restore

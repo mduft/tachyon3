@@ -1,25 +1,33 @@
 # Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
 # This file is part of the 'tachyon' operating system.
 
-#include <x86_64/defs.h>
+#include <defs.h>
 
+.global spl_init
 .global spl_lock
 .global spl_try_lock
 .global spl_unlock
 .global spl_locked
 .global spl_mine
 
+.type spl_init, @function
 .type spl_lock, @function
 .type spl_try_lock, @function
 .type spl_unlock, @function
 .type spl_locked, @function
 .type spl_mine, @function
 
+.size spl_init, .spl_init_end - spl_init
 .size spl_lock, .spl_lock_end - spl_lock
 .size spl_try_lock, .spl_try_lock_end - spl_try_lock
 .size spl_unlock, .spl_unlock_end - spl_unlock
 .size spl_locked, .spl_locked_end - spl_locked
 .size spl_mine, .spl_mine - spl_mine
+
+spl_init:
+    movq $0x0, (%rdi)
+    ret
+.spl_init_end:
 
 spl_lock:
     push %rbx

@@ -1,10 +1,10 @@
 # Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
 # This file is part of the 'tachyon' operating system.
 
-#include <x86_64/defs.h>
-#include <x86_64/asm.h>
-#include <x86_64/reg.h>
-#include <x86_64/msr.h>
+#include <defs.h>
+#include <asm.h>
+#include <reg.h>
+#include <msr.h>
 
 .global bootstrap_x86_64
 .global bootstrap_x86_64_x64

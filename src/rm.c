@@ -8,11 +8,9 @@
 #include "extp.h"
 #include "log.h"
 #include "mem.h"
-#include <x86_64/paging.h>
+#include <paging.h>
 
 #include <contrib/rme2/rme.h>
-
-INSTALL_EXTENSION(EXTP_PLATFORM_INIT, rm_init, "real mode emulator");
 
 /** convert rme state to our state */
 #define RME2OURS(rme, ours) \

@@ -24,14 +24,12 @@ static bool sysc_handler(interrupt_t* state) {
     return true;
 }
 
-static void sysc_init() {
+void sysc_init() {
     intr_add(SYSC_INTERRUPT, sysc_handler);
 }
 
-INSTALL_EXTENSION(EXTP_PLATFORM_INIT, sysc_init, "system call handler");
-
 bool sysc_active() {
-    thread_t* thr = x86_64_ctx_get()->thread;
+    thread_t* thr = thr_ctx_get()->thread;
 
     if(!thr)
         fatal("no thread associated with execution context!\n");

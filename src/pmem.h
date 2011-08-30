@@ -5,6 +5,11 @@
 
 #include "tachyon.h"
 
+typedef struct {
+    size_t alloc_pages;
+    size_t free_pages;
+} pmem_info_t;
+
 /**
  * Initializes the memory management. Since the three
  * memory management units in the kernel (pmem, vmem
@@ -73,3 +78,10 @@ bool pmem_reserve(phys_addr_t addr, size_t length);
  * @param length    the length of the block.
  */
 void pmem_free(phys_addr_t addr, size_t length);
+
+/**
+ * Gather information about physical memory usage
+ *
+ * @return  a filled pmem_info_t structure.
+ */
+pmem_info_t pmem_info();

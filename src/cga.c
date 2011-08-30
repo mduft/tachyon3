@@ -10,8 +10,6 @@
 #include <io.h>
 #include "paging.h"
 
-INSTALL_EXTENSION(EXTP_VMEM_INIT, cga_init, "screen")
-
 static uint16_t __cga_x = 0;
 static uint16_t __cga_y = 0;
 static uint16_t __cga_attr = 0x0700;

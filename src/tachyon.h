@@ -3,15 +3,8 @@
 
 #pragma once
 
-#ifdef __X86__
-# include "x86/types.h"
-# include "x86/defs.h"
-#elif defined(__X86_64__)
-# include "x86_64/types.h"
-# include "x86_64/defs.h"
-#else
-# error "unknown architecture!"
-#endif
+#include "types.h"
+#include "defs.h"
 
 #define NULL    (void*)0
 #define true    1

@@ -7,7 +7,7 @@
 #include "spc.h"
 #include "log.h"
 
-#include <x86_64/paging.h>
+#include <paging.h>
 
 #define MAX_MBOOT_MEM_REGIONS   16
 #define MBOOT_MAGIC             0x2BADB002

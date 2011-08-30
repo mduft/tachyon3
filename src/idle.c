@@ -15,19 +15,18 @@ static void idle_thread() {
         info("idling ...\n");
 
         // endless... :)
+        // TODO: better short delay?
         for(int i = 0; i < IDLE_LOOPCNT; ++i) ;
         sched_yield();
 
     }
 }
 
-static void idle_init() {
+void idle_init() {
     thread_t* idle_thr = thr_create(core, idle_thread);
 
     idle_thr->priority = Idle;
 
     sched_add(idle_thr);
 }
-
-INSTALL_EXTENSION(EXTP_SCHEDINIT, idle_init, "idle thread");
 

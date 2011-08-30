@@ -8,6 +8,8 @@
 #include <ksym.h>
 
 #include "idt.h"
+#include "thread.h"
+#include "process.h"
 
 #define ERRC_TRANS_AVAILABLE        0x01
 #define ERRC_ACC_WRITE              0x02
@@ -15,12 +17,9 @@
 #define ERRC_TRANS_RESVD_BIT        0x08
 #define ERRC_INSTR_FETCH            0x10
 
-static void pgflt_install();
 bool pgflt_handler(interrupt_t* state);
 
-INSTALL_EXTENSION(EXTP_PLATFORM_INIT, pgflt_install, "page fault handler");
-
-static void pgflt_install() {
+void pgflt_init() {
     intr_add(EX_PAGE_FAULT, pgflt_handler);
 }
 

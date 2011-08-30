@@ -7,7 +7,7 @@
 #include "spc.h"
 #include "extp.h"
 
-#include <x86_64/paging.h>
+#include <paging.h>
 
 #define VM_RES_UNMAP(x, i) \
         result = x[i] & VM_ENTRY_FLAG_MASK;  \

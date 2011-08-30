@@ -4,7 +4,6 @@
 #pragma once
 
 #include <spl.h>
-#include <thread.h>
 
 /**
  * Describes the current state of the cpu associated with a thread's context
@@ -39,7 +38,7 @@ typedef struct {
     uintptr_t cr3;
     uintptr_t cr4;
     uintptr_t cr8;
-} x86_64_cpu_state_t;
+} cpu_state_t;
 
 struct _tag_thr_context_t;
 
@@ -134,6 +133,11 @@ typedef struct {
     uint32_t cx;
     uint32_t dx;
 } PACKED cpuid_leaf_t;
+
+/**
+ * Initializes the BSP cpu and prepares for init of APs
+ */
+void cpu_bsp_init();
 
 /**
  * Queries the cpus features

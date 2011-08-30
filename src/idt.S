@@ -1,9 +1,9 @@
 # Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
 # This file is part of the 'tachyon' operating system.
 
-#include <x86_64/defs.h>
-#include <x86_64/asm.h>
-#include <x86_64/idt.h>
+#include <defs.h>
+#include <asm.h>
+#include <idt.h>
 
 SECTION_BOOT_DATA
 
@@ -70,7 +70,7 @@ _x86_64_isr\num:
     pop %rdi
     .else
     push %rax            # save the current RAX
-    call x86_64_ctx_get  # retrieve the current context.
+    call thr_ctx_get     # retrieve the current context.
     mov %rax, 0x08(%rsp) # save the pointer to the reserved stack space.
     pop %rax             # restore the original RAX
 
@@ -91,7 +91,7 @@ _x86_64_isr\num:
     pop %rax             # remove magic frame
     pop %rax             # remove dummy return address.
 
-    call x86_64_ctx_get     # retrieve current (new?) context.
+    call thr_ctx_get     # retrieve current (new?) context.
     mov %rax, (%rsp)        # save new context ptr to stack.
 
     mov $0x0, %rdi      # don't really enable interrupts, fake it.

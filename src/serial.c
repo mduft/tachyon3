@@ -30,12 +30,10 @@ static void serial_log_com1(char const* str) {
     }
 }
 
-static void serial_log_init() {
+void serial_log_init() {
     init_port(PORT_COM1);
 
     log_add_writer(serial_log_com1, "serial-log");
     log_set_level("serial-log", Trace);
 }
-
-INSTALL_EXTENSION(EXTP_EARLY_KINIT, serial_log_init, "serial-log")
 

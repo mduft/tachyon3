@@ -33,20 +33,6 @@ typedef struct {
 static log_destination_t destinations[MAX_LOG_DESTINATIONS];
 
 /**
- * This is a callback for the extp_iterate() function, which is used
- * to iterate all log writer extensions. So this is called once for
- * each log writer extension available.
- *
- * @param tag       must be EXPT_LOG_WRITER in this case.
- * @param writer    the extension callback, must be of actual type log_writer_t.
- * @param descr     the extension description, used as name for the writer.
- */
-static void log_extp_add_writer(char const* tag, extp_func_t writer, char const* descr) {
-    if(!log_add_writer((log_writer_t)writer, descr))
-        warn("maximum writer count exceeded, cannot add %p\n", writer);
-}
-
-/**
  * This function is used to format an unsigned number with the
  * specified base into a string buffer.
  *
@@ -232,7 +218,6 @@ static spinlock_t log_lock;
 
 void log_init() {
     spl_init(&log_lock);
-    extp_iterate(EXTP_LOG_WRITER, log_extp_add_writer);
 }
 
 bool log_add_writer(log_writer_t writer, char const* descr) {

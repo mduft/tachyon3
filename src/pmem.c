@@ -319,3 +319,16 @@ void pmem_free(phys_addr_t addr, size_t length) {
     warn("cannot find physical region to free %p\n", addr);
 }
 
+pmem_info_t pmem_info() {
+    pmem_region_t* reg = pmem_region_head;
+    pmem_info_t info = { 0, 0 };
+
+    while(reg) {
+        info.alloc_pages += reg->bmap->set_cnt;
+        info.free_pages += reg->bmap->bits - reg->bmap->set_cnt;
+
+        reg = reg->next;
+    }
+
+    return info;
+}

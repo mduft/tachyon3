@@ -42,7 +42,7 @@ static void tmr_init_handler(char const* tag, extp_func_t cb, char const* descr)
         _generator = p;
     }
 
-static void tmr_init() {
+void tmr_init() {
     // find all timesource extensions, and choose one of them!
     // maybe make this configurable somehow? kernel command line?
     // config file?
@@ -53,8 +53,6 @@ static void tmr_init() {
 
     _timers = list_new();
 }
-
-INSTALL_EXTENSION(EXTP_TIMER_INIT, tmr_init, "timer generator");
 
 static void tmr_resched_sorted(tmr_t* tmr) {
     list_node_t* preceeding = list_begin(_timers);

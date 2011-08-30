@@ -96,8 +96,6 @@ void cpu_bsp_init() {
     _cpuinit = true;
 }
 
-INSTALL_EXTENSION(EXTP_CPUINIT, cpu_bsp_init, "cpu state");
-
 cpuid_leaf_t cpuid(uint32_t leaf) {
     cpuid_leaf_t res;
 

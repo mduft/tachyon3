@@ -17,6 +17,14 @@
 #include "sched.h"
 #include "syscall.h"
 #include "systime.h"
+#include "serial.h"
+#include "dyngdt.h"
+#include "cga.h"
+#include "cpu.h"
+#include "pgflt.h"
+#include "ioapic.h"
+#include "tmr.h"
+#include "idle.h"
 
 /**
  * the initial state at boot. contains various boot relevant data,
@@ -25,9 +33,6 @@
 init_state_t const boot_state;
 
 // -- TESTTEST
-#include "intr.h"
-#include "x86_64/cpu.h"
-
 void test_thr() {
     thread_t* thr = thr_current();
 
@@ -43,17 +48,30 @@ void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
 }
 
 void boot() {
+    /* basic logging system initialization, there are no writers initialized
+     * however (serial and cga will follow a little later). */
     log_init();
 
-    /* initialize early kernel extensions (before memory is initialized!) */
-    extp_iterate(EXTP_EARLY_KINIT, init_subsys);
+    /* initialize the serial log early on boot, so we have debug output from
+     * nearly the start on */
+    serial_log_init();
+
+    /* initialize generic pagefault handler */
+    pgflt_init();
+
+    /* initialize dynamic GDT lock */
+    dyngdt_init_spinlock();
+
+    /* initialize the physical memory */
+    pmem_init();
+
+    /* initialize logging on the screen */
+    cga_init();
 
     info("tachyon 3.0 built " __TIMESTAMP__ "\n");
 
-    pmem_init();
-
     /* initialize the BSP. this creates the initial cpu context and state */
-    extp_iterate(EXTP_CPUINIT, init_subsys);
+    cpu_bsp_init();
 
     /* initialize the core process with the current address
      * space, and other relevant data. */
@@ -63,15 +81,17 @@ void boot() {
     if(!core)
         fatal("failed to create core process\n");
 
-    /* initial thread. it is marked as exited, as this should
+    /* initial thread. it is marked as exited (below), as this should
      * never return here. */
     thread_t* init = thr_create(core, NULL);
     init->state = Runnable;
     thr_switch(init);
 
-    /* initialize kernel internals registered as extension
-     * points in no specific order */
-    extp_iterate(EXTP_PLATFORM_INIT, init_subsys);
+    /* initialize some more */
+    ioapic_init();
+    rm_init();
+    sched_init();
+    sysc_init();
 
     /* initialize the kernels system timer. this may rely on
      * platform components (fex. i/o apic)! */
@@ -79,43 +99,16 @@ void boot() {
 
     /* initialize timer related subsystems. those may rely on
      * the kernel system timesource beeing initialized */
-    extp_iterate(EXTP_TIMER_INIT, init_subsys);
+    tmr_init();
 
     info("kernel heap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
+    pmem_info_t info = pmem_info();
+    info("physical mem: used pages: %d, free pages: %d\n", info.alloc_pages, info.free_pages);
 
-    // -- TESTTEST
-    /*
-    while(true) {
-        // interrupts should be disabled!
-        x86_64_cpu_state_t before;
-        memset(&before, 0, sizeof(before));
-        asm volatile("push $0x10; push $0x010101; pushf; push $0x18; push $0x1234; push $1; push $99; lea %0,%%rax; push %%rax; call x86_64_isr_state_save" :: "m"(before) : "rax");
+    idle_init();
 
-        uintptr_t bp = before.rbp;
-        memset(&before, 0xAB, sizeof(before));
-        before.rbp = bp;
+    // TODO: kick off initial threads.
 
-        asm volatile("call x86_64_isr_state_restore");
-
-        asm volatile("pop %%rax" ::: "rax");
-        asm volatile("pop %%rax" ::: "rax");
-        asm volatile("pop %%rax" ::: "rax");
-        asm volatile("pop %%rax" ::: "rax");
-        asm volatile("pop %%rax" ::: "rax");
-        asm volatile("pop %%rax" ::: "rax");
-        asm volatile("pop %%rax" ::: "rax");
-        asm volatile("pop %%rax" ::: "rax");
-    }
-    */
-    // -- TESTTEST
-
-    // -- TESTTEST
-    for(uint32_t i = 0; i < 128; ++i) {
-        thread_t* thr = thr_create(core, test_thr);
-        sched_add(thr);
-    }
-    // -- TESTTEST
-    
     // and start the scheduler.
     init->state = Exited;
     sched_start();
