@@ -6,7 +6,7 @@
 #include "tachyon.h"
 #include "thread.h"
 
-#define SCHED_TIMESLICE_US (1*1000*1000)
+#define SCHED_TIMESLICE_US (1*1000)
 
 /**
  * Does some basic initialization for the scheduler.

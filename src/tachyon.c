@@ -38,7 +38,7 @@ void test_thr() {
 
     while(true) {
         info("%d: hello thread %ld\n", thr->id, systime());
-        systime_stall(100000000);
+        systime_stall(1000000);
     }
 }
 // -- TESTTEST
@@ -111,10 +111,10 @@ void boot() {
 
     // TODO: kick off initial threads.
     // TEST
-    //for(size_t i = 0; i < 6; ++i) {
+    for(size_t i = 0; i < 6; ++i) {
         thread_t* thr = thr_create(core, test_thr);
         sched_add(thr);
-    //}
+    }
     // TEST
 
     // and start the scheduler.

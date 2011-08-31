@@ -64,6 +64,17 @@ void intr_dispatch(interrupt_t* state, uint16_t num) {
     fatal("unhandled interrupt %d\n", num);
 }
 
+/* TEST
+struct _tmp {
+    uintptr_t rsi;  
+    uintptr_t rdi;
+};
+
+void intr_do_test(interrupt_t* state, struct _tmp* tmp) {
+    trace("test: %p %p\n", state->ctx->state.rsi, tmp->rsi);
+}
+*/
+
 void intr_add(uint16_t num, intr_handler_t handler) {
     if(num >= MAX_INTR)
         fatal("gate %d not available\n", num);

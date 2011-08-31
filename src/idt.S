@@ -42,18 +42,37 @@ _x86_64_isr_reg_dmp:
 
 .section .text
 
+/* TEST
+intr_test:
+    # %rsp -> interrupt_t*
+    push %rdi
+    mov %rsp, %rdi
+    add $0x10, %rdi # return address!!!
+    push %rsi
+    # push rest that should be checked
+
+    mov %rsp, %rsi
+    call intr_do_test
+
+    pop %rsi
+    pop %rdi
+    ret
+*/
+
+
 .macro x86_64_isr num, has_err, res=0
 .type _x86_64_isr\num, @function
 .size _x86_64_isr\num, ._x86_64_isr_end\num - _x86_64_isr\num
 _x86_64_isr\num:
-    call intr_disable
-
+    cli                 # do it now, set the count later (below)
+                        # otherwise we would have to save register here!
+    
     .if !\has_err
     push $0x0
     .endif
     push $\num
 
-    subq $0x8, %rsp      # reserve space for the context address on the stack
+    subq $0x8, %rsp     # reserve space for the context address on the stack
 
     .if \res
     push %rdi
@@ -69,21 +88,28 @@ _x86_64_isr\num:
     pop %rsi
     pop %rdi
     .else
-    push %rax            # save the current RAX
+    push %rax            # save registers that would otherwise be clobbered.
+    push %rbx            # ATTENTION: carefully debugged to find all clobbered
+    push %rdi            #            registers. may change if the code changes!!!
+    push %rsi
+    call intr_disable    # fake disabling (adjusts d/a count).
     call thr_ctx_get     # retrieve the current context.
-    mov %rax, 0x08(%rsp) # save the pointer to the reserved stack space.
-    pop %rax             # restore the original RAX
+    mov %rax, 0x20(%rsp) # save the pointer to the reserved stack space.
+    pop %rsi
+    pop %rdi
+    pop %rbx
+    pop %rax             # restore the original registers
 
     call x86_64_isr_state_save
 
-    mov 0x08(%rsp), %rsi    # pass in the interrupt number
-    mov %rsp, %rdi          # pass in the interrupt state
+    mov 0x08(%rsp), %rsi # pass in the interrupt number
+    mov %rsp, %rdi       # pass in the interrupt state
 
-    push 0x18(%rsp)         # push dummy return address.
+    push 0x18(%rsp)      # push dummy return address.
     mov $INTR_MAGIC_FRAME, %rax
-    push %rax               # push magic number for tracer.
-    push %rbp               # new frame to ease tracing.
-    mov %rsp, %rbp          # ...
+    push %rax            # push magic number for tracer.
+    push %rbp            # new frame to ease tracing.
+    mov %rsp, %rbp       # ...
 
     callq intr_dispatch
 
@@ -92,14 +118,15 @@ _x86_64_isr\num:
     pop %rax             # remove dummy return address.
 
     call thr_ctx_get     # retrieve current (new?) context.
-    mov %rax, (%rsp)        # save new context ptr to stack.
+    mov %rax, (%rsp)     # save new context ptr to stack.
 
-    mov $0x0, %rdi      # don't really enable interrupts, fake it.
-    call intr_enable    # decrement interrupt counter.
+    mov $0x0, %rdi       # don't really enable interrupts, fake it.
+    call intr_enable     # decrement interrupt counter.
 
     call x86_64_isr_state_restore
 
-    # TODO: kernel call return value?
+    # TEST
+    #call intr_test
 
     .endif
     # ATTENTION: the cpu does _not_ pop an error code, even when it
