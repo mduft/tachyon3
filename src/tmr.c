@@ -77,7 +77,6 @@ static void tmr_handle_expired(tmr_t* tmr) {
     if(tmr->period) {
         uint64_t current = systime();
         tmr->expire = current + tmr->period;
-        //trace("rescheduling timer to %ld, current: %ld\n", tmr->expire, current);
         tmr_resched_sorted(tmr);
     } else {
         kheap_free(tmr);
@@ -115,7 +114,7 @@ static void tmr_set_next_tick() {
     }
 }
 
-bool tmr_schedule(tmr_cb_t callback, uint64_t ns, bool oneshot) {
+bool tmr_schedule(tmr_cb_t callback, uint64_t us, bool oneshot) {
     tmr_t* pt = kheap_alloc(sizeof(tmr_t));
 
     if(!callback) {
@@ -123,9 +122,9 @@ bool tmr_schedule(tmr_cb_t callback, uint64_t ns, bool oneshot) {
         return false;
     }
 
-    pt->expire = ns + systime();
+    pt->expire = us + systime();
     pt->callback = callback;
-    pt->period = (oneshot ? 0 : ns);
+    pt->period = (oneshot ? 0 : us);
 
     tmr_resched_sorted(pt);
     tmr_set_next_tick();

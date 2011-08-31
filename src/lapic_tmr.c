@@ -16,7 +16,7 @@
 #define MAX_INIT_RETRIES    10000
 #define CALIBRATE_COUNT     0xFFFFFFFF
 #define CALIBRATE_TURNS     8
-#define TICKS_INCR_2_HZ(ticks, incr) (ticks * (1000000000 / incr))
+#define TICKS_INCR_2_HZ(ticks, incr) (ticks * (1000000 / incr))
 
 // TODO: per CPU?
 static tmr_cb_t _master;
@@ -86,8 +86,8 @@ static bool lapic_tmr_init(tmr_cb_t master) {
     return true;
 }
 
-static bool lapic_tmr_sched(uint64_t ns) {
-    uint64_t cnt = (ns * _lapic_hz) / 1000000000;
+static bool lapic_tmr_sched(uint64_t us) {
+    uint64_t cnt = (us * _lapic_hz) / 1000000;
 
     APIC_REG(APIC_REG_LVT_TIMER) = IRQ_LAPIC_TIMER;
     APIC_REG(APIC_REG_INITIAL_COUNT) = cnt;

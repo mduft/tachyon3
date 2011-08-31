@@ -21,7 +21,7 @@ typedef enum {
  */
 typedef struct {
     void (*systime_init_func)();    /**< pointer to a (possibly) required init function (or NULL) */
-    uint64_t (*systime_ns_func)();  /**< pointer to the systime function */
+    uint64_t (*systime_us_func)();  /**< pointer to the systime function */
     systime_accuracy_t accuracy;    /**< rough estimation of the systime source's accuracy */
 } systime_desc_t;
 
@@ -38,9 +38,16 @@ void systime_init();
 
 /**
  * Retrieves the current system time. the system time is the time in
- * nanoseconds that the system timesource has been ticking (so since
+ * microseconds that the system timesource has been ticking (so since
  * system boot).
  *
- * @return the uptime in nanoseconds
+ * @return the uptime in microseconds
  */
 uint64_t systime();
+
+/**
+ * Stalls the calling thread for a specified amount of microseconds
+ *
+ * @param us    microseconds to (busy) wait.
+ */
+void systime_stall(uintptr_t us);

@@ -20,7 +20,7 @@ static void systime_extp_init(char const* tag, extp_func_t func, char const* des
 void systime_init() {
     extp_iterate(EXTP_SYSTIME, systime_extp_init);
 
-    if(the_timesource == NULL || the_timesource->systime_ns_func == NULL)
+    if(the_timesource == NULL || the_timesource->systime_us_func == NULL)
         fatal("no system time source found!\n");
 
     if(the_timesource->systime_init_func)
@@ -28,5 +28,12 @@ void systime_init() {
 }
 
 uint64_t systime() {
-    return the_timesource->systime_ns_func();
+    return the_timesource->systime_us_func();
+}
+
+void systime_stall(uint64_t us) {
+    uint64_t start = systime();
+    uint64_t end = start + us;
+
+    while(systime() < end);
 }

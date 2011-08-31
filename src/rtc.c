@@ -43,8 +43,8 @@
 #define RTC_B_INT_PERIODIC  (1 << 6)    /**< enable periodic interrupt at programmed rate */
 #define RTC_B_CLOCK_FREEZE  (1 << 7)    /**< freeze clock to enable setting it */
 
-#define RTC_INCREMENT_NS(x) \
-    ((1*1000*1000*1000) / (32768 >> ((x)-1)))
+#define RTC_INCREMENT_US(x) \
+    ((1*1000*1000) / (32768 >> ((x)-1)))
 
 static uint64_t _systime = 0;
 static bool _rtc_bin;
@@ -91,7 +91,7 @@ static void rtc_init() {
     _rtc_bin = (b & RTC_B_BINARY);
     _rtc_24  = (b & RTC_B_24_HRS);
 
-    info("realtime clock at %d ns per tick, bin: %d, 24h: %d\n", _increment, _rtc_bin, _rtc_24);
+    info("realtime clock at %d us per tick, bin: %d, 24h: %d\n", _increment, _rtc_bin, _rtc_24);
 
     ioapic_enable(8, lapic_cpuid());
 
@@ -102,7 +102,7 @@ static void rtc_init() {
 static systime_desc_t const* rtc_ext() {
     static systime_desc_t _desc = {
         .systime_init_func = rtc_init,
-        .systime_ns_func = rtc_systime,
+        .systime_us_func = rtc_systime,
         .accuracy = Good
     };
 
@@ -113,15 +113,15 @@ INSTALL_EXTENSION(EXTP_SYSTIME, rtc_ext, "realtime clock");
 
 uint64_t rtc_systime() {
     register uint64_t current = tsc_read();
-    register uint64_t tsc_ns = 0;
+    register uint64_t tsc_us = 0;
 
     register int64_t tsc_diff = current - _tsc_at_tick;
 
     if(_tsc_hz && tsc_diff > 0) {
-        tsc_ns = (tsc_diff * 1000000000) / _tsc_hz;
+        tsc_us = (tsc_diff * 1000000) / _tsc_hz;
     }
 
-    return _systime + tsc_ns;
+    return _systime + tsc_us;
 }
 
 uint8_t rtc_set_rate(uint8_t rate) {
@@ -133,7 +133,7 @@ uint8_t rtc_set_rate(uint8_t rate) {
     outb(RTC_REG_STATE_A, RTC_ADDR);
     outb(RTC_A_DIVIDER_32768 | rate, RTC_DATA);
 
-    _increment = RTC_INCREMENT_NS(rate);
+    _increment = RTC_INCREMENT_US(rate);
 
     return old & 0xF;
 }

@@ -9,7 +9,7 @@
 #include <intr.h>
 
 #define CALIBRATE_TURNS 8
-#define TICKS_INCR_2_HZ(ticks, incr) (ticks * (1000000000 / incr))
+#define TICKS_INCR_2_HZ(ticks, incr) (ticks * (1000000 / incr))
 
 static volatile uint64_t _tsc_hz = 0;
 
@@ -83,5 +83,4 @@ void tsc_init() {
 
     info("tsc calibrated to %ld hz\n", _tsc_hz);
 }
-
 

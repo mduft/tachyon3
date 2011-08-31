@@ -23,11 +23,11 @@
 typedef bool (*rtc_calibrate_cb_t)(uint64_t systime, uint64_t increment);
 
 /**
- * Returns the current system time in nanoseconds. The number
- * of ns is to be understood as offset from the time the system
+ * Returns the current system time in microseconds. The number
+ * of us is to be understood as offset from the time the system
  * timer started to tick.
  *
- * @return system uptime in nanoseconds
+ * @return system uptime in microseconds
  */
 uint64_t rtc_systime();
 
@@ -41,9 +41,9 @@ uint64_t rtc_systime();
 uint8_t rtc_set_rate(uint8_t rate);
 
 /**
- * Retrieve the current increment per interrupt in nanoseconds
+ * Retrieve the current increment per interrupt in microseconds
  *
- * @return number of ns incremented on each interrupt
+ * @return number of us incremented on each interrupt
  */
 uint64_t rtc_get_increment();
 
