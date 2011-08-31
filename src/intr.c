@@ -61,7 +61,7 @@ void intr_dispatch(interrupt_t* state, uint16_t num) {
             return;
     }
 
-    fatal("unhandled interrupt %d\n", num);
+    fatal("unhandled interrupt %d @ %p\n", num, state->ip);
 }
 
 /* TEST
