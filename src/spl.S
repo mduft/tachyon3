@@ -31,7 +31,10 @@ spl_init:
 
 spl_lock:
     push %rbx
+    push %rdi
+    call intr_disable
     call cpu_current_id
+    pop %rdi
     add $1, %rax                # argl... cpu with id 0...?
     mov %rax, %rbx              # target value (current cpu's id)
 
@@ -43,13 +46,18 @@ spl_lock:
     jmp 1b                      # and loop back
 
     2:
+    mov $0x1, %rdi
+    call intr_enable
     pop %rbx
     ret
 .spl_lock_end:
 
 spl_try_lock:
     push %rbx
+    push %rdi
+    call intr_disable
     call cpu_current_id
+    pop %rdi
     add $1, %rax                # see above.
     mov %rax, %rbx              # target value (current cpu's id)
     mov $0x0, %rax              # check whether lock is free.
@@ -58,6 +66,8 @@ spl_try_lock:
     jnz 1f                      # is not zero, lock was not free.
     mov $0x1, %rax              # zero, so success, return = true.
     1:
+    mov $0x1, %rdi
+    call intr_enable
     pop %rbx
     ret
 .spl_try_lock_end:

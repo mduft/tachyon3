@@ -53,8 +53,6 @@ static bool tsc_calibrate(uint64_t time, uint64_t incr) {
         else
             avg = (avg + TICKS_INCR_2_HZ(ticks, incr)) / 2;
 
-        trace("tsc turn at %ld hz\n", avg);
-
         if(turns == CALIBRATE_TURNS) {
             _tsc_hz = avg;
             return false;

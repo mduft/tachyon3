@@ -7,18 +7,10 @@
 #include "process.h"
 #include "log.h"
 
-#define IDLE_LOOPCNT    0xFFFF
-
 static void idle_thread() {
     while(true) {
-
-        info("idling ...\n");
-
-        // endless... :)
-        // TODO: better short delay?
-        for(int i = 0; i < IDLE_LOOPCNT; ++i) ;
-        sched_yield();
-
+        trace("idling ...\n");
+        asm volatile("hlt");
     }
 }
 
