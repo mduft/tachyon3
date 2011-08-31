@@ -90,13 +90,17 @@ _x86_64_isr\num:
     .else
     push %rax            # save registers that would otherwise be clobbered.
     push %rbx            # ATTENTION: carefully debugged to find all clobbered
-    push %rdi            #            registers. may change if the code changes!!!
+    push %rcx            #            registers. may change if the code changes!!!
+    push %rdx
+    push %rdi
     push %rsi
     call intr_disable    # fake disabling (adjusts d/a count).
     call thr_ctx_get     # retrieve the current context.
-    mov %rax, 0x20(%rsp) # save the pointer to the reserved stack space.
+    mov %rax, 0x30(%rsp) # save the pointer to the reserved stack space.
     pop %rsi
     pop %rdi
+    pop %rdx
+    pop %rcx
     pop %rbx
     pop %rax             # restore the original registers
 
