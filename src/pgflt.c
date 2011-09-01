@@ -65,6 +65,8 @@ bool pgflt_handler(interrupt_t* state) {
             }
         }
 
+        error("don't know anything more to do. page-fault @ %p (code 0x%lx) without resolution!\n", state->ip, state->code);
+
         // nothing more to do.
         thr_abort(context->thread);
         return true;

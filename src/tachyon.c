@@ -37,7 +37,9 @@ void test_thr() {
     thread_t* thr = thr_current();
 
     while(true) {
-        info("%d: hello thread %ld\n", thr->id, systime());
+        uintptr_t x;
+        asm volatile("mov %%rsp, %0" : "=m"(x));
+        info("%d: hello thread %ld (%p)\n", thr->id, systime(), x);
         systime_stall(10000);
     }
 }

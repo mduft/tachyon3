@@ -6,7 +6,7 @@
 #include "tachyon.h"
 #include "thread.h"
 
-#define IRQ_BASE    0x20
+#define IRQ_BASE    0x24
 #define IRQ_NUM(x)  (IRQ_BASE + x)
 
 typedef enum {

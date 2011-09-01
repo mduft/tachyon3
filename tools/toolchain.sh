@@ -18,7 +18,7 @@ tools=(
     "grub:1.99~rc2:--build=\${_tt_host}"
     "xorriso:1.0.8:--build=\${_tt_host}"
     "qemu:0.14.1:--disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
-    "bochs:2.4.6:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-vbe --enable-acpi --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-compressed-hd --enable-sb16=linux --enable-debugger --enable-ne2000 --enable-pcidev --enable-pnic --enable-smp --enable-logging"
+    "bochs:2.4.6:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-vbe --enable-acpi --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-compressed-hd --enable-sb16=linux --enable-gdb-stub --enable-ne2000 --enable-pcidev --enable-pnic --disable-smp --enable-logging"
 )
 
 function info()  { [[ ${_tt_verbose} == true ]] && echo ">>> " "$@"; }

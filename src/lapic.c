@@ -58,8 +58,8 @@ void lapic_init() {
     intr_add(IRQ_SPURIOUS, lapic_handle_spurious);
     intr_add(IRQ_ERROR, lapic_handle_error);
 
-    APIC_REG(APIC_REG_SV)           |= IRQ_SPURIOUS | APIC_SV_ENABLE;
-    APIC_REG(APIC_REG_LVT_ERROR)    |= IRQ_ERROR;
+    APIC_REG(APIC_REG_SV)           = IRQ_SPURIOUS | APIC_SV_ENABLE;
+    APIC_REG(APIC_REG_LVT_ERROR)    = IRQ_ERROR;
 
     /* requires back-to-back write */
     APIC_REG(APIC_REG_ERROR_STATUS) = 0;

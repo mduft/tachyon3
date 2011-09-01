@@ -64,16 +64,15 @@ void intr_dispatch(interrupt_t* state, uint16_t num) {
     fatal("unhandled interrupt %d @ %p\n", num, state->ip);
 }
 
-/* TEST
 struct _tmp {
+    uintptr_t rsp;
     uintptr_t rsi;  
     uintptr_t rdi;
 };
 
 void intr_do_test(interrupt_t* state, struct _tmp* tmp) {
-    trace("test: %p %p\n", state->ctx->state.rsi, tmp->rsi);
+    trace("%d: iretq to %p (stk at %p)\n", state->num, state->ip, tmp->rsp);
 }
-*/
 
 void intr_add(uint16_t num, intr_handler_t handler) {
     if(num >= MAX_INTR)

@@ -42,7 +42,6 @@ _x86_64_isr_reg_dmp:
 
 .section .text
 
-/* TEST
 intr_test:
     # %rsp -> interrupt_t*
     push %rdi
@@ -50,14 +49,15 @@ intr_test:
     add $0x10, %rdi # return address!!!
     push %rsi
     # push rest that should be checked
+    push %rsp
 
     mov %rsp, %rsi
     call intr_do_test
 
+    pop %rsp
     pop %rsi
     pop %rdi
     ret
-*/
 
 
 .macro x86_64_isr num, has_err, res=0
@@ -130,7 +130,7 @@ _x86_64_isr\num:
     call x86_64_isr_state_restore
 
     # TEST
-    #call intr_test
+    call intr_test
 
     .endif
     # ATTENTION: the cpu does _not_ pop an error code, even when it
@@ -260,11 +260,10 @@ x86_64_idt_init:
     set_int_gate 31
 
     # IRQs and other implementation defined stuff.
-    set_int_gate 31
     set_int_gate 32
-    set_int_gate 33
-    set_int_gate 34
-    set_int_gate 35
+    set_int_gate 33, 3 # low-level-hardware stack
+    set_int_gate 34, 3 # low-level-hardware stack
+    set_int_gate 35, 3 # low-level-hardware stack
     set_int_gate 36
     set_int_gate 37
     set_int_gate 38
@@ -279,7 +278,7 @@ x86_64_idt_init:
     set_int_gate 47
     set_int_gate 48
     set_int_gate 49
-    set_int_gate 50
+    set_int_gate 50, 2 # syscall
     set_int_gate 51
     set_int_gate 52
     set_int_gate 53

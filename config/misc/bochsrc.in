@@ -7,6 +7,8 @@ com1: enabled=1, mode=file, dev=@SERIAL_FILE@
 
 boot: cdrom
 
+#gdbstub: enabled=1, port=1234, text_base=0, data_base=0, bss_base=0
+
 #debug: action=report
 #info: action=report
 #log: @LOG_FILE@

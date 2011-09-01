@@ -7,6 +7,8 @@
 
 #define IST_STACK_SIZE      0x1000
 #define IST_FAULT_STACK     0x1
+#define IST_SYSC_STACK      0x2
+#define IST_LLHW_STACK      0x3
 
 /**
  * Describes a TSS, pointed to by a system selector in the
