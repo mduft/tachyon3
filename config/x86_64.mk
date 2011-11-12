@@ -1,12 +1,14 @@
 # Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
 # This file is part of the 'tachyon' operating system.
 
-CC				:= x86_64-pc-elf-gcc
-CXX				:= x86_64-pc-elf-g++
-LD				:= x86_64-pc-elf-ld
-CPP				:= x86_64-pc-elf-cpp
-OBJCOPY         := x86_64-pc-elf-objcopy
-NM				:= x86_64-pc-elf-nm
+#CROSS_COMPILER	:= x86_64-pc-elf-
+
+CC				:= ${CROSS_COMPILER}gcc
+CXX				:= ${CROSS_COMPILER}g++
+LD				:= ${CROSS_COMPILER}ld
+CPP				:= ${CROSS_COMPILER}cpp
+OBJCOPY			:= ${CROSS_COMPILER}objcopy
+NM				:= ${CROSS_COMPILER}nm
 
 KERNEL_CPPFLAGS := -D__X86_64__
 KERNEL_CFLAGS	:= -O0 -g -mcmodel=kernel -mno-red-zone -mno-sse $(KERNEL_CPPFLAGS)
