@@ -22,7 +22,7 @@
 .size spl_try_lock, .spl_try_lock_end - spl_try_lock
 .size spl_unlock, .spl_unlock_end - spl_unlock
 .size spl_locked, .spl_locked_end - spl_locked
-.size spl_mine, .spl_mine - spl_mine
+.size spl_mine, .spl_mine_end - spl_mine
 
 spl_init:
     movq $0x0, (%rdi)
