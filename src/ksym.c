@@ -4,6 +4,8 @@
 #include "ksym.h"
 #include "log.h"
 #include "kheap.h"
+#include "spc.h"
+#include "vmem.h"
 
 #define KSYM_TRACE_MAX_LEN  256
 
@@ -11,6 +13,10 @@
 extern ksym_t const ksym_table;
 static ksym_t const intr_magic_frame = {
     INTR_MAGIC_FRAME, 0, " -- interrupt"
+};
+
+static ksym_t const stack_curruption = {
+    0, 0, " -- CORRUPTED STACK"
 };
 
 ksym_t const* ksym_get(void* addr) {
@@ -64,8 +70,18 @@ list_t* ksym_trace() {
     list_t* trace = list_new();
     register uintptr_t* basep = ksym_get_bp();
 
-    while(basep && basep[0] && basep[1]) {
+    spc_t spc = spc_current();
+    while(basep) {
         ksym_node_t* node = kheap_alloc(sizeof(ksym_node_t));
+
+        if(vmem_resolve(spc, basep) == 0 || vmem_resolve(spc, (void*)&basep[0]) == 0
+                || vmem_resolve(spc, (void*)basep[1]) == 0) {
+            // invalid virtual memory!
+            node->sym = &stack_curruption;
+            node->real_addr = basep;
+            list_add(trace, node);
+            break;
+        }
 
         if(basep[1] == INTR_MAGIC_FRAME) {
             ksym_node_t* ifnode = kheap_alloc(sizeof(ksym_node_t));
@@ -84,7 +100,7 @@ list_t* ksym_trace() {
 
         if(list_size(trace) >= KSYM_TRACE_MAX_LEN) {
             warn("trace too long, limiting\n");
-            return trace;
+            break;
         }
     }
 

@@ -60,7 +60,7 @@ static bool stka_grow(stack_allocator_t* allocator, stack_t* stack, uintptr_t am
         return false;
     }
 
-    if(stack->mapped - amount < stack->guard) {
+    if((stack->mapped - amount) < stack->guard) {
         error("cannot grow stack - maximum size exceeded\n");
         return false;
     }
@@ -103,7 +103,7 @@ stack_t* stka_alloc(stack_allocator_t* allocator) {
 
     // leave an additional page room for the next stack, so a stack overflow
     // does not doom another thread, but rather causes a page fault.
-    allocator->next_stk = stack->guard + (STK_PAGESIZE);
+    allocator->next_stk = stack->guard - (STK_PAGESIZE);
 
     trace("allocated new stack at %p (%d bytes comm, %d bytes res)\n", stack->top, stack->top - stack->mapped, stack->top - stack->guard);
 

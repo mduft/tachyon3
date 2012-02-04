@@ -13,7 +13,7 @@ tools=(
     "mpfr:3.0.1:--build=\${_tt_host}"
     "mpc:0.9:--build=\${_tt_host} --with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
     "gcc:4.6.2:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable=languages=c,c++:all-gcc:install-gcc"
-    "gdb:7.3.1:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
+    "gdb:7.2:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
     "cgdb:0.6.6:--build=\${_tt_host}"
     "grub:1.99:--build=\${_tt_host}"
     "xorriso:1.1.6:--build=\${_tt_host}"
@@ -145,6 +145,7 @@ function tt_unpack() {
     tar ${tflags} "${_tt_cur_src}"
     cd ${_tt_cur_name}* || fatal "missing expected directory"
 
+    set -xv
     for patch in "${_tt_home}/patches/${_tt_cur_name}-${_tt_cur_version}"*.patch; do
         [[ ${patch} == *'*.patch' ]] && break
 
@@ -165,6 +166,7 @@ function tt_unpack() {
 
         patch --quiet -p${_p} < "${patch}"
     done
+    set +xv
 }
 
 # .--------------------------------------------.

@@ -31,6 +31,14 @@ bool pgflt_handler(interrupt_t* state) {
             "fetching instructions from" : ((state->code & ERRC_ACC_WRITE) ? 
                 "writing to" : "reading from")), state->ctx->state.cr2);
 
+    trace("CPU registers after fault:\n"
+        " RAX: %p, RBX: %p\n"
+        " RCX: %p, RDX: %p\n"
+        " RBP: %p, RSP: %p\n", state->ctx->state.rax,
+        state->ctx->state.rbx, state->ctx->state.rcx,
+        state->ctx->state.rdx, state->ctx->state.rbp,
+        state->ctx->state.rsp);
+
     if(state->code & ERRC_TRANS_AVAILABLE) {
         if(state->code & ERRC_TRANS_RESVD_BIT) {
             fatal("a translation for the page was available, but a reserved\n"
