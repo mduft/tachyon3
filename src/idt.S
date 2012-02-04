@@ -42,24 +42,6 @@ _x86_64_isr_reg_dmp:
 
 .section .text
 
-intr_test:
-    # %rsp -> interrupt_t*
-    push %rdi
-    mov %rsp, %rdi
-    add $0x10, %rdi # return address!!!
-    push %rsi
-    # push rest that should be checked
-    push %rsp
-
-    mov %rsp, %rsi
-    call intr_do_test
-
-    pop %rsp
-    pop %rsi
-    pop %rdi
-    ret
-
-
 .macro x86_64_isr num, has_err, res=0
 .type _x86_64_isr\num, @function
 .size _x86_64_isr\num, ._x86_64_isr_end\num - _x86_64_isr\num
@@ -128,9 +110,6 @@ _x86_64_isr\num:
     call intr_enable     # decrement interrupt counter.
 
     call x86_64_isr_state_restore
-
-    # TEST
-    call intr_test
 
     .endif
     # ATTENTION: the cpu does _not_ pop an error code, even when it

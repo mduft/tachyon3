@@ -113,7 +113,7 @@ void boot() {
 
     // TODO: kick off initial threads.
     // TEST
-    for(size_t i = 0; i < 1; ++i) {
+    for(size_t i = 0; i < 32; ++i) {
         thread_t* thr = thr_create(core, test_thr);
         sched_add(thr);
     }
