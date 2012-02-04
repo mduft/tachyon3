@@ -46,7 +46,6 @@ bool spl_locked(spinlock_t* lock);
 
 /**
  * Determines whether a given lock is held by the current cpu.
- * (currently calls spl_locked, TODO: when SMP is here).
  */
 bool spl_mine(spinlock_t* lock);
 

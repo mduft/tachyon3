@@ -96,5 +96,5 @@ spl_mine:
     1:
     mov $0x1, %rax              # it's ours.
     ret
-
 .spl_mine_end:
+
