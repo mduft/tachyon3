@@ -50,3 +50,6 @@
 #define GDT_KDATA64  0x20
 #define GDT_KTSS     0x28 /* attention: req. 2 slots! */
 
+#define GDT_UCODE64  0x38
+#define GDT_UDATA64  0x40
+

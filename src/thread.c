@@ -15,6 +15,7 @@
 
 #include "intr.h"
 #include <log.h>
+#include "uapi.h"
 
 thread_t* thr_create(process_t* parent, thread_start_t entry) {
     thread_t* thr = kheap_alloc(sizeof(thread_t));
@@ -34,8 +35,7 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
 
     // TODO: error checking
 
-    // TODO: user mode trampoline!
-    thr->context->state.rip = (uintptr_t)thr_trampoline;
+    thr->context->state.rip = (uintptr_t)uapi_thr_trampoline;
     thr->context->state.rdi = (uintptr_t)thr;
     thr->context->state.rsi = (uintptr_t)entry;
     thr->context->state.rflags = FL_IF; // enable interrupts when starting thread.
@@ -45,7 +45,10 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
     if(parent->ring == 0) {
         thr->context->state.ss = GDT_KDATA64;
         thr->context->state.cs = GDT_KCODE64;
-    } // TODO: else
+    } else {
+        thr->context->state.ss = GDT_UDATA64;
+        thr->context->state.cs = GDT_UCODE64;
+    }
 
     thr->state = Runnable;
 
@@ -103,14 +106,3 @@ void thr_abort(thread_t* target) {
     /* never reached - as the thread is aborting, it will never be re-scheduled */
 }
 
-void thr_trampoline(thread_t* thread, thread_start_t entry) {
-    entry();
-
-    thread->state = Exited;
-    
-    trace("thread %d in process %d exited\n", thread->id, thread->parent->id);
-
-    sysc_call(SysSchedule, 0, 0);
-
-    /* never reached - as the thread is aborting, it will never be re-scheduled */
-}

@@ -72,11 +72,13 @@ typedef struct _tag_thread_t {
     uint64_t preempt_at;                /**< absolute point in system time to interrupt thread at latest */
 } thread_t;
 
+/* forward for thread start */
+struct _tag_uapi_desc_t;
 
 /**
  * Defines the type for a threads entry point.
  */
-typedef void (*thread_start_t)();
+typedef void (*thread_start_t)(struct _tag_uapi_desc_t const*);
 
 /**
  * Creates a new thread within the given process.
@@ -117,15 +119,6 @@ thread_t* thr_current();
  * @param thread    the thread to abort forcefully.
  */
 void thr_abort(thread_t* thread);
-
-/**
- * Starts a thread, and after it returns, cleans
- * up after it.
- *
- * @param thread    the thread about to start.
- * @param entry     the threads entry point.
- */
-void thr_trampoline(thread_t* thread, thread_start_t entry);
 
 /**
  * Returns the threads current context.

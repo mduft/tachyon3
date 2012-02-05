@@ -8,6 +8,7 @@
 #include <sched.h>
 
 #include "intr.h"
+#include "uapi.h"
 
 static bool sysc_handler(interrupt_t* state) {
     thread_t* thr = state->ctx->thread;
@@ -39,17 +40,7 @@ bool sysc_active() {
 
 uintptr_t sysc_call(syscall_t call, uintptr_t param0, uintptr_t param1) {
     if(!sysc_active()) {
-        uintptr_t res;
-
-        // TODO: sysenter, etc.?
-        
-        asm volatile(
-            "\tint %1\n"
-            "\tmov %%rax, %0\n"
-            : "=a"(res) 
-            : "i"(SYSC_INTERRUPT), "D"(call), "S"(param0), "d"(param1));
-
-        return res;
+        return uapi_sysc_call(call, param0, param1);
     }
 
     switch(call) {

@@ -29,8 +29,11 @@ void cpu_init() {
 
     dyngdt_init_and_lock();
 
-    dyngdt_set(GDT_KCODE64, 0, 0xFFFFFFFF, GDT_TYPE_CODE | GDT_TYPE_CODE_READ_ENABLE, 0, true, false);
-    dyngdt_set(GDT_KDATA64, 0, 0xFFFFFFFF, GDT_TYPE_DATA_WRITE_ENABLE, 0, true, false);
+    dyngdt_set(GDT_KCODE64, 0, 0xFFFFFFFF, GDT_TYPE_CODE | GDT_TYPE_CODE_READ_ENABLE, RING_KERNEL, true, false);
+    dyngdt_set(GDT_KDATA64, 0, 0xFFFFFFFF, GDT_TYPE_DATA_WRITE_ENABLE, RING_KERNEL, true, false);
+
+    dyngdt_set(GDT_UCODE64, 0, 0xFFFFFFFF, GDT_TYPE_CODE | GDT_TYPE_CODE_READ_ENABLE, RING_USERSPACE, true, false);
+    dyngdt_set(GDT_UDATA64, 0, 0xFFFFFFFF, GDT_TYPE_DATA_WRITE_ENABLE, RING_USERSPACE, true, false);
 
     tss_init();
 

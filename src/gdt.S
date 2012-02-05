@@ -13,6 +13,8 @@ SECTION_BOOT_DATA
 
 # .----------------------------------------.
 # | 64 kernel gdt code and data segments   |
+# | This GDT only has to contain segments  |
+# | required before dyngdt kicks in        |
 # '----------------------------------------'
 
 .align 0x10

@@ -25,6 +25,7 @@
 #include "ioapic.h"
 #include "tmr.h"
 #include "idle.h"
+#include "uapi.h"
 
 /**
  * the initial state at boot. contains various boot relevant data,
@@ -33,7 +34,7 @@
 init_state_t const boot_state;
 
 // -- TESTTEST
-void test_thr() {
+void test_thr(uapi_desc_t const* uapi) {
     thread_t* thr = thr_current();
 
     while(true) {
@@ -117,6 +118,13 @@ void boot() {
         thread_t* thr = thr_create(core, test_thr);
         sched_add(thr);
     }
+
+    // a user space process... :)
+    extern void test_thr2();
+    process_t* uproc = prc_new(spc_new(), Normal, RING_USERSPACE);
+    thread_t* thr = thr_create(uproc, test_thr2);
+    sched_add(thr);
+
     // TEST
 
     // and start the scheduler.
