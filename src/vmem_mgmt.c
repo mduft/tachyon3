@@ -212,6 +212,21 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
     vmem_mgmt_unmap(pdpt);
     vmem_mgmt_unmap(pml4);
 
+    // now map all the registered global regions
+    list_node_t* node = list_begin(vmem_glob_map);
+    while(node) {
+        vmem_glob_mapping_t* map = (vmem_glob_mapping_t*)node->data;
+
+        if(map) {
+            trace("trying to map: %p -> %p (0x%x); old = %p\n", map->from, map->to, map->flags, vmem_resolve(space, map->to));
+
+            if(!vmem_map(space, map->from, map->to, map->flags))
+                fatal("cannot insert required global mapping!\n");
+        }
+
+        node = node->next;
+    }
+
     return true;
 }
 

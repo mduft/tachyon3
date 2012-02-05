@@ -21,6 +21,7 @@ typedef struct {
     spc_t space;         /**< adress space for the stack */
     uintptr_t pg_fl;     /**< paging flag hint */
     bool fixed;          /**< is the stack fixed in size? */
+    bool global;         /**< whether this stack should be mapped in every prc */
 } stack_allocator_desc_t;
 
 /**

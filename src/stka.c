@@ -6,6 +6,7 @@
 #include "pmem.h"
 #include "log.h"
 #include "vmem.h"
+#include "vmem_mgmt.h"
 #include "mem.h"
 
 /** initial size of new stacks */
@@ -71,6 +72,9 @@ static bool stka_grow(stack_allocator_t* allocator, stack_t* stack, uintptr_t am
             // TODO: unmap already mapped pages!
             return false;
         }
+
+        if(allocator->desc.global)
+            vmem_mgmt_add_global_mapping(phys, (void*)i, allocator->desc.pg_fl);
 
         memset((void*)(i), 0, STK_PAGESIZE);
     }

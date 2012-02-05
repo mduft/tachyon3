@@ -17,18 +17,6 @@
 
 static stack_allocator_t* kstack_allocator = NULL;
 
-static void _tss_publish_mapping(stack_t* stack, stack_allocator_t* allocator) {
-    uintptr_t start_v = stack->mapped;
-    
-    while(start_v < stack->top) {
-        // remember mappings for each page.
-        vmem_mgmt_add_global_mapping(vmem_resolve(spc_current(), 
-            (void*)start_v), (void*)start_v, allocator->desc.pg_fl);
-        
-        start_v += STK_PAGESIZE;
-    }
-}
-
 void tss_init() {
     if(kstack_allocator == NULL) {
         stack_allocator_desc_t desc = {
@@ -36,7 +24,8 @@ void tss_init() {
             .bottom = KSHEAP_START,
             .space = spc_current(),
             .pg_fl = (PG_WRITABLE),
-            .fixed = true
+            .fixed = true,
+            .global = true
         };
 
         kstack_allocator = stka_new(&desc);
@@ -62,11 +51,6 @@ void tss_init() {
     stack_t* lstk = stka_alloc(kstack_allocator);
     tss->ist[IST_LLHW_STACK] = lstk->top;
     info("IST low-level stack at %p - %p\n", lstk->mapped, lstk->top);
-
-    info("publishing global stack mappings");
-    _tss_publish_mapping(fstk, kstack_allocator);
-    _tss_publish_mapping(sstk, kstack_allocator);
-    _tss_publish_mapping(lstk, kstack_allocator);
 
     dyngdt_set(GDT_KTSS, (uintptr_t)tss, sizeof(tss_t), GDT_TYPE_TSS, 0, true, true);
 }

@@ -92,6 +92,7 @@ void boot() {
      * space, and other relevant data. */
     process_t** pcore = (process_t**)&core;
     *pcore = prc_new(spc_current(), Kernel, RING_KERNEL);
+    spc_switch(core->space);
 
     if(!core)
         fatal("failed to create core process\n");
@@ -101,6 +102,11 @@ void boot() {
     thread_t* init = thr_create(core, NULL);
     init->state = Runnable;
     thr_switch(init);
+
+    /* need to set up a save stack for the kernel level. */
+    asm volatile (
+        "movq %0,%%rsp; movq %0, %%rbp; pushq $0; pushq $0" :: "d"(init->stack->top - (sizeof(uintptr_t) * 2)) : "rsp"
+    );
 
     /* initialize some more */
     ioapic_init();

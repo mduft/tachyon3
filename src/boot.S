@@ -143,6 +143,7 @@ bootstrap_x86_64_x64:
 
 SECTION_BOOT_DATA
 
+.align 0x100
 bootstrap_x86_64_stack:
     .space 0x10000
     bootstrap_x86_64_stack_top:

@@ -15,7 +15,7 @@ static ksym_t const intr_magic_frame = {
     INTR_MAGIC_FRAME, 0, " -- interrupt"
 };
 
-static ksym_t const stack_curruption = {
+static ksym_t const stack_corruption = {
     0, 0, " -- CORRUPTED STACK"
 };
 
@@ -74,10 +74,9 @@ list_t* ksym_trace() {
     while(basep) {
         ksym_node_t* node = kheap_alloc(sizeof(ksym_node_t));
 
-        if(vmem_resolve(spc, basep) == 0 || vmem_resolve(spc, (void*)&basep[0]) == 0
-                || vmem_resolve(spc, (void*)basep[1]) == 0) {
+        if(vmem_resolve(spc, basep) == 0) {
             // invalid virtual memory!
-            node->sym = &stack_curruption;
+            node->sym = &stack_corruption;
             node->real_addr = basep;
             list_add(trace, node);
             break;
