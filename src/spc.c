@@ -6,6 +6,7 @@
 #include <vmem_mgmt.h>
 #include <log.h>
 #include "paging.h"
+#include "uapi.h"
 
 spc_t spc_new() {
     // FIXME: would need far less room for a pml4 (64-bit only!)
@@ -23,6 +24,9 @@ spc_t spc_new() {
         pmem_free(sp, PAGE_SIZE_4K);
         return 0;
     }
+
+    /* we also need to enable the UAPI mappings in the new space */
+    uapi_map(sp);
 
     return sp;
 }

@@ -41,6 +41,28 @@ SECTIONS {
         _core_lma_ebss = . - CORE_VMA_OFF;
     }
 
+    .user.c ALIGN(0x1000) : AT(ADDR(.user.c) - CORE_VMA_OFF) {
+        _core_vma_user_code = .;
+        _core_lma_user_code = . - CORE_VMA_OFF;
+
+        *(.user.c)
+        . = ALIGN(0x1000);
+
+        _core_vma_user_ecode = .;
+        _core_lma_user_ecode = . - CORE_VMA_OFF;
+    }
+
+    .user.d ALIGN(0x1000) : AT(ADDR(.user.d) - CORE_VMA_OFF) {
+        _core_vma_user_data = .;
+        _core_lma_user_data = . - CORE_VMA_OFF;
+
+        *(.user.d)
+        . = ALIGN(0x1000);
+
+        _core_vma_user_edata = .;
+        _core_lma_user_edata = . - CORE_VMA_OFF;
+    }
+
     _core_vma_end = .;
     _core_lma_end = . - CORE_VMA_OFF;
 

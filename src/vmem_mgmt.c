@@ -125,14 +125,17 @@ bool vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd,
     *pd = vmem_mgmt_map(pdpt[idx_pdpt] & VM_ENTRY_FLAG_MASK);
     VM_CHECK_MAPPING((*pd));
 
-    if((*pd)[idx_pd] & PG_LARGE || flags & VM_SPLIT_LARGE) {
-        if(flags & VM_SPLIT_LARGE 
-                && (*pd[idx_pd] & PG_PRESENT) 
-                && !(*pd[idx_pd] & PG_LARGE)) {
+    if(flags & VM_SPLIT_LARGE) {
+        if(((*pd)[idx_pd] & PG_PRESENT) && !((*pd)[idx_pd] & PG_LARGE)) {
             error("large page requested, but present entry is a page table\n");
             goto error;
         }
     } else {
+        if(((*pd)[idx_pd] & PG_PRESENT) && ((*pd)[idx_pd] & PG_LARGE)) {
+            error("small page requested, but large page already mapped here\n");
+            goto error;
+        }
+
         VM_CHECK_ENTRY((*pd), idx_pd);
 
         *pt = vmem_mgmt_map((*pd)[idx_pd] & VM_ENTRY_FLAG_MASK);

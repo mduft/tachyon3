@@ -35,3 +35,10 @@ uintptr_t uapi_sysc_call(syscall_t call, uintptr_t param0, uintptr_t param1);
  * @param entry  the threads entry point to call.
  */
 void uapi_thr_trampoline(thread_t* thread, thread_start_t entry);
+
+/**
+ * Maps the UAPI into the specified address space.
+ *
+ * @param space the address space to modify
+ */
+bool uapi_map(spc_t space);

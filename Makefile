@@ -84,7 +84,7 @@ MAKE_BDIR 	 = test -d "$(dir $@)" || mkdir -p "$(dir $@)"
 #| Specialized Rules                |
 #'----------------------------------'
 
-$(ARCH_PPLSCRIPT): $(ARCH_LINKSCRIPT)
+$(ARCH_PPLSCRIPT): $(ARCH_LINKSCRIPT) config/common-layout.ld
 	@-$(MAKE_BDIR)
 	@if test $(VERBOSE) = 0; then \
 		echo "[CPP ] $(notdir $@)"; \

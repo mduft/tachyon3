@@ -28,6 +28,9 @@ typedef __builtin_va_list va_list;
 #define va_end(v)           __builtin_va_end(v)
 #define va_arg(v, l)        __builtin_va_arg(v,l)
 
+#define SECT_USER_CODE      ".user.c"
+#define SECT_USER_DATA      ".user.d"
+
 #define PACKED              __attribute__((__packed__))
 #define SECTION(x)          __attribute__((section(x)))
 #define UNUSED              __attribute__((unused))
