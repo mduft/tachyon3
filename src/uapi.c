@@ -2,7 +2,7 @@
  * This file is part of the 'tachyon' operating system. */
 
 #include "uapi.h"
-#include "vmem.h"
+#include "vmem_mgmt.h"
 #include "ldsym.h"
 #include "paging.h"
 
@@ -33,11 +33,10 @@ void SECTION(SECT_USER_CODE) uapi_thr_trampoline(thread_t* thread, thread_start_
     /* never reached - as the thread is aborting, it will never be re-scheduled */
 }
 
-static bool _uapi_map_from_to(spc_t space, uintptr_t* sv, uintptr_t* sp, uintptr_t* ev, uintptr_t* ep) {
+static bool _uapi_map_from_to(uintptr_t* sv, uintptr_t* sp, uintptr_t* ev, uintptr_t* ep) {
     // attention: keep sv and sp synchronous!
     while(sv < ev && sp < ep) {
-        if(!vmem_map(space, (uintptr_t)sp, sv, PG_USER | PG_GLOBAL))
-            return false;
+        vmem_mgmt_add_global_mapping((uintptr_t)sp, sv, PG_USER | PG_GLOBAL);
         
         sv += PAGE_SIZE_4K;
         sp += PAGE_SIZE_4K;
@@ -46,22 +45,8 @@ static bool _uapi_map_from_to(spc_t space, uintptr_t* sv, uintptr_t* sp, uintptr
     return true;
 }
 
-/* NOT mapped to user space! */
-bool uapi_map(spc_t space) {
-    // TODO: unmap in case of error!
-
-    if(!_uapi_map_from_to(space, &_core_vma_user_code, &_core_lma_user_code, &_core_vma_user_ecode, &_core_lma_user_ecode))
-        return false;
-
-    if(!_uapi_map_from_to(space, &_core_vma_user_data, &_core_lma_user_data, &_core_vma_user_edata, &_core_lma_user_edata))
-        return false;
-
-    return true;
+void uapi_init() {
+    _uapi_map_from_to(&_core_vma_user_code, &_core_lma_user_code, &_core_vma_user_ecode, &_core_lma_user_ecode);
+    _uapi_map_from_to(&_core_vma_user_data, &_core_lma_user_data, &_core_vma_user_edata, &_core_lma_user_edata);
 }
 
-///// TEST /////
-
-void SECTION(SECT_USER_CODE) test_thr2(uapi_desc_t const* uapi) {
-    /// HELP i cannot output anything here!
-    return;
-}

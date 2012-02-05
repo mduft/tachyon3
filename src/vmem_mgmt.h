@@ -93,3 +93,14 @@ bool vmem_mgmt_make_glob_spc(spc_t space);
  * @param space the address space to clobber.
  */
 void vmem_mgmt_clobber_spc(spc_t space);
+
+/**
+ * Adds an additional global memory region to be mapped in
+ * every single address space. this is then added to every
+ * new address space created with spc_new.
+ *
+ * Parameters are the same as vmem_map, except that you don't
+ * have to specify a target address space.
+ */
+void vmem_mgmt_add_global_mapping(phys_addr_t phys, void* virt, uint32_t flags);
+

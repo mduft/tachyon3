@@ -44,6 +44,13 @@ void test_thr(uapi_desc_t const* uapi) {
         systime_stall(10000);
     }
 }
+
+///// TEST /////
+
+void SECTION(SECT_USER_CODE) test_thr2(uapi_desc_t const* uapi) {
+    /// HELP i cannot output anything here!
+    return;
+}
 // -- TESTTEST
 
 void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
@@ -69,6 +76,9 @@ void boot() {
 
     /* initialize the physical memory */
     pmem_init();
+
+    /* initialize the userspace api mappings */
+    uapi_init();
 
     /* initialize logging on the screen */
     cga_init();

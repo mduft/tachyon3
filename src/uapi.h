@@ -37,8 +37,7 @@ uintptr_t uapi_sysc_call(syscall_t call, uintptr_t param0, uintptr_t param1);
 void uapi_thr_trampoline(thread_t* thread, thread_start_t entry);
 
 /**
- * Maps the UAPI into the specified address space.
- *
- * @param space the address space to modify
+ * Initializes the global mappings required for the userspace
+ * API to appear in every address space.
  */
-bool uapi_map(spc_t space);
+void uapi_init();

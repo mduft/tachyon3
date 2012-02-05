@@ -25,9 +25,6 @@ spc_t spc_new() {
         return 0;
     }
 
-    /* we also need to enable the UAPI mappings in the new space */
-    uapi_map(sp);
-
     return sp;
 }
 

@@ -41,7 +41,14 @@ SECTIONS {
         _core_lma_ebss = . - CORE_VMA_OFF;
     }
 
-    .user.c ALIGN(0x1000) : AT(ADDR(.user.c) - CORE_VMA_OFF) {
+    _core_vma_end = .;
+    _core_lma_end = . - CORE_VMA_OFF;
+
+    /* the actual kernel ended here, coming up is the attached usermode
+     * code that is required to be able to use trampolines and such
+     */
+
+    .user.c ALIGN(0x200000) : AT(ADDR(.user.c) - CORE_VMA_OFF) {
         _core_vma_user_code = .;
         _core_lma_user_code = . - CORE_VMA_OFF;
 
@@ -62,9 +69,6 @@ SECTIONS {
         _core_vma_user_edata = .;
         _core_lma_user_edata = . - CORE_VMA_OFF;
     }
-
-    _core_vma_end = .;
-    _core_lma_end = . - CORE_VMA_OFF;
 
     /DISCARD/ : {
         *(.comment)

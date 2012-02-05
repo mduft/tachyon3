@@ -8,9 +8,6 @@
 #include "vmem.h"
 #include "mem.h"
 
-/** size of one chunk of stack space (must be vmem_map'able). */
-#define STK_PAGESIZE    0x1000
-
 /** initial size of new stacks */
 #define STK_INITSIZE    (STK_PAGESIZE * 2)
 

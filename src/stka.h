@@ -9,6 +9,9 @@
 #include "spl.h"
 #include "spc.h"
 
+/** size of one chunk of stack space (must be vmem_map'able). */
+#define STK_PAGESIZE    0x1000
+
 /**
  * Describes the basic information required to create a stack allocator.
  */

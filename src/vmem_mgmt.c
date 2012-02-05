@@ -6,6 +6,8 @@
 #include "pmem.h"
 #include "log.h"
 #include "mem.h"
+#include "list.h"
+#include "kheap.h"
 
 #include "paging.h"
 
@@ -15,6 +17,14 @@ extern phys_addr_t x86_64_pg_kernel_pdpt;
 extern phys_addr_t x86_64_pg_pt_low;
 
 phys_addr_t* ps_mapspace = (phys_addr_t*)((uintptr_t)&x86_64_pg_tmap + CORE_VMA_X86_64);
+
+typedef struct {
+    phys_addr_t from;
+    void* to;
+    uint32_t flags;
+} vmem_glob_mapping_t;
+
+static list_t* vmem_glob_map = 0; 
 
 #define VM_CHECK_MAPPING(x) \
     { if(!(x)) { error("cannot map " #x " for %p\n", virt); } }
@@ -266,3 +276,17 @@ void vmem_mgmt_clobber_spc(spc_t space) {
 
     vmem_mgmt_unmap(pml4);
 }
+
+void vmem_mgmt_add_global_mapping(phys_addr_t phys, void* virt, uint32_t flags) {
+    if(vmem_glob_map == 0) {
+        vmem_glob_map = list_new();
+    }
+
+    vmem_glob_mapping_t* map = kheap_alloc(sizeof(vmem_glob_mapping_t));
+    map->from = phys;
+    map->to = virt;
+    map->flags = flags;
+
+    list_add(vmem_glob_map, map);
+}
+
