@@ -14,6 +14,13 @@
  */
 #define VM_INVAL(x)         asm volatile("invlpg (%0)" :: "r"((x)))
 
+typedef enum {
+    SmallExpected,
+    LargeExpected,
+    SplitSuccess,
+    SplitError
+} vmem_split_res_t;
+
 /**
  * The mapspace, that is used to temporarily map page management 
  * structures, as they are required. This is architecure-implementation
@@ -73,7 +80,7 @@ void vmem_mgmt_free(phys_addr_t addr);
  *                      - VM_SPLIT_LARGE: the virtual address should
  *                          be treated as a large page.
  */
-bool vmem_mgmt_split(spc_t space, uintptr_t virt, 
+vmem_split_res_t vmem_mgmt_split(spc_t space, uintptr_t virt, 
         uintptr_t** pd, uintptr_t** pt, size_t* ipd, size_t* ipt, uint32_t flags);
 
 /**

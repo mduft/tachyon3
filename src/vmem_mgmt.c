@@ -34,7 +34,7 @@ static list_t* vmem_glob_map = 0;
         if(flags & VM_SPLIT_ALLOC) {                                \
             (x)[i] = vmem_mgmt_alloc() | PG_PRESENT | PG_WRITABLE;  \
         } else {                                                    \
-            goto error;                                             \
+            goto not_found;                                         \
         }                                                           \
     }
 
@@ -113,11 +113,13 @@ void vmem_mgmt_free(phys_addr_t addr) {
     pmem_free(addr, VM_PS_STRUCT_SZ);
 }
 
-bool vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd, 
+vmem_split_res_t vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd, 
                     uintptr_t** pt, size_t* ipd, size_t* ipt, uint32_t flags) {
     if(!pd || !pt) {
-        return false;
+        return Error;
     }
+
+    vmem_split_res_t result = SplitError;
 
     register size_t idx_pml4 = (virt >> 39) & 0x1FF;
     register size_t idx_pdpt = (virt >> 30) & 0x1FF;
@@ -138,11 +140,13 @@ bool vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd,
     if(flags & VM_SPLIT_LARGE) {
         if(((*pd)[idx_pd] & PG_PRESENT) && !((*pd)[idx_pd] & PG_LARGE)) {
             error("large page requested, but present entry is a page table\n");
+            result = LargeExpected;
             goto error;
         }
     } else {
         if(((*pd)[idx_pd] & PG_PRESENT) && ((*pd)[idx_pd] & PG_LARGE)) {
             error("small page requested, but large page already mapped here\n");
+            result = SmallExpected;
             goto error;
         }
 
@@ -159,14 +163,16 @@ bool vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd,
     vmem_mgmt_unmap(pml4);
     vmem_mgmt_unmap(pdpt);
 
-    return true;
+    return SplitSuccess;
 
+not_found:
+    result = SplitSuccess;
 error:
     if(pml4) { vmem_mgmt_unmap(pml4); }
     if(pdpt) { vmem_mgmt_unmap(pdpt); }
     if(*pd)  { vmem_mgmt_unmap(*pd);  }
     if(*pt)  { vmem_mgmt_unmap(*pt);  }
-    return false;
+    return result;
 }
 
 bool vmem_mgmt_make_glob_spc(spc_t space) {

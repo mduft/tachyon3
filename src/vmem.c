@@ -24,11 +24,26 @@ static inline phys_addr_t vmem_find_unmap(spc_t spc, void* virt, bool unmap) {
     uintptr_t* pd;
     uintptr_t* pt;
 
-    if(!vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, 0)) {
-        return 0; /* not mapped, it seems */
+    register phys_addr_t result = 0;
+
+    vmem_split_res_t split = vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, 0);
+    
+    switch(split) {
+    case SplitSuccess:
+        break;
+    case SmallExpected:
+        // was a large page, but small expected - upgrade :)
+        switch(vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, VM_SPLIT_LARGE)) {
+        case SplitSuccess:
+            break;
+        default:
+            fatal("second chance failure during virtual memory mapping lookup\n");
+        }
+        break;
+    default:
+        fatal("unexpected error during virtual memory mapping lookup\n");
     }
 
-    register phys_addr_t result = 0;
 
     if(pd[ipd] & PG_LARGE) {
         VM_RES_UNMAP(pd, ipd);
@@ -54,8 +69,11 @@ bool vmem_map(spc_t spc, phys_addr_t phys, void* virt, uint32_t flags) {
     uintptr_t* pt;
     bool result = true;
 
-    if(!vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, 
+    switch(vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, 
             VM_SPLIT_ALLOC | (flags & PG_LARGE ? VM_SPLIT_LARGE : 0))) {
+    case SplitSuccess:
+        break;
+    default:
         return false;
     }
 
