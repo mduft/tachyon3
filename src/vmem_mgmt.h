@@ -15,6 +15,7 @@
 #define VM_INVAL(x)         asm volatile("invlpg (%0)" :: "r"((x)))
 
 typedef enum {
+    NotMapped,
     SmallExpected,
     LargeExpected,
     SplitSuccess,

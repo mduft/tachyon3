@@ -65,6 +65,18 @@ static list_t* vmem_glob_map = 0;
  */
 #define VM_PS_PAGE(x)       VM_PAGE(x, VM_PS_STRUCT_SZ)
 
+/**
+ * Defines a mask for interesting flags to determine whether a mapped
+ * page fulfills all requirements to use it.
+ */
+#define VM_FL_MASK          (PG_WRITABLE | PG_USER | PG_WRITETHROUGH \
+                            | PG_NONCACHABLE | PG_GLOBAL)
+
+/**
+ * Calculates the actual interesting flags for a complete page table entry
+ */
+#define VM_FLAGS(x)         (((x) & ~VM_ENTRY_FLAG_MASK) & VM_FL_MASK)
+
 void* vmem_mgmt_map(phys_addr_t phys) {
     register phys_addr_t page = VM_PS_PAGE(phys);
 
@@ -139,13 +151,13 @@ vmem_split_res_t vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd,
 
     if(flags & VM_SPLIT_LARGE) {
         if(((*pd)[idx_pd] & PG_PRESENT) && !((*pd)[idx_pd] & PG_LARGE)) {
-            error("large page requested, but present entry is a page table\n");
+            warn("large page requested, but present entry is a page table\n");
             result = LargeExpected;
             goto error;
         }
     } else {
         if(((*pd)[idx_pd] & PG_PRESENT) && ((*pd)[idx_pd] & PG_LARGE)) {
-            error("small page requested, but large page already mapped here\n");
+            warn("small page requested, but large page already mapped here\n");
             result = SmallExpected;
             goto error;
         }
@@ -166,7 +178,7 @@ vmem_split_res_t vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd,
     return SplitSuccess;
 
 not_found:
-    result = SplitSuccess;
+    result = NotMapped;
 error:
     if(pml4) { vmem_mgmt_unmap(pml4); }
     if(pdpt) { vmem_mgmt_unmap(pdpt); }
@@ -226,8 +238,50 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
         if(map) {
             trace("trying to map: %p -> %p (0x%x); old = %p\n", map->from, map->to, map->flags, vmem_resolve(space, map->to));
 
-            if(!vmem_map(space, map->from, map->to, map->flags))
-                fatal("cannot insert required global mapping!\n");
+            // if there is a mapping already, thats ok, but it has to meet the flags.
+            // an exception is, that a large page is ok if a small one was requested.
+            size_t ipd, ipt;
+            uintptr_t* pd;
+            uintptr_t* pt;
+
+            register uintptr_t pg_flags;
+            
+            switch(vmem_mgmt_split(space, (uintptr_t)map->to, &pd, &pt, &ipd, &ipt, 
+                (((map->flags & PG_LARGE) == 0) ? VM_SPLIT_LARGE : 0))) {
+            case NotMapped:
+                if(!vmem_map(space, map->from, map->to, map->flags))
+                    fatal("cannot insert required global mapping %p -> %p!\n", 
+                        map->from, map->to);
+                break;
+            case SmallExpected:
+                // small page requested, but large found, thats the good case :)
+                // fallthrough to the flag check.
+            case SplitSuccess:
+                // it's already present. check flags whether they match.
+
+                // this time we want only the flags, nothing else.
+                if(pd[ipd] & PG_LARGE) {
+                    pg_flags = VM_FLAGS(pd[ipd]);
+                } else {
+                    pg_flags = VM_FLAGS(pt[ipt]);
+                }
+
+                if(pg_flags != VM_FLAGS(map->flags)) {
+                    fatal("present page does not match flags, 0x%x != 0x%x\n", 
+                        pg_flags, VM_FLAGS(map->flags));
+                }
+                
+                // and finally unmap management stuff.
+                if(pt) vmem_mgmt_unmap(pt);
+                if(pd) vmem_mgmt_unmap(pd);
+                break;
+            case LargeExpected:
+                // large expected, but small found .... :|
+                fatal("cannot insert large page, small page already mapped at %p\n", map->to);
+            case SplitError:
+                fatal("cannot split virtual address %p ?!\n", map->to);
+            }
+
         }
 
         node = node->next;
