@@ -178,7 +178,7 @@ vmem_split_res_t vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd,
     return SplitSuccess;
 
 not_found:
-    result = NotMapped;
+    result = TableNotMapped;
 error:
     if(pml4) { vmem_mgmt_unmap(pml4); }
     if(pdpt) { vmem_mgmt_unmap(pdpt); }
@@ -245,10 +245,11 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
             uintptr_t* pt;
 
             register uintptr_t pg_flags;
+            register uintptr_t pg_rflags;
             
             switch(vmem_mgmt_split(space, (uintptr_t)map->to, &pd, &pt, &ipd, &ipt, 
-                (((map->flags & PG_LARGE) == 0) ? VM_SPLIT_LARGE : 0))) {
-            case NotMapped:
+                ((map->flags & PG_LARGE) ? VM_SPLIT_LARGE : 0))) {
+            case TableNotMapped:
                 if(!vmem_map(space, map->from, map->to, map->flags))
                     fatal("cannot insert required global mapping %p -> %p!\n", 
                         map->from, map->to);
@@ -262,15 +263,23 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
                 // this time we want only the flags, nothing else.
                 if(pd[ipd] & PG_LARGE) {
                     pg_flags = VM_FLAGS(pd[ipd]);
+                    pg_rflags = pd[ipd] & ~VM_ENTRY_FLAG_MASK;
                 } else {
                     pg_flags = VM_FLAGS(pt[ipt]);
+                    pg_rflags = pt[ipt] & ~VM_ENTRY_FLAG_MASK;
                 }
 
-                if(pg_flags != VM_FLAGS(map->flags)) {
-                    fatal("present page does not match flags, 0x%x != 0x%x\n", 
-                        pg_flags, VM_FLAGS(map->flags));
+                if(pg_rflags & PG_PRESENT) {
+                    if(pg_flags != VM_FLAGS(map->flags)) {
+                        fatal("present page does not match flags, 0x%x (0x%x) != 0x%x\n", 
+                            pg_flags, pg_rflags, VM_FLAGS(map->flags));
+                    }
+                } else {
+                    if(!vmem_map(space, map->from, map->to, map->flags))
+                        fatal("cannot insert required global mapping %p -> %p!\n", 
+                            map->from, map->to);
                 }
-                
+
                 // and finally unmap management stuff.
                 if(pt) vmem_mgmt_unmap(pt);
                 if(pd) vmem_mgmt_unmap(pd);

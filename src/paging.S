@@ -58,6 +58,7 @@ x86_64_pg_pd_low:
 x86_64_pg_pd_high:
     .quad 0x000000        + ( PG_BASE_KFLAGS | PG_LARGE | PG_GLOBAL )   # 0 - 2MB (-2GB)
     .quad 0x200000        + ( PG_BASE_KFLAGS | PG_LARGE | PG_GLOBAL )   # 2 - 4MB (-2GB)
+    # ATTENTION, ATTENTION: if the kernel grows larger, we need to add mappings here!
     .fill 0x1FE, 0x8, 0x0                                     # 4MB - -1GB unm.
 
 .align 0x1000

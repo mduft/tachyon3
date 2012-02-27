@@ -237,7 +237,6 @@ phys_addr_t pmem_alloc(size_t length, off_t align) {
     fatal("out of physical memory\n");
 
   ok:
-    trace("allocated %d bytes at %p\n", length, addr);
     return addr;
 }
 

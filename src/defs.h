@@ -15,11 +15,11 @@
  * | F | PHEAP    | PSHEAP | ... resvd ... | KHEAP    | KSHEAP | CORE        ...
  * '-----------------------------------------------------------------------------
  *
- *                0xFFFFFFFF81001000  0xFFFFFFFF81112000
+ *                0xFFFFFFFF81001000  0xFFFFFFFF81112000   0xFFFFFFFF81123000
  *      0xFFFFFFFF81000000  0xFFFFFFFF81002000  0xFFFFFFFF81113000
- * ---------------------------------------------.
- *  ... | APIC    | CGA     | RME-MEM | GDT-TMP |
- * ---------------------------------------------'
+ * --------------------------------------------------------.
+ *  ... | APIC    | CGA     | RME-MEM | GDT-TMP | UAPI ... |
+ * --------------------------------------------------------'
  *
  * </pre>
  *
@@ -59,7 +59,6 @@
 #define CORE_VMA_X86_64     0xFFFFFFFF80000000
 /** the kernels virtual higher half end (+safety region) */
 #define CORE_VMA_X86_64_END (CORE_VMA_X86_64 + 0x1000000)
-
 
 /** the kernel heap start */
 #define KHEAP_START         0xFFFFFF0000000000
@@ -104,6 +103,12 @@
 #define GDT_VIRTUAL         (RM_VIRTUAL + RM_VSZ)
 /** size of the temporary GDT region */
 #define GDT_VSZ             0x1000
+
+/** virtual starting address of the UAPI. */
+#define UAPI_VMA_X86_64     (GDT_VIRTUAL + GDT_VSZ)
+
+/** maximum size for the mapped uapi code */
+#define UAPI_MAX_SZ         0x10000
 
 /** ksym support: magic stack frame cookie */
 #define INTR_MAGIC_FRAME    0x00900d900dc0ffee

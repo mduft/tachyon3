@@ -10,5 +10,6 @@ ENTRY(bootstrap_x86_64)
 
 CORE_LMA_START = CORE_LMA_X86_64;
 CORE_VMA_OFF   = CORE_VMA_X86_64;
+UAPI_VMA       = UAPI_VMA_X86_64;
 
 #include "common-layout.ld"

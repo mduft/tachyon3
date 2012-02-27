@@ -48,26 +48,29 @@ SECTIONS {
      * code that is required to be able to use trampolines and such
      */
 
-    .user.c ALIGN(0x200000) : AT(ADDR(.user.c) - CORE_VMA_OFF) {
+    UAPI_VMA_OFF = (CORE_VMA_OFF + (. - CORE_VMA_OFF));
+    . = UAPI_VMA;
+
+    .user.c ALIGN(0x1000) : AT(ADDR(.user.c) - UAPI_VMA_OFF) {
         _core_vma_user_code = .;
-        _core_lma_user_code = . - CORE_VMA_OFF;
+        _core_lma_user_code = . - UAPI_VMA_OFF;
 
         *(.user.c)
         . = ALIGN(0x1000);
 
         _core_vma_user_ecode = .;
-        _core_lma_user_ecode = . - CORE_VMA_OFF;
+        _core_lma_user_ecode = . - UAPI_VMA_OFF;
     }
 
-    .user.d ALIGN(0x1000) : AT(ADDR(.user.d) - CORE_VMA_OFF) {
+    .user.d ALIGN(0x1000) : AT(ADDR(.user.d) - UAPI_VMA_OFF) {
         _core_vma_user_data = .;
-        _core_lma_user_data = . - CORE_VMA_OFF;
+        _core_lma_user_data = . - UAPI_VMA_OFF;
 
         *(.user.d)
         . = ALIGN(0x1000);
 
         _core_vma_user_edata = .;
-        _core_lma_user_edata = . - CORE_VMA_OFF;
+        _core_lma_user_edata = . - UAPI_VMA_OFF;
     }
 
     /DISCARD/ : {
