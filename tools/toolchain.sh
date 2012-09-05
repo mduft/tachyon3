@@ -8,17 +8,17 @@
 # each entry has this format: <name>:<version>:<configure flags>:<all target>:<install target>
 
 tools=(
-    "binutils:2.21.1a:--build=\${_tt_host} --target=x86_64-pc-elf"
-    "gmp:5.0.2:--build=\${_tt_host}"
-    "mpfr:3.0.1:--build=\${_tt_host}"
+    "binutils:2.22.90:--build=\${_tt_host} --target=x86_64-pc-elf"
+    "gmp:5.0.5:--build=\${_tt_host}"
+    "mpfr:3.1.1:--build=\${_tt_host}"
     "mpc:0.9:--build=\${_tt_host} --with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
-    "gcc:4.6.2:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable=languages=c,c++:all-gcc:install-gcc"
-    "gdb:7.2:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
+    "gcc:4.6.3:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable-languages=c,c++:all-gcc:install-gcc"
+    "gdb:7.5:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
     "cgdb:0.6.6:--build=\${_tt_host}"
-    "grub:1.99:--build=\${_tt_host}"
-    "xorriso:1.1.6:--build=\${_tt_host}"
-    "qemu:0.15.1:--disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
-    "bochs:2.4.6:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-vbe --enable-acpi --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-compressed-hd --enable-sb16=linux --enable-gdb-stub --enable-ne2000 --enable-pcidev --enable-pnic --disable-smp --enable-logging"
+    "grub:2.00:--build=\${_tt_host} --disable-werror"
+    "xorriso:1.2.4:--build=\${_tt_host}"
+    "qemu:1.1.1-1:--python=/usr/bin/python2 --disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
+    "bochs:2.6:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-sb16=linux --enable-gdb-stub --enable-ne2000 --enable-pcidev --enable-pnic --disable-smp --enable-logging"
 )
 
 function info()  { [[ ${_tt_verbose} == true ]] && echo ">>> " "$@"; }
@@ -121,7 +121,7 @@ function tt_build_dir() {
 # '--------------------------------------------'
 function tt_find_source() {
     for file in ${_tt_source}/${_tt_cur_name}-${_tt_cur_version}.*; do
-        if [[ ${file} == *.tar.gz || ${file} == *.tar.bz2 || ${file} == *.tgz ]]; then
+        if [[ ${file} == *.tar.gz || ${file} == *.tar.bz2 || ${file} == *.tgz || ${file} == *.tar ]]; then
             echo "${file}"
             return
         fi
@@ -140,12 +140,12 @@ function tt_unpack() {
     case "${_tt_cur_src}" in
     *.tgz|*.tar.gz) tflags="xfz";;
     *.tar.bz2)      tflags="xfj";;
+    *.tar)          tflags="xf";;
     esac
 
     tar ${tflags} "${_tt_cur_src}"
     cd ${_tt_cur_name}* || fatal "missing expected directory"
 
-    set -xv
     for patch in "${_tt_home}/patches/${_tt_cur_name}-${_tt_cur_version}"*.patch; do
         [[ ${patch} == *'*.patch' ]] && break
 
@@ -166,7 +166,6 @@ function tt_unpack() {
 
         patch --quiet -p${_p} < "${patch}"
     done
-    set +xv
 }
 
 # .--------------------------------------------.
