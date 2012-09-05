@@ -308,7 +308,7 @@ $(GRUB2_PXE):
 $(GRUB2_ISO): $(GRUB2_CFG) all-kernel
 	@-rm -f "$@"
 	@mkresc=$$(type -p grub-mkrescue); test -x "$${mkresc}" || { echo "grub-mkrescue not found!"; exit 1; }; \
-	 $${mkresc} -o "$@" --modules="biosdisk iso9660 multiboot sh" $(BUILDDIR)
+	 $${mkresc} -o "$@" --modules="biosdisk iso9660 multiboot" $(BUILDDIR)
 	@echo "iso image \"$@\" built..."
 
 iso: $(GRUB2_ISO)
