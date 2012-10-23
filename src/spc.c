@@ -43,5 +43,11 @@ void spc_switch(spc_t target) {
     if(target == spc_current())
         return;
 
+    info("dump of source address space:\n");
+    vmem_mgmt_dump_spc(spc_current());
+
+    info("dump of target address space:\n");
+    vmem_mgmt_dump_spc(target);
+
     asm volatile("mov %0, %%cr3" :: "r"(target));
 }

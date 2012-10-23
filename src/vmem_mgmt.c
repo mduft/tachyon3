@@ -374,3 +374,90 @@ void vmem_mgmt_add_global_mapping(phys_addr_t phys, void* virt, uint32_t flags) 
     list_add(vmem_glob_map, map);
 }
 
+static void vmem_mgmt_dump_pt(uintptr_t virt_addr, uintptr_t pt_ptr) {
+    uintptr_t* pt = vmem_mgmt_map(pt_ptr & VM_ENTRY_FLAG_MASK);
+
+    if(!pt) {
+        error("\t\t\tcannot map PT\n");
+        return;
+    }
+
+    for(uintptr_t pte = 0; pte < 512; ++pte) {
+        uintptr_t page = pt[pte];
+        if(page & PG_PRESENT) {
+            trace("\t\t\tPAGE 4K %4d: %p -> %p (%x)\n", pte, virt_addr | (pte << 12), page & VM_ENTRY_FLAG_MASK, VM_FLAGS(page));
+        }
+    }
+
+    vmem_mgmt_unmap(pt);
+}
+
+static void vmem_mgmt_dump_pd(uintptr_t parent_virt_addr, uintptr_t pd_ptr) {
+    uintptr_t* pd = vmem_mgmt_map(pd_ptr & VM_ENTRY_FLAG_MASK);
+
+    if(!pd) {
+        error("\t\tcannot map PD\n");
+        return;
+    }
+
+    for(uintptr_t pde = 0; pde < 512; ++pde) {
+        uintptr_t pt_ptr = pd[pde];
+        if(pt_ptr & PG_PRESENT) {
+            uintptr_t virt_addr = parent_virt_addr | (pde << 21);
+            if(pt_ptr & PG_LARGE) {
+                trace("\t\tPAGE 2M %4d: %p -> %p (%x)\n", pde, virt_addr, pt_ptr & VM_ENTRY_FLAG_MASK, VM_FLAGS(pt_ptr));
+            } else {
+                trace("\t\tPD %4d: %p (%x)\n", pde, pt_ptr & VM_ENTRY_FLAG_MASK, VM_FLAGS(pt_ptr));
+                vmem_mgmt_dump_pt(virt_addr, pt_ptr);
+            }
+        }
+    }
+
+    vmem_mgmt_unmap(pd);
+}
+
+static void vmem_mgmt_dump_pdpt(uintptr_t parent_virt_addr, uintptr_t pdpt_ptr) {
+    uintptr_t* pdpt = vmem_mgmt_map(pdpt_ptr & VM_ENTRY_FLAG_MASK);
+
+    if(!pdpt) {
+        error("\tcannot map PDPT\n");
+        return;
+    }
+
+    for(uintptr_t pdpte = 0; pdpte < 512; ++pdpte) {
+        uintptr_t pd_ptr = pdpt[pdpte];
+        if(pd_ptr & PG_PRESENT) {
+            uintptr_t virt_addr = parent_virt_addr | (pdpte << 30);
+            if(pd_ptr & PG_LARGE) {
+                trace("\tPAGE 1G %4d: %p -> %p (%x)\n", pdpte, virt_addr, pd_ptr & VM_ENTRY_FLAG_MASK, VM_FLAGS(pd_ptr));
+            } else {
+                trace("\tPDPT %4d: %p (%x)\n", pdpte, pd_ptr & VM_ENTRY_FLAG_MASK, VM_FLAGS(pd_ptr));
+                vmem_mgmt_dump_pd(virt_addr, pd_ptr);
+            }
+        }
+    }
+
+    vmem_mgmt_unmap(pdpt);
+}
+
+void vmem_mgmt_dump_spc(spc_t space) {
+    uintptr_t* pml4 = vmem_mgmt_map(space);
+
+    if(!pml4) {
+        error("cannot map PML4!\n");
+        return;
+    }
+
+    for(uintptr_t pml4e = 0; pml4e < 512; ++pml4e) {
+        uintptr_t pdpt_ptr = pml4[pml4e];
+        if(pdpt_ptr & PG_PRESENT) {
+            uintptr_t virt_addr = pml4e << 39;
+            if((virt_addr >> 47) & 1)
+                virt_addr |= 0xffff000000000000;
+            trace("PML4 %4d: %p (%x)\n", pml4e, pdpt_ptr & VM_ENTRY_FLAG_MASK, VM_FLAGS(pdpt_ptr));
+            vmem_mgmt_dump_pdpt(virt_addr, pdpt_ptr);
+        }
+    }
+
+    vmem_mgmt_unmap(pml4);
+}

@@ -27,6 +27,8 @@
 #include "idle.h"
 #include "uapi.h"
 
+#include "vmem_mgmt.h"
+
 /**
  * the initial state at boot. contains various boot relevant data,
  * saved by the early entry routine

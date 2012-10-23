@@ -112,3 +112,9 @@ void vmem_mgmt_clobber_spc(spc_t space);
  */
 void vmem_mgmt_add_global_mapping(phys_addr_t phys, void* virt, uint32_t flags);
 
+/**
+ * Dumps the mappings that the given space contains.
+ *
+ * @param space the address space to dump
+ */
+void vmem_mgmt_dump_spc(spc_t space);
