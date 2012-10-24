@@ -187,6 +187,15 @@ error:
     return result;
 }
 
+static void vmem_mgmt_gen_flag_string(char buf[6], uintptr_t flags) {
+    buf[0] = (flags & PG_WRITABLE) ? 'w' : '-';
+    buf[1] = (flags & PG_USER) ? 'u' : '-';
+    buf[2] = (flags & PG_WRITETHROUGH) ? 't' : '-';
+    buf[3] = (flags & PG_NONCACHABLE) ? 'n' : '-';
+    buf[4] = (flags & PG_GLOBAL) ? 'g' : '-';
+    buf[5] = 0;
+}
+
 bool vmem_mgmt_make_glob_spc(spc_t space) {
     uintptr_t* pml4 = (uintptr_t*)vmem_mgmt_map(space);
 
@@ -195,6 +204,7 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
         return false;
     }
 
+    // TODO: no easier (maintainable) way?
     uintptr_t ng_flags = (PG_KFLAGS & ~PG_GLOBAL);
 
     memset(pml4, 0, PAGE_SIZE_4K);
@@ -224,7 +234,7 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
 
     memset(pd, 0, PAGE_SIZE_4K);
     pd[0] = (phys_addr_t)&x86_64_pg_pt_low | ng_flags;
-    pd[1] = 0x200000 | ng_flags | PG_LARGE;
+    pd[1] = 0x200000 | ng_flags | PG_LARGE | PG_GLOBAL;
 
     vmem_mgmt_unmap(pd);
     vmem_mgmt_unmap(pdpt);
@@ -236,7 +246,9 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
         vmem_glob_mapping_t* map = (vmem_glob_mapping_t*)node->data;
 
         if(map) {
-            trace("trying to map: %p -> %p (0x%x); old = %p\n", map->from, map->to, map->flags, vmem_resolve(space, map->to));
+            char buf[6];
+            vmem_mgmt_gen_flag_string(buf, map->flags);
+            trace("trying to map: %p -> %p (%s); old = %p\n", map->from, map->to, buf, vmem_resolve(space, map->to));
 
             // if there is a mapping already, thats ok, but it has to meet the flags.
             // an exception is, that a large page is ok if a small one was requested.
@@ -374,6 +386,8 @@ void vmem_mgmt_add_global_mapping(phys_addr_t phys, void* virt, uint32_t flags) 
     list_add(vmem_glob_map, map);
 }
 
+// TODO: refactor walking of the address space, so that dumping is just one of the possible use cases.
+
 static void vmem_mgmt_dump_pt(uintptr_t virt_addr, uintptr_t pt_ptr) {
     uintptr_t* pt = vmem_mgmt_map(pt_ptr & VM_ENTRY_FLAG_MASK);
 
@@ -385,7 +399,9 @@ static void vmem_mgmt_dump_pt(uintptr_t virt_addr, uintptr_t pt_ptr) {
     for(uintptr_t pte = 0; pte < 512; ++pte) {
         uintptr_t page = pt[pte];
         if(page & PG_PRESENT) {
-            trace("\t\t\tPAGE 4K %4d: %p -> %p (%x)\n", pte, virt_addr | (pte << 12), page & VM_ENTRY_FLAG_MASK, VM_FLAGS(page));
+            char buf[6];
+            vmem_mgmt_gen_flag_string(buf, VM_FLAGS(page));
+            trace("\t\t\tPAGE 4K %4d: %p -> %p (%s)\n", pte, virt_addr | (pte << 12), page & VM_ENTRY_FLAG_MASK, buf);
         }
     }
 
@@ -404,10 +420,12 @@ static void vmem_mgmt_dump_pd(uintptr_t parent_virt_addr, uintptr_t pd_ptr) {
         uintptr_t pt_ptr = pd[pde];
         if(pt_ptr & PG_PRESENT) {
             uintptr_t virt_addr = parent_virt_addr | (pde << 21);
+            char buf[6];
+            vmem_mgmt_gen_flag_string(buf, VM_FLAGS(pt_ptr));
             if(pt_ptr & PG_LARGE) {
-                trace("\t\tPAGE 2M %4d: %p -> %p (%x)\n", pde, virt_addr, pt_ptr & VM_ENTRY_FLAG_MASK, VM_FLAGS(pt_ptr));
+                trace("\t\tPAGE 2M %4d: %p -> %p (%s)\n", pde, virt_addr, pt_ptr & VM_ENTRY_FLAG_MASK, buf);
             } else {
-                trace("\t\tPD %4d: %p (%x)\n", pde, pt_ptr & VM_ENTRY_FLAG_MASK, VM_FLAGS(pt_ptr));
+                trace("\t\tPD %4d: %p (%s)\n", pde, pt_ptr & VM_ENTRY_FLAG_MASK, buf);
                 vmem_mgmt_dump_pt(virt_addr, pt_ptr);
             }
         }
@@ -428,10 +446,12 @@ static void vmem_mgmt_dump_pdpt(uintptr_t parent_virt_addr, uintptr_t pdpt_ptr) 
         uintptr_t pd_ptr = pdpt[pdpte];
         if(pd_ptr & PG_PRESENT) {
             uintptr_t virt_addr = parent_virt_addr | (pdpte << 30);
+            char buf[6];
+            vmem_mgmt_gen_flag_string(buf, VM_FLAGS(pd_ptr));
             if(pd_ptr & PG_LARGE) {
-                trace("\tPAGE 1G %4d: %p -> %p (%x)\n", pdpte, virt_addr, pd_ptr & VM_ENTRY_FLAG_MASK, VM_FLAGS(pd_ptr));
+                trace("\tPAGE 1G %4d: %p -> %p (%s)\n", pdpte, virt_addr, pd_ptr & VM_ENTRY_FLAG_MASK, buf);
             } else {
-                trace("\tPDPT %4d: %p (%x)\n", pdpte, pd_ptr & VM_ENTRY_FLAG_MASK, VM_FLAGS(pd_ptr));
+                trace("\tPDPT %4d: %p (%s)\n", pdpte, pd_ptr & VM_ENTRY_FLAG_MASK, buf);
                 vmem_mgmt_dump_pd(virt_addr, pd_ptr);
             }
         }
@@ -452,9 +472,11 @@ void vmem_mgmt_dump_spc(spc_t space) {
         uintptr_t pdpt_ptr = pml4[pml4e];
         if(pdpt_ptr & PG_PRESENT) {
             uintptr_t virt_addr = pml4e << 39;
+            char buf[6];
+            vmem_mgmt_gen_flag_string(buf, VM_FLAGS(pdpt_ptr));
             if((virt_addr >> 47) & 1)
                 virt_addr |= 0xffff000000000000;
-            trace("PML4 %4d: %p (%x)\n", pml4e, pdpt_ptr & VM_ENTRY_FLAG_MASK, VM_FLAGS(pdpt_ptr));
+            trace("PML4 %4d: %p (%s)\n", pml4e, pdpt_ptr & VM_ENTRY_FLAG_MASK, buf);
             vmem_mgmt_dump_pdpt(virt_addr, pdpt_ptr);
         }
     }
