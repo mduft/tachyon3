@@ -3,6 +3,7 @@
 
 #include "heap.h"
 #include "vmem.h"
+#include "vmem_mgmt.h"
 #include "pmem.h"
 #include "spc.h"
 #include "mem.h"
@@ -113,7 +114,7 @@
  * @param h the heap to check.
  */
 #define HEAP_CHECK(h) \
-    if(h->space != spc_current()) \
+    if(h->space != spc_current() && !(h->pg_fl & PG_GLOBAL)) \
         fatal("the heap can only operate if the heaps address space is active!\n"); \
 
 
@@ -189,6 +190,10 @@ bool heap_init(heap_t* heap) {
 
     heap->state.valid = true;
 
+    // now add the mapping for later.
+    if(heap->pg_fl & PG_GLOBAL)
+        vmem_mgmt_add_global_mapping(phys, (void*)heap->start, heap->pg_fl);
+
     return true;
 }
 
@@ -227,15 +232,17 @@ void* heap_alloc(heap_t* heap, size_t bytes) {
 
             for(register size_t i = 0; i < pcnt; ++i) {
                 register phys_addr_t phys = pmem_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K);
+                register void* target = (void*)heap->state.vmem_mark;
 
-                if(!vmem_map(heap->space, phys,
-                    (void*)heap->state.vmem_mark, heap->pg_fl))
-                {
+                if(!vmem_map(heap->space, phys, target, heap->pg_fl)) {
                     error("failed to allocate more room for the kernel heap!\n");
                     return NULL;
                 } else {
                     heap->state.vmem_mark += PAGE_SIZE_4K;
                     HEAP_BL_SET(block, sz + (PAGE_SIZE_4K * (i + 1)), 0);
+
+                    if(heap->pg_fl & PG_GLOBAL)
+                        vmem_mgmt_add_global_mapping(phys, target, heap->pg_fl);
                 }
             }
 

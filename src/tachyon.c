@@ -94,7 +94,6 @@ void boot() {
      * space, and other relevant data. */
     process_t** pcore = (process_t**)&core;
     *pcore = prc_new(spc_current(), Kernel, RING_KERNEL);
-    spc_switch(core->space);
 
     if(!core)
         fatal("failed to create core process\n");
