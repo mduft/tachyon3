@@ -46,6 +46,11 @@ typedef struct {
 } stack_allocator_t;
 
 /**
+ * The kernel stack allocator.
+ */
+extern stack_allocator_t* kstack_allocator;
+
+/**
  * Creates a new stack allocator from the given description.
  *
  * @param desc  the description. all fields have to be valid.

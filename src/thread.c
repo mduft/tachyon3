@@ -101,6 +101,11 @@ void thr_abort(thread_t* target) {
     ksym_write_trace(Error, trace);
     ksym_delete(trace);
 
+    if(target->parent->id == 0) {
+        // uh oh - kernel thread crashed....!!
+        abort();
+    }
+
     sysc_call(SysSchedule, 0, 0);
 
     /* never reached - as the thread is aborting, it will never be re-scheduled */

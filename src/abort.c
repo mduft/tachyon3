@@ -4,6 +4,8 @@
 #include <tachyon.h>
 #include <log.h>
 #include <ksym.h>
+#include <intr.h>
+#include <vmem_mgmt.h>
 
 void abort(void) {
     // don't use fatal() as this calls abort ;)
@@ -12,6 +14,10 @@ void abort(void) {
     list_t* trace = ksym_trace();
     ksym_write_trace(Error, trace);
     ksym_delete(trace);
+
+    vmem_mgmt_dump_spc(spc_current());
+
+    intr_disable();
 
     stop:
         asm("cli; hlt;");

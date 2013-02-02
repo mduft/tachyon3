@@ -76,7 +76,11 @@ static bool stka_grow(stack_allocator_t* allocator, stack_t* stack, uintptr_t am
         if(allocator->desc.global)
             vmem_mgmt_add_global_mapping(phys, (void*)i, allocator->desc.pg_fl);
 
-        memset((void*)(i), 0, STK_PAGESIZE);
+        if(spc_current() == allocator->desc.space) {
+            memset((void*)(i), 0, STK_PAGESIZE);
+        } else {
+            warn("page mapped in foreign space: %p, should have been %p\n", spc_current(), allocator->desc.space);
+        }
     }
 
     stack->mapped -= amount;

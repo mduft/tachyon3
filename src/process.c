@@ -56,18 +56,22 @@ process_t* prc_new(spc_t space, priority_t priority, uint8_t ring) {
         goto fail;
     }
 
-    stack_allocator_desc_t desc = {
-        .top = SHEAP_END,
-        .bottom = SHEAP_START,
-        .space = prc->space,
-        // TODO: see above - swap to correct location.
-        // TODO: no execute on stack...?
-        .pg_fl = (PG_WRITABLE | PG_USER),
-        .fixed = false,
-        .global = (ring == RING_KERNEL)
-    };
+    if(ring == RING_KERNEL) {
+        prc->stka = kstack_allocator;
+    } else {
+        stack_allocator_desc_t desc = {
+            .top = SHEAP_END,
+            .bottom = SHEAP_START,
+            .space = prc->space,
+            // TODO: see above - swap to correct location.
+            // TODO: no execute on stack...?
+            .pg_fl = (PG_WRITABLE | PG_USER),
+            .fixed = false,
+            .global = false
+        };
 
-    prc->stka = stka_new(&desc);
+        prc->stka = stka_new(&desc);
+    }
 
     if(!prc->stka) {
         goto fail;

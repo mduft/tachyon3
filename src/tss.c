@@ -15,9 +15,10 @@
 #include "vmem.h"
 #include "vmem_mgmt.h"
 
-static stack_allocator_t* kstack_allocator = NULL;
+stack_allocator_t* kstack_allocator = NULL;
 
 void tss_init() {
+    // TODO: move this somewhere more useful
     if(kstack_allocator == NULL) {
         stack_allocator_desc_t desc = {
             .top = KSHEAP_END,
