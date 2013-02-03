@@ -60,6 +60,15 @@ void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
     cb();
 }
 
+/**
+ * Contains the local data required during the boot() function.
+ * It is required to have that information in a global sope, since
+ * stacks are swapped in between which would doom that informations.
+ */
+static struct {
+    thread_t* init;
+} locals;
+
 void boot() {
     /* basic logging system initialization, there are no writers initialized
      * however (serial and cga will follow a little later). */
@@ -100,13 +109,13 @@ void boot() {
 
     /* initial thread. it is marked as exited (below), as this should
      * never return here. */
-    thread_t* init = thr_create(core, NULL);
-    init->state = Runnable;
-    thr_switch(init);
+    locals.init = thr_create(core, NULL);
+    locals.init->state = Runnable;
+    thr_switch(locals.init);
 
     /* need to set up a save stack for the kernel level. */
     asm volatile (
-        "movq %0,%%rsp; movq %0, %%rbp; pushq $0; pushq $0" :: "d"(init->stack->top - (sizeof(uintptr_t) * 2)) : "rsp"
+        "movq %0,%%rsp; movq %0, %%rbp; pushq $0; pushq $0" :: "d"(locals.init->stack->top - (sizeof(uintptr_t) * 2)) : "rsp"
     );
 
     /* initialize some more */
@@ -131,7 +140,7 @@ void boot() {
 
     // TODO: kick off initial threads.
     // TEST
-    for(size_t i = 0; i < 32; ++i) {
+    for(size_t i = 0; i < 2; ++i) {
         thread_t* thr = thr_create(core, test_thr);
         sched_add(thr);
     }
@@ -145,7 +154,7 @@ void boot() {
     // TEST
 
     // and start the scheduler.
-    init->state = Exited;
+    locals.init->state = Exited;
     sched_start();
 
     fatal("kernel ended unexpectedly.\n");

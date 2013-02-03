@@ -204,7 +204,7 @@ $(KERNEL_COBJECTS): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.c
 	 else \
 	 	echo "$(CC) $(KCFLAGS) -c -o \"$@\" \"$<\""; \
 	 fi
-	@$(CC) -MMD -MF "$(subst .o,.Po,$@)" $(KCFLAGS) -c -o "$@" "$<"
+	@$(CC) -MMD -MF "$(subst .o,.Po,$@)" -dA -dP -save-temps=obj $(KCFLAGS) -c -o "$@" "$<"
 
 $(KERNEL_SOBJECTS): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.S
 	@-$(MAKE_BDIR)

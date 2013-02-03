@@ -99,6 +99,8 @@ void sched_schedule() {
     thread_t* thr = sched_choose();
 
     if(thr) {
+        trace("switching: %d:%d\n", thr->parent->id, thr->id);
+
         thr->preempt_at = systime() + SCHED_TIMESLICE_US;
 
         thr_switch(thr);
