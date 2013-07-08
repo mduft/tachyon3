@@ -5,6 +5,7 @@
 #include "vmem_mgmt.h"
 #include "ldsym.h"
 #include "paging.h"
+#include "log.h"
 
 static uapi_desc_t const SECTION(SECT_USER_DATA) uapi_desc = {
     .syscall=uapi_sysc_call
@@ -46,6 +47,12 @@ static bool _uapi_map_from_to(uintptr_t* sv, uintptr_t* sp, uintptr_t* ev, uintp
 }
 
 void uapi_init() {
+    // copy userspace code to fresh phys memory, and add a mapping /somewhere/.
+    size_t uapi_code_sz = ((size_t)&_core_lma_user_ecode) - ((size_t)&_core_lma_user_code);
+    size_t uapi_data_sz = ((size_t)&_core_lma_user_edata) - ((size_t)&_core_lma_user_data);
+
+    trace("uapi sz: code: %d bytes, data: %d bytes\n", uapi_code_sz, uapi_data_sz);
+
     _uapi_map_from_to(&_core_vma_user_code, &_core_lma_user_code, &_core_vma_user_ecode, &_core_lma_user_ecode);
     _uapi_map_from_to(&_core_vma_user_data, &_core_lma_user_data, &_core_vma_user_edata, &_core_lma_user_edata);
 }

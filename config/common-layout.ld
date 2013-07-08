@@ -48,7 +48,7 @@ SECTIONS {
      * code that is required to be able to use trampolines and such
      */
 
-    UAPI_VMA_OFF = (CORE_VMA_OFF + (. - CORE_VMA_OFF));
+    UAPI_VMA_OFF = UAPI_VMA - _core_lma_end;
     . = UAPI_VMA;
 
     .user.c ALIGN(0x1000) : AT(ADDR(.user.c) - UAPI_VMA_OFF) {
