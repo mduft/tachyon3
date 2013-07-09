@@ -103,7 +103,7 @@ void pmem_init() {
 
     /* reserve the kernel's physical memory, so nobody
      * else tries to use it */
-    if(!pmem_reserve(0xA0000, (((size_t)&_core_lma_end) - 0xA0000))) {
+    if(!pmem_reserve(0xA0000, (((size_t)&_core_lma_ebss) - 0xA0000))) {
         error("failed to protect physical lower and kernel memory\n");
     }
 
