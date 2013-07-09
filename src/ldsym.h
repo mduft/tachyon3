@@ -10,6 +10,7 @@ extern uintptr_t _core_lma_start;
 extern uintptr_t _core_vma_start;
 extern uintptr_t _core_vma_edata;
 extern uintptr_t _core_lma_edata;
+extern uintptr_t _core_vma_bss;
 extern uintptr_t _core_vma_ebss;
 extern uintptr_t _core_lma_ebss;
 extern uintptr_t _core_vma_end;

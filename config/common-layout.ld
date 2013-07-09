@@ -33,6 +33,7 @@ SECTIONS {
         _core_lma_edata = . - CORE_VMA_OFF;
     }
 
+    . = ALIGN(0x1000);
     _core_vma_end = .;
     _core_lma_end = . - CORE_VMA_OFF;
 
@@ -65,9 +66,11 @@ SECTIONS {
         _core_lma_user_edata = . - UAPI_VMA_OFF;
     }
 
+    CORE_VMA_OFF = CORE_VMA_OFF - (SIZEOF(.user.c) + SIZEOF(.user.d));
     . = _core_vma_end;
 
     .bss ALIGN(0x1000) : AT(ADDR(.bss) - CORE_VMA_OFF) {
+        _core_vma_bss = .;
         *(COMMON)
         *(.bss)
         . = ALIGN(0x1000);

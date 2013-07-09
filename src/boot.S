@@ -40,8 +40,8 @@ bootstrap_x86_64_mbhdr:
     .long CHECKSUM                  # checksum
     .long bootstrap_x86_64_mbhdr    # address of this header
     .long CORE_LMA_START            # start of the kernel
-    .long 0                         # end of data. kernel (file!) must be at least this big.
-    .long 0                         # end of bss, which might not physically exist in file.
+    .long _core_lma_user_edata      # end of data. kernel (file!) must be at least this big.
+    .long _core_lma_ebss            # end of bss, which might not physically exist in file.
     .long bootstrap_x86_64          # entry point address
 
 bootstrap_x86_64:

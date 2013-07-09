@@ -11,7 +11,7 @@
  * helps a lot.
  */
 void bss_init() {
-    uintptr_t* pstart = &_core_vma_edata;
+    uintptr_t* pstart = &_core_vma_bss;
     uintptr_t* pend =   &_core_vma_ebss;
 
     while(pstart < pend) {
