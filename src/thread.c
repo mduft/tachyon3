@@ -12,6 +12,7 @@
 #include <sched.h>
 #include <syscall.h>
 #include <ksym.h>
+#include <spc.h>
 
 #include "intr.h"
 #include <log.h>
@@ -46,8 +47,11 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
         thr->context->state.ss = GDT_KDATA64;
         thr->context->state.cs = GDT_KCODE64;
     } else {
-        thr->context->state.ss = GDT_UDATA64;
-        thr->context->state.cs = GDT_UCODE64;
+        //thr->context->state.ss = GDT_UDATA64;
+        //thr->context->state.cs = GDT_UCODE64;
+
+        thr->context->state.ss = GDT_KDATA64;
+        thr->context->state.cs = GDT_KCODE64;
     }
 
     thr->state = Runnable;
@@ -81,6 +85,10 @@ thread_t* thr_switch(thread_t* target) {
         // thread, return the new thread as old one. This saves
         // the caller from having to check NULLs.
         return target;
+    }
+
+    if(old->thread->parent != target->parent) {
+        spc_switch(target->parent->space);
     }
 
     return old->thread;
