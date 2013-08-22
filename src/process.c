@@ -18,6 +18,9 @@
  */
 process_t* const core;
 
+// TODO: just a workaround - need some manager for pids.
+static pid_t current = 0;
+
 process_t* prc_new(spc_t space, priority_t priority, uint8_t ring) {
     process_t* prc = kheap_alloc(sizeof(process_t));
 
@@ -79,6 +82,7 @@ process_t* prc_new(spc_t space, priority_t priority, uint8_t ring) {
 
     prc->priority = priority;
     prc->ring = ring;
+    prc->id = ++current;
 
     // switch back to the previous address space.
     spc_switch(old);

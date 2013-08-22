@@ -9,7 +9,7 @@ OBJCOPY         := x86_64-pc-elf-objcopy
 NM				:= x86_64-pc-elf-nm
 
 KERNEL_CPPFLAGS := -D__X86_64__
-KERNEL_CFLAGS	:= -O0 -g -mcmodel=kernel -mno-red-zone -mno-sse $(KERNEL_CPPFLAGS)
+KERNEL_CFLAGS	:= -O0 -g -mcmodel=large -mno-red-zone -mno-sse $(KERNEL_CPPFLAGS)
 KERNEL_CXXFLAGS	:= $(KERNEL_CFLAGS)
 KERNEL_LDFLAGS	:= -z max-page-size=0x1000
 

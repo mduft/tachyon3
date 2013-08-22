@@ -70,10 +70,16 @@
 /** the kernel stack heap region end */
 #define KSHEAP_END          0xFFFFFFFF80000000
 
+/** maximum size for the mapped uapi code */
+#define UAPI_MAX_SZ         0x10000
+
 /** the per-process heap region start */
 #define PHEAP_START         0x0000000000400000
 /** the per-process heap region end */
-#define PHEAP_END           0x0000700000000000
+#define PHEAP_END           0x0000700000000000 - UAPI_MAX_SZ
+
+/** virtual starting address of the UAPI. */
+#define UAPI_VMA_X86_64     PHEAP_END
 
 /** the per-process stack heap region start */
 #define SHEAP_START         0x0000700000000000
@@ -103,12 +109,6 @@
 #define GDT_VIRTUAL         (RM_VIRTUAL + RM_VSZ)
 /** size of the temporary GDT region */
 #define GDT_VSZ             0x1000
-
-/** virtual starting address of the UAPI. */
-#define UAPI_VMA_X86_64     (GDT_VIRTUAL + GDT_VSZ)
-
-/** maximum size for the mapped uapi code */
-#define UAPI_MAX_SZ         0x10000
 
 /** ksym support: magic stack frame cookie */
 #define INTR_MAGIC_FRAME    0x00900d900dc0ffee
