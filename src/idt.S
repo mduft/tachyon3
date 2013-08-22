@@ -188,10 +188,11 @@ x86_64_isr     59,  0
 # | Functions to init and fill the idt     |
 # '----------------------------------------'
 
-.macro set_int_gate num, ist=0
+.macro set_int_gate num, ist=0, dpl=0
     mov $_x86_64_isr\num, %rsi
     mov $\num, %rdi
     mov $\ist, %r8
+    mov $\dpl, %r9
     call x86_64_idt_set
 .endm
 
@@ -202,6 +203,7 @@ x86_64_idt_init:
     push %rsi
     push %rdi
     push %r8
+    push %r9
 
     set_int_gate 0
     set_int_gate 1
@@ -257,7 +259,7 @@ x86_64_idt_init:
     set_int_gate 47
     set_int_gate 48
     set_int_gate 49
-    set_int_gate 50, 2 # syscall
+    set_int_gate 50, 2, 3 # syscall
     set_int_gate 51
     set_int_gate 52
     set_int_gate 53
@@ -270,6 +272,7 @@ x86_64_idt_init:
 
     lidt (x86_64_idt_ptr)
 
+    pop %r9
     pop %r8
     pop %rdi
     pop %rsi
@@ -287,6 +290,7 @@ x86_64_idt_set:
     # RDI: the gate number
     # RSI: the target RIP
     # R8: the IST index to use
+    # R9: the DPL of the gate.
 
     # .----------------------------------------.
     # | Calculate the entries address in IDT   |
@@ -326,7 +330,9 @@ x86_64_idt_set:
     mov %ebx, (%rax)
     mov %rsi, %rbx
     and $~0xFFFF, %ebx
+    shr $0xD, %r9
     or $(IDTT_LARGE_INT_GATE | IDTE_PRESENT), %ebx
+    or %r9d, %ebx
     or %r8d, %ebx
     mov %ebx, 4(%rax)
 
