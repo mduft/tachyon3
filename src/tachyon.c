@@ -149,6 +149,7 @@ void boot() {
     extern void test_thr2();
     process_t* uproc = prc_new(spc_new(), Normal, RING_USERSPACE);
     thread_t* thr = thr_create(uproc, test_thr2);
+    thr->priority=Kernel; // tmp - scheduler only chooses kernel currently
     sched_add(thr);
 
     // TEST

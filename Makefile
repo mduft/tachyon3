@@ -25,7 +25,7 @@ ENV_MAKEFILE	:= $(SOURCEDIR)/.package/env.mk
 include $(ENV_MAKEFILE)
 include $(ARCH_MAKEFILE)
 
-GDB				:= x86_64-pc-linux-gnu-gdb
+GDB				:= gdb
 
 BASE_CPPFLAGS   := -Wall -Wextra -I$(SOURCEDIR)/src
 

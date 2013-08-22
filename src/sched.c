@@ -96,10 +96,10 @@ void sched_schedule() {
     // BUG: this algorithm will start to choose the idle thread when
     // only one other thread is remaining runnable.
 
-    thread_t* thr = sched_choose();
+    thread_t* thr = sched_choose(old);
 
     if(thr) {
-        trace("switching: %d:%d\n", thr->parent->id, thr->id);
+        trace("switching: %d:%d (%d)\n", thr->parent->id, thr->id, thr->priority);
 
         thr->preempt_at = systime() + SCHED_TIMESLICE_US;
 
