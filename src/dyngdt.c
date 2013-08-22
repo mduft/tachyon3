@@ -34,7 +34,7 @@ void dyngdt_init_and_lock() {
 }
 
 void dyngdt_set(uint16_t sel, uintptr_t base, uint32_t limit, uint32_t type, uint8_t dpl, bool large, bool sys) {
-    if(dpl > 2)
+    if(dpl > 3)
         fatal("dpl out of range for gdt entry: %d\n", dpl);
 
     if(!spl_locked(&global_gdt_init_lock))

@@ -116,7 +116,7 @@
 /* rings. */
 #define RING_KERNEL         0
 #define RING_DRIVERS        2
-#define RING_USERSPACE      2
+#define RING_USERSPACE      3
 
 /* registers */
 #define AX  "rax"

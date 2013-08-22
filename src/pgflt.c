@@ -44,13 +44,20 @@ bool pgflt_handler(interrupt_t* state) {
             fatal("a translation for the page was available, but a reserved\n"
                   "bit was set in one of the paging structures!\n");
         }
+        if(state->code & ERRC_ACC_USER) {
+            fatal("present page (0x%x) not accessible in user mode\n", state->ctx->state.cr2);
+        }
+        fatal("unknwon error when accessing present page\n");
     } else {
         trace("no translation for the given page was available!\n");
 
         thr_context_t* context = state->ctx;
 
-        if(!context->thread)
+        if(!context->thread) {
             fatal("no thread associated with current execution context!\n");
+        } else {
+            trace("fault occured in thread %d, process %d\n", context->thread->id, context->thread->parent->id);
+        }
 
         stack_t* stk = context->thread->stack;
 

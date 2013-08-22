@@ -47,11 +47,8 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
         thr->context->state.ss = GDT_KDATA64;
         thr->context->state.cs = GDT_KCODE64;
     } else {
-        //thr->context->state.ss = GDT_UDATA64;
-        //thr->context->state.cs = GDT_UCODE64;
-
-        thr->context->state.ss = GDT_KDATA64;
-        thr->context->state.cs = GDT_KCODE64;
+        thr->context->state.ss = GDT_UDATA64 | RING_USERSPACE;
+        thr->context->state.cs = GDT_UCODE64 | RING_USERSPACE;
     }
 
     thr->state = Runnable;

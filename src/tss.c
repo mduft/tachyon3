@@ -53,5 +53,5 @@ void tss_init() {
     tss->ist[IST_LLHW_STACK] = lstk->top;
     info("IST low-level stack at %p - %p\n", lstk->mapped, lstk->top);
 
-    dyngdt_set(GDT_KTSS, (uintptr_t)tss, sizeof(tss_t), GDT_TYPE_TSS, 0, true, true);
+    dyngdt_set(GDT_KTSS, (uintptr_t)tss, sizeof(tss_t), GDT_TYPE_TSS, RING_USERSPACE, true, true);
 }

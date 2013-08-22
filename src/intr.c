@@ -61,7 +61,7 @@ void intr_dispatch(interrupt_t* state, uint16_t num) {
             return;
     }
 
-    fatal("unhandled interrupt %d @ %p\n", num, state->ip);
+    fatal("unhandled interrupt %d (0x%x) @ %p\n", num, state->code, state->ip);
 }
 
 void intr_add(uint16_t num, intr_handler_t handler) {
