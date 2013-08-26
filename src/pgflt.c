@@ -25,6 +25,7 @@ void pgflt_init() {
 
 bool pgflt_handler(interrupt_t* state) {
     ksym_t const* sym = ksym_get((void*)state->ip);
+    thr_context_t* context = state->ctx;
     trace("page-fault at %p <%p:%s + 0x%x> while %s %p\n",
         state->ip,sym ? sym->addr : 0x0, sym ? sym->name : "unknown",
         sym ? (state->ip - sym->addr) : 0, ((state->code & ERRC_INSTR_FETCH) ? 
@@ -39,26 +40,23 @@ bool pgflt_handler(interrupt_t* state) {
         state->ctx->state.rdx, state->ctx->state.rbp,
         state->ctx->state.rsp);
 
+    if(!context->thread) {
+        fatal("no thread associated with current execution context!\n");
+    } else {
+        trace("fault occured in thread %d, process %d\n", context->thread->id, context->thread->parent->id);
+    }
+
     if(state->code & ERRC_TRANS_AVAILABLE) {
         if(state->code & ERRC_TRANS_RESVD_BIT) {
-            fatal("a translation for the page was available, but a reserved\n"
+            error("a translation for the page was available, but a reserved\n"
                   "bit was set in one of the paging structures!\n");
         }
         if(state->code & ERRC_ACC_USER) {
-            fatal("present page (0x%x) not accessible in user mode\n", state->ctx->state.cr2);
+            error("present page (0x%x) not accessible in user mode\n", state->ctx->state.cr2);
         }
         fatal("unknwon error when accessing present page\n");
     } else {
         trace("no translation for the given page was available!\n");
-
-        thr_context_t* context = state->ctx;
-
-        if(!context->thread) {
-            fatal("no thread associated with current execution context!\n");
-        } else {
-            trace("fault occured in thread %d, process %d\n", context->thread->id, context->thread->parent->id);
-        }
-
         stack_t* stk = context->thread->stack;
 
         if(context->state.cr2 >= stk->guard && context->state.cr2 <= stk->top) {
@@ -81,11 +79,9 @@ bool pgflt_handler(interrupt_t* state) {
         }
 
         error("don't know anything more to do. page-fault @ %p (code 0x%lx) without resolution!\n", state->ip, state->code);
-
-        // nothing more to do.
-        thr_abort(context->thread);
-        return true;
     }
-
+    
+    // nothing more to do.
+    thr_abort(context->thread);
     fatal("unexpectedly reached end of page fault handler\n");
 }

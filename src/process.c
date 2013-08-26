@@ -82,7 +82,7 @@ process_t* prc_new(spc_t space, priority_t priority, uint8_t ring) {
 
     prc->priority = priority;
     prc->ring = ring;
-    prc->id = ++current;
+    prc->id = current++;
 
     // switch back to the previous address space.
     spc_switch(old);

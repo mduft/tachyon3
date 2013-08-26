@@ -2,6 +2,7 @@
  * This file is part of the 'tachyon' operating system. */
 
 #include "uapi.h"
+#include "vmem.h"
 #include "vmem_mgmt.h"
 #include "ldsym.h"
 #include "paging.h"
@@ -38,6 +39,10 @@ static bool _uapi_map_from_to(uintptr_t* sv, uintptr_t* sp, uintptr_t* ev, uintp
     // attention: keep sv and sp synchronous!
     while(sv < ev && sp < ep) {
         vmem_mgmt_add_global_mapping((uintptr_t)sp, sv, PG_USER | PG_GLOBAL);
+
+        if(!vmem_map(spc_current(), (phys_addr_t)sp, sv, PG_USER | PG_GLOBAL)) {
+            warn("failed to map UAPI in current address space!\n");
+        }
         
         sv += PAGE_SIZE_4K;
         sp += PAGE_SIZE_4K;
