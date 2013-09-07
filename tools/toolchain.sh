@@ -8,17 +8,17 @@
 # each entry has this format: <name>:<version>:<configure flags>:<all target>:<install target>
 
 tools=(
-    "binutils:2.23.1:--build=\${_tt_host} --target=x86_64-pc-elf"
-    "gmp:5.0.5:--build=\${_tt_host}"
-    "mpfr:3.1.1:--build=\${_tt_host}"
+    "binutils:2.23.2:--build=\${_tt_host} --target=x86_64-pc-elf"
+    "gmp:5.1.2:--build=\${_tt_host}"
+    "mpfr:3.1.2:--build=\${_tt_host}"
     "mpc:1.0.1:--build=\${_tt_host} --with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
-    "gcc:4.7.2:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable-languages=c,c++:all-gcc:install-gcc"
-    "gdb:7.5.1:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
-    "cgdb:0.6.6:--build=\${_tt_host}"
+    "gcc:4.7.3:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable-languages=c,c++:all-gcc:install-gcc"
+    "gdb:7.6.1:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
+    "cgdb:0.6.7:--build=\${_tt_host}"
     "grub:2.00:--build=\${_tt_host} --disable-werror"
-    "xorriso:1.2.4:--build=\${_tt_host}"
-    "qemu:1.3.0:--python=/usr/bin/python2 --disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
-    "bochs:2.6:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-sb16=linux --enable-gdb-stub --enable-ne2000 --enable-pcidev --enable-pnic --disable-smp --enable-logging"
+    "xorriso:1.3.2:--build=\${_tt_host}"
+    "qemu:1.6.0:--python=/usr/bin/python2 --disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
+    "bochs:2.6.2:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-sb16=linux --enable-gdb-stub --enable-ne2000 --enable-pcidev --enable-pnic --disable-smp --enable-logging"
 )
 
 function info()  { [[ ${_tt_verbose} == true ]] && echo ">>> " "$@"; }
