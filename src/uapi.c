@@ -29,9 +29,7 @@ uintptr_t SECTION(SECT_USER_CODE) uapi_sysc_call(syscall_t call, uintptr_t p0, u
 void SECTION(SECT_USER_CODE) uapi_thr_trampoline(thread_t* thread, thread_start_t entry) {
     entry(&uapi_desc);
 
-    thread->state = Exited;
-    sysc_call(SysSchedule, 0, 0);
-
+    uapi_sysc_call(SysThrExit, 0, 0);
     /* never reached - as the thread is aborting, it will never be re-scheduled */
 }
 

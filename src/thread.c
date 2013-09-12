@@ -112,7 +112,11 @@ void thr_abort(thread_t* target) {
     }
 
     sysc_call(SysSchedule, 0, 0);
-
-    /* never reached - as the thread is aborting, it will never be re-scheduled */
 }
 
+void thr_exit(thread_t* thread) {
+    trace("thread %d in process %d exiting normally\n", thread->id, thread->parent->id);
+    thread->state = Exited;
+
+    sysc_call(SysSchedule, 0, 0);
+}

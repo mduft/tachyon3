@@ -29,13 +29,16 @@ static list_t* vmem_glob_map = 0;
 #define VM_CHECK_MAPPING(x) \
     { if(!(x)) { error("cannot map " #x " for %p\n", virt); } }
 
-#define VM_CHECK_ENTRY(x, i) \
+#define VM_CHECK_ENTRY(x, i, u) \
     if(!((x)[i] & PG_PRESENT)) {                                    \
         if(flags & VM_SPLIT_ALLOC) {                                \
             (x)[i] = vmem_mgmt_alloc() | PG_PRESENT | PG_WRITABLE;  \
         } else {                                                    \
             goto not_found;                                         \
         }                                                           \
+    }                                                               \
+    if(flags & VM_SPLIT_ALLOC) {                                    \
+        (x)[i] |= u;                                                \
     }
 
 /** 
@@ -126,7 +129,7 @@ void vmem_mgmt_free(phys_addr_t addr) {
 }
 
 vmem_split_res_t vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd, 
-                    uintptr_t** pt, size_t* ipd, size_t* ipt, uint32_t flags) {
+                    uintptr_t** pt, size_t* ipd, size_t* ipt, uint32_t flags, uint32_t pgflags) {
     if(!pd || !pt) {
         return Error;
     }
@@ -140,11 +143,11 @@ vmem_split_res_t vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd,
     uintptr_t* pdpt = NULL;
     uintptr_t* pml4 = vmem_mgmt_map(space);
     VM_CHECK_MAPPING(pml4);
-    VM_CHECK_ENTRY(pml4, idx_pml4);
+    VM_CHECK_ENTRY(pml4, idx_pml4, pgflags);
 
     pdpt = vmem_mgmt_map(pml4[idx_pml4] & VM_ENTRY_FLAG_MASK);
     VM_CHECK_MAPPING(pdpt);
-    VM_CHECK_ENTRY(pdpt, idx_pdpt);
+    VM_CHECK_ENTRY(pdpt, idx_pdpt, pgflags);
 
     *pd = vmem_mgmt_map(pdpt[idx_pdpt] & VM_ENTRY_FLAG_MASK);
     VM_CHECK_MAPPING((*pd));
@@ -162,7 +165,7 @@ vmem_split_res_t vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd,
             goto error;
         }
 
-        VM_CHECK_ENTRY((*pd), idx_pd);
+        VM_CHECK_ENTRY((*pd), idx_pd, pgflags);
 
         *pt = vmem_mgmt_map((*pd)[idx_pd] & VM_ENTRY_FLAG_MASK);
         VM_CHECK_MAPPING((*pt));
@@ -260,7 +263,7 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
             register uintptr_t pg_rflags;
             
             switch(vmem_mgmt_split(space, (uintptr_t)map->to, &pd, &pt, &ipd, &ipt, 
-                ((map->flags & PG_LARGE) ? VM_SPLIT_LARGE : 0))) {
+                ((map->flags & PG_LARGE) ? VM_SPLIT_LARGE : 0), 0)) {
             case TableNotMapped:
                 if(!vmem_map(space, map->from, map->to, map->flags))
                     fatal("cannot insert required global mapping %p -> %p!\n", 

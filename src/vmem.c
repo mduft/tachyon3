@@ -26,7 +26,7 @@ static inline phys_addr_t vmem_find_unmap(spc_t spc, void* virt, bool unmap) {
 
     register phys_addr_t result = 0;
 
-    vmem_split_res_t split = vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, 0);
+    vmem_split_res_t split = vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, 0, 0);
     
     switch(split) {
     case SplitSuccess:
@@ -35,7 +35,7 @@ static inline phys_addr_t vmem_find_unmap(spc_t spc, void* virt, bool unmap) {
         return 0;
     case SmallExpected:
         // was a large page, but small expected - upgrade :)
-        switch(vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, VM_SPLIT_LARGE)) {
+        switch(vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, VM_SPLIT_LARGE, 0)) {
         case SplitSuccess:
             break;
         default:
@@ -71,7 +71,7 @@ bool vmem_map(spc_t spc, phys_addr_t phys, void* virt, uint32_t flags) {
     bool result = true;
 
     switch(vmem_mgmt_split(spc, (uintptr_t)virt, &pd, &pt, &ipd, &ipt, 
-            VM_SPLIT_ALLOC | (flags & PG_LARGE ? VM_SPLIT_LARGE : 0))) {
+            VM_SPLIT_ALLOC | (flags & PG_LARGE ? VM_SPLIT_LARGE : 0), flags)) {
     case SplitSuccess:
     case TableNotMapped: // can not happen with VM_SPLIT_ALLOC, just for completeness
         break;

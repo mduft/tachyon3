@@ -10,6 +10,7 @@
 typedef enum {
     SysSchedule,    /**< re-schedule, no parameters */
     SysYield,       /**< yield current thread */
+    SysThrExit,     /**< abort thread */
 } syscall_t;
 
 /**

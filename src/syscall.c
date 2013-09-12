@@ -50,6 +50,9 @@ uintptr_t sysc_call(syscall_t call, uintptr_t param0, uintptr_t param1) {
     case SysYield:
         sched_yield();
         return 0;
+    case SysThrExit:
+        thr_exit(thr_current());
+        return 0;
     }
 
     return (uintptr_t)-1;

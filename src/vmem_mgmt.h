@@ -7,6 +7,7 @@
 
 #define VM_SPLIT_ALLOC  0x1     /**< allocate structure if they don't exist. */
 #define VM_SPLIT_LARGE  0x2     /**< operate on large pages, not small */
+#define VM_SPLIT_USER   0x4     /**< verify (and upgrade if neccessary!) usermode access on structures */
 
 /**
  * Invalidate a given virtual address, meaning the CPU should remove
@@ -80,9 +81,11 @@ void vmem_mgmt_free(phys_addr_t addr);
  *                          otherwise the address must be mapped.
  *                      - VM_SPLIT_LARGE: the virtual address should
  *                          be treated as a large page.
+ * @param pgflags   additional paging flags to assure present on the structures.
+ *                  will only be evaluated if VM_SPLIT_ALLOC is given.
  */
 vmem_split_res_t vmem_mgmt_split(spc_t space, uintptr_t virt, 
-        uintptr_t** pd, uintptr_t** pt, size_t* ipd, size_t* ipt, uint32_t flags);
+        uintptr_t** pd, uintptr_t** pt, size_t* ipd, size_t* ipt, uint32_t flags, uint32_t pgflags);
 
 /**
  * Prepares a given address space by putting all kernel global

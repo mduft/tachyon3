@@ -52,7 +52,7 @@ bool pgflt_handler(interrupt_t* state) {
                   "bit was set in one of the paging structures!\n");
         }
         if(state->code & ERRC_ACC_USER) {
-            error("present page (0x%x) not accessible in user mode\n", state->ctx->state.cr2);
+            error("present page (0x%lx) not accessible in user mode\n", state->ctx->state.cr2);
         }
         fatal("unknwon error when accessing present page\n");
     } else {

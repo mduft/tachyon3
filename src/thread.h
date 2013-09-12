@@ -124,10 +124,15 @@ void thr_abort(thread_t* thread);
  * Returns the threads current context.
  * @attention implemented in context.S
  */
-extern thr_context_t* thr_ctx_get();
+thr_context_t* thr_ctx_get();
 
 /**
  * Sets the current context for this cpu.
  * @attention implemented in context.S
  */
-extern void thr_ctx_set(thr_context_t* ctx);
+void thr_ctx_set(thr_context_t* ctx);
+
+/**
+ * Sets the state of the given thread to (normal) exited
+ */
+void thr_exit(thread_t* thread);
