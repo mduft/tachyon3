@@ -43,6 +43,7 @@ uintptr_t sysc_call(syscall_t call, uintptr_t param0, uintptr_t param1) {
         return uapi_sysc_call(call, param0, param1);
     }
 
+    /* TODO: find a more dynamic way to wire this? */
     switch(call) {
     case SysSchedule:
         sched_schedule();
@@ -53,6 +54,13 @@ uintptr_t sysc_call(syscall_t call, uintptr_t param0, uintptr_t param1) {
     case SysThrExit:
         thr_exit(thr_current());
         return 0;
+    case SysLog:
+        {
+            log_level_t level = (log_level_t)param0;
+            char const* str = (char const*)param1;
+            log_write(level, str);
+            return 0;
+        }
     }
 
     return (uintptr_t)-1;
