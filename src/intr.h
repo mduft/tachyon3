@@ -80,3 +80,7 @@ void intr_remove(uint16_t gate, intr_handler_t handler);
  */
 void intr_set_mode(uint16_t gate, gatemode_t mode);
 
+/**
+ * Dumps the IDT to trace for debugging purposes.
+ */
+void intr_dump_idt();

@@ -27,3 +27,5 @@ extern uintptr_t _core_lma_user_edata;
 
 extern extension_point_t* _core_vma_sextp;
 extern extension_point_t* _core_vma_eextp;
+
+extern uintptr_t _x86_64_idt_vma;

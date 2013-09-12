@@ -99,6 +99,9 @@ void boot() {
     /* initialize the BSP. this creates the initial cpu context and state */
     cpu_bsp_init();
 
+    /* dump IDT information */
+    intr_dump_idt();
+
     /* initialize the core process with the current address
      * space, and other relevant data. */
     process_t** pcore = (process_t**)&core;

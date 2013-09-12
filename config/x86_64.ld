@@ -13,3 +13,5 @@ CORE_VMA_OFF   = CORE_VMA_X86_64;
 UAPI_VMA       = UAPI_VMA_X86_64;
 
 #include "common-layout.ld"
+
+_x86_64_idt_vma = x86_64_idt + CORE_VMA_X86_64;

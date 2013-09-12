@@ -9,9 +9,11 @@ SECTION_BOOT_DATA
 
 .global x86_64_idt_init
 .global x86_64_idt_set
+.global x86_64_idt
 
 .type x86_64_idt_init, @function
 .type x86_64_idt_set, @function
+.type x86_64_idt, @object
 
 .size x86_64_idt_init, .x86_64_idt_init_end - x86_64_idt_init
 .size x86_64_idt_set, .x86_64_idt_set_end - x86_64_idt_set
@@ -330,7 +332,7 @@ x86_64_idt_set:
     mov %ebx, (%rax)
     mov %rsi, %rbx
     and $~0xFFFF, %ebx
-    shr $0xD, %r9
+    shl $0xD, %r9
     or $(IDTT_LARGE_INT_GATE | IDTE_PRESENT), %ebx
     or %r9d, %ebx
     or %r8d, %ebx

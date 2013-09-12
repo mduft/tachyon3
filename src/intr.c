@@ -6,6 +6,7 @@
 #include "intr.h"
 #include "list.h"
 #include "reg.h"
+#include "ldsym.h"
 
 /** 
  * the maximum supported interrupt gate. this is fixed
@@ -23,6 +24,16 @@ typedef struct {
         list_t* list;           /**< the list of handlers. */
     } h;
 } intr_gate_desc_t;
+
+/** only used internally for debug dump! */
+typedef struct {
+    uint16_t offs_lo;
+    uint16_t seg_sel;
+    uint16_t flags;
+    uint16_t offs_m;
+    uint32_t offs_hi;
+    uint32_t res;
+} PACKED idt_entry_t;
 
 /**
  * Holds the desciptors of all interrupt gates.
@@ -154,3 +165,9 @@ bool intr_enable(bool doIt) {
     return false;
 }
 
+void intr_dump_idt() {
+    idt_entry_t* idtp = (idt_entry_t*)&_x86_64_idt_vma;
+    for(int i = 0; i < 60; ++i, ++idtp) {
+        trace("idt %d: [flags: 0x%x], [seg: 0x%x]\n", i, idtp->flags, idtp->seg_sel);
+    }
+}
