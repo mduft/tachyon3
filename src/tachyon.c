@@ -50,7 +50,7 @@ void test_thr(uapi_desc_t const* uapi) {
 ///// TEST /////
 
 void SECTION(SECT_USER_CODE) test_thr2(uapi_desc_t const* uapi) {
-    for(int i = 0; i < 10; ++i) {
+    for(int i = 0; i < 100; ++i) {
         uapi_sysc_call(SysLog, Info, (uintptr_t)"hello userspace\n");
     }
     return;
@@ -72,9 +72,11 @@ static struct {
 } locals;
 
 void boot() {
-    /* basic logging system initialization, there are no writers initialized
-     * however (serial and cga will follow a little later). */
-    log_init();
+    /* initialize interrupt dispatcher tables as early as possible. */
+    intr_init();
+
+    /* setup system call interrupt modes */
+    sysc_init();
 
     /* initialize the serial log early on boot, so we have debug output from
      * nearly the start on */
@@ -104,6 +106,11 @@ void boot() {
     /* dump IDT information */
     intr_dump_idt();
 
+    /* register system calls */
+    log_init();
+    thr_init();
+    sched_init();
+
     /* initialize the core process with the current address
      * space, and other relevant data. */
     process_t** pcore = (process_t**)&core;
@@ -126,8 +133,6 @@ void boot() {
     /* initialize some more */
     ioapic_init();
     rm_init();
-    sched_init();
-    sysc_init();
 
     /* initialize the kernels system timer. this may rely on
      * platform components (fex. i/o apic)! */

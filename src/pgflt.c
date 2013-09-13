@@ -83,5 +83,5 @@ bool pgflt_handler(interrupt_t* state) {
     
     // nothing more to do.
     thr_abort(context->thread);
-    fatal("unexpectedly reached end of page fault handler\n");
+    return true;
 }

@@ -6,7 +6,10 @@
 #include "tachyon.h"
 #include "thread.h"
 
-#define SCHED_TIMESLICE_US (1*1000)
+/**
+ * Scheduler default timeslice per thread in microseconds.
+ */
+#define SCHED_TIMESLICE_US (5*1000)
 
 /**
  * Does some basic initialization for the scheduler.

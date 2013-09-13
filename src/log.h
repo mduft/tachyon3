@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tachyon.h"
+#include "systime.h"
 
 /**
  * The different levels a log an be written to.
@@ -30,7 +31,7 @@ typedef void (*log_writer_t)(char const* msg);
  * with just a format string, and without parameters, would result
  * in a compile error.
  */
-#define LOG0(lvl, str, ...) log_write(lvl, str __VA_ARGS__, NULL);
+#define LOG0(lvl, str, ...) log_write(lvl, "[%ld] ", systime()); log_write(lvl, str __VA_ARGS__, NULL);
 
 #define fatal(...)  { LOG0(Fatal,   "fatal: ", __VA_ARGS__); abort(); }
 #define error(...)  { LOG0(Error,   "error: ", __VA_ARGS__); }

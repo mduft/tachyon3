@@ -12,8 +12,8 @@ static uapi_desc_t const SECTION(SECT_USER_DATA) uapi_desc = {
     .syscall=uapi_sysc_call
 };
 
-uintptr_t SECTION(SECT_USER_CODE) uapi_sysc_call(syscall_t call, uintptr_t p0, uintptr_t p1) {
-    uintptr_t res;
+uintptr_t SECTION(SECT_USER_CODE) uapi_sysc_call(syscall_t call, volatile uintptr_t p0, volatile uintptr_t p1) {
+    volatile uintptr_t res;
 
     // TODO: sysenter, etc.?
     

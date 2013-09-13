@@ -109,6 +109,7 @@ static void tmr_set_next_tick() {
     if(node) {
         tmr_t* tmr = (tmr_t*)node->data;
         _generator->schedule(tmr->expire - current);
+        trace("scheduled for %ld\n", tmr->expire - current);
     } else {
         _generator->schedule(TMR_MAX_TIMEOUT);
     }

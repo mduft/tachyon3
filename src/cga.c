@@ -9,13 +9,17 @@
 #include <mem.h>
 #include <io.h>
 #include "paging.h"
+#include "spl.h"
 
 static uint16_t __cga_x = 0;
 static uint16_t __cga_y = 0;
 static uint16_t __cga_attr = 0x0700;
 
+static spinlock_t cga_lock;
+
 void cga_init() {
     vmem_map(spc_current(), CGA_VR_PHYSICAL, (void*)CGA_VR_LOCATION, PG_WRITABLE);
+    spl_init(&cga_lock);
 
     asm("cld; rep stosl;"
         :   /* no output */
@@ -53,6 +57,7 @@ static void scroll1() {
 #define CALC_LOCATION (int16_t*)CGA_VR_LOCATION + (((CGA_WIDTH) * __cga_y) + __cga_x)
 
 void cga_write(char const* str) {
+    spl_lock(&cga_lock);
     int16_t* vram_current = CALC_LOCATION;
 
     while(str && *str) {
@@ -97,4 +102,5 @@ void cga_write(char const* str) {
         ++str;
         ++vram_current;
     }
+    spl_unlock(&cga_lock);
 }

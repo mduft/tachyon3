@@ -31,6 +31,12 @@ typedef struct {
 
 typedef bool (*intr_handler_t)(interrupt_t* info);
 
+
+/**
+ * initializes interrupt tables for the dispatcher
+ */
+void intr_init();
+
 /**
  * Enable interrupts. This decrements a counter until
  * it reaches zero, and then really enables them.

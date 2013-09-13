@@ -28,6 +28,8 @@ void systime_init() {
 }
 
 uint64_t systime() {
+    if(!the_timesource)
+        return 0;
     return the_timesource->systime_us_func();
 }
 

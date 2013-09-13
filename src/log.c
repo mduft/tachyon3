@@ -6,6 +6,7 @@
 #include "string.h"
 #include "spl.h"
 #include "intr.h"
+#include "syscall.h"
 
 #define MAX_LOG_DESTINATIONS     32
 #define MAX_LOG_WRITE_BUFFER     1024       /*< max log buffer, ATTENTION, this creates a large stack frame!! */
@@ -214,10 +215,24 @@ static void log_format_message(char* buf, size_t len, char const* fmt, va_list a
 
 }
 
-static spinlock_t log_lock;
+uintptr_t log_handle_write_syscall(syscall_t call, log_level_t level, char const* str) {
+    log_write(level, str);
+    return 0;
+}
+
+bool log_syscall_handler(interrupt_t* state) {
+    switch(sysc_get_call(state)) {
+    case SysLog:
+        /* log_write signature is different from syscall handler! */
+        sysc_call(state, (syscall_handler_t)log_handle_write_syscall);
+        return true;
+    default:
+        return false;
+    }
+}
 
 void log_init() {
-    spl_init(&log_lock);
+    intr_add(SYSC_INTERRUPT, log_syscall_handler);
 }
 
 bool log_add_writer(log_writer_t writer, char const* descr) {
@@ -251,7 +266,6 @@ void log_write(log_level_t lvl, char const* fmt, ...) {
     va_end(lst);
 
     intr_disable();
-    spl_lock(&log_lock);
 
     for(register size_t idx = 0; idx < MAX_LOG_DESTINATIONS; ++idx) {
         if(destinations[idx].writer && destinations[idx].level >= lvl) {
@@ -259,7 +273,6 @@ void log_write(log_level_t lvl, char const* fmt, ...) {
         }
     }
 
-    spl_unlock(&log_lock);
     intr_enable(true);
 }
 

@@ -7,6 +7,8 @@
 #include "list.h"
 #include "reg.h"
 #include "ldsym.h"
+#include "mem.h"
+#include "syscall.h"
 
 /** 
  * the maximum supported interrupt gate. this is fixed
@@ -40,6 +42,10 @@ typedef struct {
  */
 intr_gate_desc_t intr_gate_table[MAX_INTR];
 
+void intr_init() {
+    memset(intr_gate_table, 0, sizeof(intr_gate_table));
+}
+
 /**
  * C lowest-level iterrupt handler. All interrupts are routed here
  * from the assembly stubs/trampolines.
@@ -72,7 +78,11 @@ void intr_dispatch(interrupt_t* state, uint16_t num) {
             return;
     }
 
-    fatal("unhandled interrupt %d (0x%x) @ %p\n", num, state->code, state->ip);
+    if(num == SYSC_INTERRUPT) {
+        error("unhandled system call %d\n", sysc_get_call(state));
+    } else {
+        fatal("unhandled interrupt %d (0x%x) @ %p\n", num, state->code, state->ip);
+    }
 }
 
 void intr_add(uint16_t num, intr_handler_t handler) {

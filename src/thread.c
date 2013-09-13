@@ -17,6 +17,21 @@
 #include "intr.h"
 #include <log.h>
 #include "uapi.h"
+#include "syscall.h"
+
+static bool thr_syscall_handler(interrupt_t* state) {
+    switch(sysc_get_call(state)) {
+    case SysThrExit:
+        sysc_call(state, (syscall_handler_t)thr_exit);
+        return true;
+    default:
+        return false;
+    }
+}
+
+void thr_init() {
+    intr_add(SYSC_INTERRUPT, thr_syscall_handler);
+}
 
 thread_t* thr_create(process_t* parent, thread_start_t entry) {
     thread_t* thr = kheap_alloc(sizeof(thread_t));
@@ -111,12 +126,12 @@ void thr_abort(thread_t* target) {
         abort();
     }
 
-    sysc_call(SysSchedule, 0, 0);
+    sched_schedule();
 }
 
 void thr_exit(thread_t* thread) {
     trace("thread %d in process %d exiting normally\n", thread->id, thread->parent->id);
     thread->state = Exited;
 
-    sysc_call(SysSchedule, 0, 0);
+    sched_schedule();
 }

@@ -17,6 +17,19 @@
 static list_t* _sched_queues[MaxPrio];
 static spinlock_t _sched_lock;
 
+static bool sched_syscall_handler(interrupt_t* state) {
+    switch(sysc_get_call(state)) {
+    case SysSchedule:
+        sysc_call(state, (syscall_handler_t)sched_schedule);
+        return true;
+    case SysYield:
+        sysc_call(state, (syscall_handler_t)sched_yield);
+        return true;
+    default:
+        return false;
+    }
+}
+
 void sched_init() {
     if(intr_state())
         fatal("interrupts may not be enabled in sched_init()\n");
@@ -24,6 +37,7 @@ void sched_init() {
     spl_init(&_sched_lock);
 
     memset(_sched_queues, 0, sizeof(_sched_queues));
+    intr_add(SYSC_INTERRUPT, sched_syscall_handler);
 }
 
 void sched_start() {
@@ -127,9 +141,7 @@ void sched_yield() {
     thread_t * thr = thr_current();
     thr->state = Yielded;
 
-    sysc_call(SysSchedule, 0, 0);
-
-    return;
+    sched_schedule();
 }
 
 void sched_add(thread_t* thread) {

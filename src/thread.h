@@ -81,6 +81,11 @@ struct _tag_uapi_desc_t;
 typedef void (*thread_start_t)(struct _tag_uapi_desc_t const*);
 
 /**
+ * initialize threading system calls
+ */
+void thr_init();
+
+/**
  * Creates a new thread within the given process.
  *
  * @param process   the parent process for the thread.
