@@ -216,6 +216,14 @@ $(KERNEL_SOBJECTS): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.S
 	@$(CC) -MMD -MF "$(subst .o,.Po,$@)" $(KCFLAGS) -D__ASM__ -c -o "$@" "$<"
 
 #.----------------------------------.
+#| build a config if missing        |
+#'----------------------------------'
+
+$(ENV_MAKEFILE):
+	mkdir -p $(dir $@)
+	touch $@
+
+#.----------------------------------.
 #| Helper rules                     |
 #'----------------------------------'
 
