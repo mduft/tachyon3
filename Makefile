@@ -182,6 +182,15 @@ $(KERNEL).sym.S: $(KERNEL).sym.dmp
 	 done; \
 	 printf "\n";
 
+$(KERNEL).bochs-sym: $(KERNEL).sym.dmp
+	@-rm -f "$@"
+	@echo "[BSYM] $(notdir $(KERNEL))";
+	@source "$<"; \
+	 x=0; while [[ $${x} -lt $${#names[@]} ]]; do \
+	 	echo "$${addrs[$${x}]} $${names[$${x}]}" >> "$@"; \
+		((x += 1)); \
+	 done;
+
 $(KERNEL).sym.o: $(KERNEL).sym.S
 	@-$(MAKE_BDIR)
 	@if test $(VERBOSE) = 0; then \
@@ -285,9 +294,9 @@ qemu-cd-dbg:
 
 BOCHS_RC	:= $(BUILDDIR)/bochsrc.txt
 
-$(BOCHS_RC): $(SOURCEDIR)/config/misc/bochsrc.in $(GRUB2_ISO)
+$(BOCHS_RC): $(SOURCEDIR)/config/misc/bochsrc.in $(GRUB2_ISO) $(KERNEL).bochs-sym
 	@-$(MAKE_BDIR)
-	@sed -e "s,@GRUB2_ISO@,$(GRUB2_ISO),g" -e "s,@SERIAL_FILE@,$(BUILDDIR)/serial-bochs.log,g" -e "s,@LOG_FILE@,$(BUILDDIR)/debug-bochs.log,g" < "$<" > "$@"
+	@sed -e "s,@GRUB2_ISO@,$(GRUB2_ISO),g" -e "s,@SERIAL_FILE@,$(BUILDDIR)/serial-bochs.log,g" -e "s,@LOG_FILE@,$(BUILDDIR)/debug-bochs.log,g" -e "s,@SYM_FILE@,$(KERNEL).bochs-sym,g" < "$<" > "$@"
 
 bochs-cd: $(BOCHS_RC) $(GRUB2_ISO)
 	@bochs="$$(type -p bochs)"; test -x "$${bochs}" || { echo "bochs not found!"; exit 1; }; \

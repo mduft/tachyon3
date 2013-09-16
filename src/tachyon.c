@@ -50,7 +50,7 @@ void test_thr(uapi_desc_t const* uapi) {
 ///// TEST /////
 
 void SECTION(SECT_USER_CODE) test_thr2(uapi_desc_t const* uapi) {
-    for(int i = 0; i < 100; ++i) {
+    while(true) {
         uapi_sysc_call(SysLog, Info, (uintptr_t)"hello userspace\n");
     }
     return;

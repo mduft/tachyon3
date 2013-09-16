@@ -6,9 +6,17 @@ ata0-slave: type=cdrom, path=@GRUB2_ISO@, status=inserted
 com1: enabled=1, mode=file, dev=@SERIAL_FILE@
 
 boot: cdrom
+port_e9_hack: enabled=1
 
 #gdbstub: enabled=1, port=1234, text_base=0, data_base=0, bss_base=0
 
 #debug: action=report
 #info: action=report
-#log: @LOG_FILE@
+log: @LOG_FILE@
+debugger_log: @LOG_FILE@.dbg
+debug_symbols: file=@SYM_FILE@
+
+
+debug: action=ignore, cpu0=report
+info: action=ignore, apic0=report, cpu0=report
+

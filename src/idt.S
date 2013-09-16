@@ -190,7 +190,7 @@ x86_64_isr     59,  0
 # | Functions to init and fill the idt     |
 # '----------------------------------------'
 
-.macro set_int_gate num, ist=0, dpl=0
+.macro set_int_gate num, ist=IST_LLHW_STACK, dpl=0
     mov $_x86_64_isr\num, %rsi
     mov $\num, %rdi
     mov $\ist, %r8
@@ -207,21 +207,23 @@ x86_64_idt_init:
     push %r8
     push %r9
 
+    # ATTENTION: set the IST if it should be other than IST_LLHW_STACK!!
+
     set_int_gate 0
     set_int_gate 1
-    set_int_gate 2,  1
+    set_int_gate 2,  IST_FAULT_STACK
     set_int_gate 3
     set_int_gate 4
     set_int_gate 5
     set_int_gate 6
     set_int_gate 7
-    set_int_gate 8,  1
+    set_int_gate 8,  IST_FAULT_STACK
     set_int_gate 9
     set_int_gate 10
     set_int_gate 11
-    set_int_gate 12, 1
+    set_int_gate 12, IST_FAULT_STACK
     set_int_gate 13
-    set_int_gate 14, 1
+    set_int_gate 14, IST_FAULT_STACK
     set_int_gate 15
     set_int_gate 16
     set_int_gate 17
@@ -244,9 +246,9 @@ x86_64_idt_init:
 
     # IRQs and other implementation defined stuff.
     set_int_gate 32
-    set_int_gate 33, 3 # low-level-hardware stack
-    set_int_gate 34, 3 # low-level-hardware stack
-    set_int_gate 35, 3 # low-level-hardware stack
+    set_int_gate 33
+    set_int_gate 34
+    set_int_gate 35
     set_int_gate 36
     set_int_gate 37
     set_int_gate 38
@@ -261,7 +263,7 @@ x86_64_idt_init:
     set_int_gate 47
     set_int_gate 48
     set_int_gate 49
-    set_int_gate 50, 2, 3 # syscall
+    set_int_gate 50, IST_SYSC_STACK, 3 # syscall
     set_int_gate 51
     set_int_gate 52
     set_int_gate 53

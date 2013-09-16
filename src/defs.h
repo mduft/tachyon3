@@ -118,6 +118,11 @@
 #define RING_DRIVERS        2
 #define RING_USERSPACE      3
 
+/* IST stacks */
+#define IST_FAULT_STACK     0x1
+#define IST_SYSC_STACK      0x2
+#define IST_LLHW_STACK      0x3
+
 /* registers */
 #define AX  "rax"
 #define BX  "rbx"
