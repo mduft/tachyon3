@@ -67,7 +67,7 @@ static bool lapic_tmr_init(tmr_cb_t master) {
     uint8_t old_rate = rtc_set_rate(RTC_RATE_128HZ);
     rtc_calibrate(lapic_tmr_calibrate);
 
-    // enable interrupts for this to work, disable the again afterwards.
+    // enable interrupts for this to work, disable them again afterwards.
     intr_enable(true);
 
     // wait for calibration to finish.

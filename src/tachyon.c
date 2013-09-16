@@ -64,7 +64,7 @@ void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
 
 /**
  * Contains the local data required during the boot() function.
- * It is required to have that information in a global sope, since
+ * It is required to have that information in a global scope, since
  * stacks are swapped in between which would doom that informations.
  */
 static struct {
@@ -142,9 +142,10 @@ void boot() {
      * the kernel system timesource beeing initialized */
     tmr_init();
 
-    info("kernel heap: used bytes: %d, allocated blocks: %d\n", kheap.state.used_bytes, kheap.state.block_count);
+    info("kernel heap: used bytes: %ld, allocated blocks: %ld\n", kheap.state.used_bytes, kheap.state.block_count);
+    // TODO: debug, somethings wrong here!
     pmem_info_t info = pmem_info();
-    info("physical mem: used pages: %d, free pages: %d\n", info.alloc_pages, info.free_pages);
+    info("physical mem: used pages: %ld, free pages: %ld\n", info.alloc_pages, info.free_pages);
 
     idle_init();
 
