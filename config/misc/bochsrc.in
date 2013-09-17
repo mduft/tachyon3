@@ -12,11 +12,11 @@ port_e9_hack: enabled=1
 
 #debug: action=report
 #info: action=report
-log: @LOG_FILE@
-debugger_log: @LOG_FILE@.dbg
+#log: @LOG_FILE@
+#debugger_log: @LOG_FILE@.dbg
 debug_symbols: file=@SYM_FILE@
 
 
-debug: action=ignore, cpu0=report
-info: action=ignore, apic0=report, cpu0=report
+debug: action=ignore, cpu0=ignore
+info: action=ignore, apic0=ignore, cpu0=report
 

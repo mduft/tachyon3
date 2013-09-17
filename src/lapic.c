@@ -25,13 +25,11 @@ bool lapic_is_enabled() {
 
 static bool lapic_handle_error(interrupt_t* state) {
     error("local APIC error!\n");
-    lapic_eoi();
     return true;
 }
 
 static bool lapic_handle_spurious(interrupt_t* state) {
-    error("spurious interrupt!\n");
-    lapic_eoi();
+    warn("spurious interrupt!\n");
     return true;
 }
 
@@ -60,6 +58,9 @@ void lapic_init() {
 
     APIC_REG(APIC_REG_SV)           = IRQ_SPURIOUS | APIC_SV_ENABLE;
     APIC_REG(APIC_REG_LVT_ERROR)    = IRQ_ERROR;
+
+    APIC_REG(APIC_REG_LVT_LINT0)    = APIC_DM_EXT << 8;
+    APIC_REG(APIC_REG_LVT_LINT1)    = APIC_DM_NMI << 8;
 
     /* requires back-to-back write */
     APIC_REG(APIC_REG_ERROR_STATUS) = 0;

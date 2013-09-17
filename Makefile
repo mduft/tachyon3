@@ -37,7 +37,7 @@ BASE_CFLAGS		:= $(BASE_CPPFLAGS) -Werror -ffreestanding -nostartfiles -nostdlib 
 BASE_CXXFLAGS	:= $(BASE_CFLAGS) -fno-rtti -fno-exceptions -Wold-style-cast
 BASE_LDFLAGS	 = -T $(ARCH_PPLSCRIPT) -Map=$(KERNEL).map
 
-BASE_QFLAGS		:= -curses -serial file:$(BUILDDIR)/serial-qemu.log -serial file:$(BUILDDIR)/com2-serial-qemu.log
+BASE_QFLAGS		:= -smp 2 -curses -serial file:$(BUILDDIR)/serial-qemu.log -serial file:$(BUILDDIR)/com2-serial-qemu.log
 BASE_GDBFLAGS	:= 
 
 MAKE			:= $(MAKE) --no-print-directory

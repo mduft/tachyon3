@@ -18,7 +18,7 @@ tools=(
     "grub:2.00:--build=\${_tt_host} --disable-werror"
     "xorriso:1.3.2:--build=\${_tt_host}"
     "qemu:1.6.0:--python=/usr/bin/python2 --disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
-    "bochs:2.6.2:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-sb16=linux --enable-ne2000 --enable-pcidev --enable-pnic --disable-smp --enable-logging --enable-debugger --enable-disasm"
+    "bochs:2.6.2:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-sb16=linux --enable-ne2000 --enable-pcidev --enable-pnic --enable-smp --enable-logging"
 )
 
 function info()  { [[ ${_tt_verbose} == true ]] && echo ">>> " "$@"; }
@@ -166,6 +166,8 @@ function tt_unpack() {
 
         patch --quiet -p${_p} < "${patch}"
     done
+
+    cd ..
 }
 
 # .--------------------------------------------.
@@ -179,6 +181,15 @@ function tt_configure() {
 
     [[ -x ./configure ]] \
         || fatal "oups. cannot find configure script"
+
+    case "${_tt_cur_name}" in
+    bochs|qemu)
+        # debugable emulator/simulator comes handy when searching
+        # the source of interrupts, etc.
+        CFLAGS="-g"
+        CXXFLAGS="-g"
+        ;;
+    esac
 
     ./configure --prefix=${_tt_prefix} $(eval echo ${_tt_cur_flags})
 }
@@ -273,6 +284,7 @@ for package in "${tools[@]}"; do
 
     [[ -f ${_tfbase}.unpacked ]] \
         || tt_unpack || fatal "failed to unpack ${_tt_cur_name}-${_tt_cur_version}"
+    cd ${_tt_cur_name}* || fatal "missing expected directory"
     touch ${_tfbase}.unpacked
     [[ -f ${_tfbase}.configured ]] \
         || tt_configure || fatal "failed to configure ${_tt_cur_name}-${_tt_cur_version}"
@@ -292,8 +304,8 @@ if [[ ${_tt_clean} == true ]]; then
 fi
 
 info "generating environment to ${_tt_env}"
-echo "export PATH=${_tt_prefix}/bin:\${PATH}" > "${_tt_env}"
+echo "export PATH=${_tt_prefix}/bin:${_tt_prefix}/sbin:\${PATH}" > "${_tt_env}"
 
 info "generating environment to ${_tt_mkenv}"
-echo "export PATH := ${_tt_prefix}/bin:\$(PATH)" > "${_tt_mkenv}"
+echo "export PATH := ${_tt_prefix}/bin:${_tt_prefix}/sbin:\$(PATH)" > "${_tt_mkenv}"
 

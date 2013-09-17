@@ -52,6 +52,11 @@ bootstrap_x86_64:
     mov %eax, (bootstrap_x86_64_boot_eax)
     mov %ebx, (bootstrap_x86_64_boot_ebx)
 
+    # enable the A20 line, just in case it is disabled
+    in $0x92, %al   # 0x92 -> system control port A
+    or $0x2, %al    # 0x2 -> mask for A20 line enable
+    out %al, $0x92  # write back to system control port A
+
     lgdt (x86_64_gdt_ptr)        # load the new 64-bit gdt.
 
     ljmp $0x8,$1f
