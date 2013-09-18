@@ -134,7 +134,7 @@ $(KERNEL).sym.dmp: $(KERNEL_OBJECTS) $(ARCH_PPLSCRIPT)
 	@echo "declare -a names" >> "$@"
 	@echo "declare -a sizes" >> "$@"
 	@$(NM) -n -S --defined-only "$@.bin" | sed -e 's,\(^[0-9a-fA-F]*[ \t]*\)\([tT].*$$\),\10a \2,g' | grep -E '^[0-9a-fA-F]*[ \t]+[0-9a-fA-F]*[ \t]+[Tt]' | while read addr size type name; do \
-		test -z "$${size}" && size=1; \
+		test -z "$${size}" && size=2; \
 		test -z "$${idx}" && idx=0; \
 		echo "names[$${idx}]=\"$${name}\"" >> "$@"; \
         echo "addrs[$${idx}]=$${addr}" >> "$@"; \
@@ -166,6 +166,8 @@ $(KERNEL).sym.S: $(KERNEL).sym.dmp
             sizes[$${x}]=$${sizes[$${x}]}; \
             if [[ $${cross} -lt 0 && $${cross} -gt -11 ]]; then \
                 sizes[$${y}]=$${sizes[$${y}]}$${cross}; \
+			else \
+				sizes[$${y}]="$${sizes[$${y}]}-1"; \
             fi; \
             rm -f "$@.calc"; \
         fi; \

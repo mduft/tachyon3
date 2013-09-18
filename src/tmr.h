@@ -7,7 +7,10 @@
 #include "extp.h"
 
 /** defines the maximum timeout microseconds if no timer is present */
-#define TMR_MAX_TIMEOUT    (10)
+#define TMR_MAX_TIMEOUT    (10 * 1000)
+
+/** defines the minimum sleep time for the timer */
+#define TMR_MIN_TIMEOUT    (50)
 
 /** Signature of a callback to be called on every timer iteration */
 typedef void (*tmr_cb_t)();

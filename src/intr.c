@@ -7,6 +7,7 @@
 #include "list.h"
 #include "reg.h"
 #include "ldsym.h"
+#include "ksym.h"
 #include "mem.h"
 #include "syscall.h"
 
@@ -90,6 +91,7 @@ void intr_add(uint16_t num, intr_handler_t handler) {
         fatal("gate %d not available\n", num);
 
     intr_gate_desc_t* gate = &intr_gate_table[num];
+    ksym_t const* sym = ksym_get(handler);
 
     if(gate->mode & GateModeMultiHandler) {
         list_t* list = gate->h.list;
@@ -98,9 +100,11 @@ void intr_add(uint16_t num, intr_handler_t handler) {
             gate->h.list = list;
         }
         list_add(list, handler);
-        trace("adding handler for interrupt %d: %p (new handler count: %d)\n", num, handler, list_size(list));
+        trace("adding handler for interrupt %d: %p <%s> (new handler count: %d)\n", 
+            num, handler, sym->name, list_size(list));
     } else {
-        trace("setting handler for interrupt %d: %p (old: %p)\n", num, handler, gate->h.handler);
+        trace("setting handler for interrupt %d: %p <%s> (old: %p)\n", 
+            num, handler, sym->name, gate->h.handler);
         gate->h.handler = handler;
     }
 }

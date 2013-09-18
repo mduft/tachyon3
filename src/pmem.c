@@ -10,7 +10,6 @@
 #include "spl.h"
 #include "ldsym.h"
 
-#define PMEM_PAGESIZE   4096
 #define PMEM_FDEG       80
 #define PMEM_PAGES(len) (ALIGN_UP(len, PMEM_PAGESIZE) / PMEM_PAGESIZE)
 

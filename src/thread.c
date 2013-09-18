@@ -44,36 +44,30 @@ thread_t* thr_create(process_t* parent, thread_start_t entry, thread_isolation_t
     thr->id = prc_next_tid(parent);
     thr->parent = parent;
     thr->context = kheap_alloc(sizeof(thr_context_t));
-
-    if(isolation == IsolationKernel) {
-        thr->stka = kstack_allocator;
-    } else {
-        thr->stka = parent->stka;
-    }
-
-    thr->stack = stka_alloc(thr->stka);
     thr->priority = parent->priority;
 
     memset(thr->context, 0, sizeof(thr_context_t));
 
     // TODO: error checking
 
-    thr->context->state.rip = (uintptr_t)uapi_thr_trampoline;
-    thr->context->state.rdi = (uintptr_t)thr;
-    thr->context->state.rsi = (uintptr_t)entry;
-    thr->context->state.rflags = FL_IF; // enable interrupts when starting thread.
-    thr->context->state.rsp = thr->stack->top - (sizeof(uintptr_t) * 2);
-    thr->context->thread = thr;
-
     if(isolation == IsolationKernel) {
         thr->context->state.ss = GDT_KDATA64;
         thr->context->state.cs = GDT_KCODE64;
+        thr->stka = kstack_allocator;
     } else {
         thr->context->state.ss = GDT_UDATA64 | RING_USERSPACE;
         thr->context->state.cs = GDT_UCODE64 | RING_USERSPACE;
+        thr->stka = parent->stka;
     }
 
+    thr->stack = stka_alloc(thr->stka);
     thr->state = Runnable;
+
+    thr->context->state.rip = (uintptr_t)uapi_thr_trampoline;
+    thr->context->state.rdi = (uintptr_t)entry;
+    thr->context->state.rflags = FL_IF; // enable interrupts when starting thread.
+    thr->context->state.rsp = thr->stack->top - (sizeof(uintptr_t) * 2);
+    thr->context->thread = thr;
 
     return thr;
 }

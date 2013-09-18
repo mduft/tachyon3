@@ -69,6 +69,7 @@ void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
  */
 static struct {
     thread_t* init;
+    pmem_info_t pmem;
 } locals;
 
 void boot() {
@@ -143,13 +144,15 @@ void boot() {
     tmr_init();
 
     info("kernel heap: used bytes: %ld, allocated blocks: %ld\n", kheap.state.used_bytes, kheap.state.block_count);
-    // TODO: debug, somethings wrong here!
-    pmem_info_t info = pmem_info();
-    info("physical mem: used pages: %ld, free pages: %ld\n", info.alloc_pages, info.free_pages);
+    locals.pmem = pmem_info();
+    info("physical mem: used pages: %ld (%ld kb), free pages: %ld (%ld kb)\n",
+        locals.pmem.alloc_pages, (locals.pmem.alloc_pages * PMEM_PAGESIZE) / 1024,
+        locals.pmem.free_pages, (locals.pmem.free_pages * PMEM_PAGESIZE) / 1024);
 
     idle_init();
 
     // TODO: kick off initial threads.
+    // FIXME: local variables are BAD in this method - this only works "by accident"
     // TEST
     for(size_t i = 0; i < 2; ++i) {
         thread_t* thr = thr_create(core, test_thr, IsolationKernel);

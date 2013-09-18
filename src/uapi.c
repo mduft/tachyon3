@@ -26,7 +26,7 @@ uintptr_t SECTION(SECT_USER_CODE) uapi_sysc_call(syscall_t call, volatile uintpt
     return res;
 }
 
-void SECTION(SECT_USER_CODE) uapi_thr_trampoline(thread_t* thread, thread_start_t entry) {
+void SECTION(SECT_USER_CODE) uapi_thr_trampoline(thread_start_t entry) {
     entry(&uapi_desc);
 
     uapi_sysc_call(SysThrExit, 0, 0);

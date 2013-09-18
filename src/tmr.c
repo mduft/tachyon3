@@ -108,8 +108,14 @@ static void tmr_set_next_tick() {
 
     if(node) {
         tmr_t* tmr = (tmr_t*)node->data;
-        _generator->schedule(tmr->expire - current);
-        trace("scheduled for %ld\n", tmr->expire - current);
+
+        uint64_t timeout = tmr->expire - current;
+        if(tmr->expire <= current + TMR_MIN_TIMEOUT) {
+            timeout = TMR_MIN_TIMEOUT;
+        }
+
+        trace("scheduling timer for %lu (delta %lu)\n", tmr->expire, timeout);
+        _generator->schedule(timeout);
     } else {
         _generator->schedule(TMR_MAX_TIMEOUT);
     }

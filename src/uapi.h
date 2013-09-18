@@ -31,10 +31,9 @@ uintptr_t uapi_sysc_call(syscall_t call, uintptr_t param0, uintptr_t param1);
  *
  * This is also used for kernel mode threads!
  *
- * @param thread the thread that is starting.
  * @param entry  the threads entry point to call.
  */
-void uapi_thr_trampoline(thread_t* thread, thread_start_t entry);
+void uapi_thr_trampoline(thread_start_t entry);
 
 /**
  * Initializes the global mappings required for the userspace

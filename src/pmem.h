@@ -5,6 +5,8 @@
 
 #include "tachyon.h"
 
+#define PMEM_PAGESIZE   4096
+
 typedef struct {
     size_t alloc_pages;
     size_t free_pages;
