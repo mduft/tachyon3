@@ -50,10 +50,12 @@ void list_insert(list_t* list, list_node_t* node, void const* data) {
         if(!list->tail)
             list->tail = new_node;
     } else {
-        if(list->tail == node)
+        if(list->tail == node) {
             list->tail = new_node;
+        } else {
+            new_node->next = node->next;
+        }
 
-        new_node->next = node->next;
         node->next = new_node;
     }
 
