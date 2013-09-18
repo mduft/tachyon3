@@ -25,15 +25,23 @@ typedef enum {
  * Priority of a thread or a process.
  */
 typedef enum {
-    Idle,
-    Lowest,
-    Low,
-    Normal,
-    High,
-    Highest,
-    Kernel,
-    MaxPrio
+    PrioIdle,
+    PrioLowest,
+    PrioLow,
+    PrioNormal,
+    PrioHigh,
+    PrioHighest,
+    PrioKernel,
+    PrioMaxPrio
 } priority_t;
+
+/**
+ * Defines the thread isolation level (kernel or usermode thread).
+ */
+typedef enum {
+    IsolationKernel = RING_KERNEL,
+    IsolationUser = RING_USERSPACE
+} thread_isolation_t;
 
 /**
  * Describes a process, forward declared to avoid circular
@@ -63,8 +71,10 @@ typedef struct _tag_thr_context_t {
 typedef struct _tag_thread_t {
     tid_t id;                           /**< the threads id within it's process */
     thread_state_t state;               /**< the threads execution state */
+    thread_isolation_t isolation;       /**< the threads isolation level */
     priority_t priority;                /**< the threads priority, inherited from 
                                          *   the parent process, may be overridden. */
+    stack_allocator_t* stka;            /**< the stack allocator used to create the threads stack */
     stack_t* stack;                     /**< the threads stack */
     struct _tag_process_t* parent;      /**< the threads parent process */
     thr_context_t* context;             /**< the threads associated cpu context */
@@ -89,9 +99,11 @@ void thr_init();
  * Creates a new thread within the given process.
  *
  * @param process   the parent process for the thread.
+ * @param entry     the entrypoint for the thread.
+ * @param isolation the threads target isolation level.
  * @return          the new thread
  */
-thread_t* thr_create(struct _tag_process_t* process, thread_start_t entry);
+thread_t* thr_create(struct _tag_process_t* process, thread_start_t entry, thread_isolation_t isolation);
 
 /**
  * Frees all associated resources for the given thread,

@@ -14,7 +14,7 @@
 #include "systime.h"
 #include "mem.h"
 
-static list_t* _sched_queues[MaxPrio];
+static list_t* _sched_queues[PrioMaxPrio];
 static spinlock_t _sched_lock;
 
 static bool sched_syscall_handler(interrupt_t* state) {
@@ -64,7 +64,7 @@ static void sched_remove_unlocked(thread_t* thread) {
 }
 
 static thread_t* sched_choose() {
-    for(priority_t i = Kernel; i < MaxPrio; --i) {
+    for(priority_t i = PrioKernel; i < PrioMaxPrio; --i) {
         list_node_t* node = list_begin(_sched_queues[i]);
 
         // TODO: check priorities!

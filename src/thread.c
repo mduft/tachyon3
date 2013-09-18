@@ -33,7 +33,7 @@ void thr_init() {
     intr_add(SYSC_INTERRUPT, thr_syscall_handler);
 }
 
-thread_t* thr_create(process_t* parent, thread_start_t entry) {
+thread_t* thr_create(process_t* parent, thread_start_t entry, thread_isolation_t isolation) {
     thread_t* thr = kheap_alloc(sizeof(thread_t));
 
     if(!thr)
@@ -44,7 +44,14 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
     thr->id = prc_next_tid(parent);
     thr->parent = parent;
     thr->context = kheap_alloc(sizeof(thr_context_t));
-    thr->stack = stka_alloc(parent->stka);
+
+    if(isolation == IsolationKernel) {
+        thr->stka = kstack_allocator;
+    } else {
+        thr->stka = parent->stka;
+    }
+
+    thr->stack = stka_alloc(thr->stka);
     thr->priority = parent->priority;
 
     memset(thr->context, 0, sizeof(thr_context_t));
@@ -58,7 +65,7 @@ thread_t* thr_create(process_t* parent, thread_start_t entry) {
     thr->context->state.rsp = thr->stack->top - (sizeof(uintptr_t) * 2);
     thr->context->thread = thr;
 
-    if(parent->ring == 0) {
+    if(isolation == IsolationKernel) {
         thr->context->state.ss = GDT_KDATA64;
         thr->context->state.cs = GDT_KCODE64;
     } else {
@@ -76,7 +83,7 @@ thread_t* thr_delete(thread_t* thr) {
         kheap_free(thr->context);
     }
     if(thr->stack) {
-        stka_free(thr->parent->stka, thr->stack);
+        stka_free(thr->stka, thr->stack);
     }
     if(thr) {
         kheap_free(thr);

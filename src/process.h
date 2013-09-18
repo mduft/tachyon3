@@ -17,7 +17,6 @@
 typedef struct _tag_process_t {
     pid_t id;               /**< the process' unique id within the system */
     spc_t space;            /**< the root of the process' address space */
-    uint8_t ring;           /**< the ring the process lives in (kernel-space, user-space, ...) */
     priority_t priority;    /**< the process' priority */
     spinlock_t lock;        /**< a process lock, locked whenever the process is modified */
     tid_t ctid;             /**< the current thread id counter - each new thread gets ctid++ */
@@ -42,10 +41,9 @@ extern process_t* const core;
  *
  * @param space     the address space used by the process.
  * @param priority  the process' priority for the scheduler.
- * @param ring      the process' target execution ring.
  * @return the new process' descriptor.
  */
-process_t* prc_new(spc_t space, priority_t priority, uint8_t ring);
+process_t* prc_new(spc_t space, priority_t priority);
 
 /**
  * Frees any resources associated with a process.

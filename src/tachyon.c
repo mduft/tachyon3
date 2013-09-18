@@ -114,14 +114,14 @@ void boot() {
     /* initialize the core process with the current address
      * space, and other relevant data. */
     process_t** pcore = (process_t**)&core;
-    *pcore = prc_new(spc_current(), Kernel, RING_KERNEL);
+    *pcore = prc_new(spc_current(), PrioKernel);
 
     if(!core)
         fatal("failed to create core process\n");
 
     /* initial thread. it is marked as exited (below), as this should
      * never return here. */
-    locals.init = thr_create(core, NULL);
+    locals.init = thr_create(core, NULL, IsolationKernel);
     locals.init->state = Runnable;
     thr_switch(locals.init);
 
@@ -152,14 +152,14 @@ void boot() {
     // TODO: kick off initial threads.
     // TEST
     for(size_t i = 0; i < 2; ++i) {
-        thread_t* thr = thr_create(core, test_thr);
+        thread_t* thr = thr_create(core, test_thr, IsolationKernel);
         sched_add(thr);
     }
 
     // a user space process... :)
-    process_t* uproc = prc_new(spc_new(), Normal, RING_USERSPACE);
-    thread_t* thr = thr_create(uproc, test_thr2);
-    thr->priority=Kernel; // tmp - scheduler only chooses kernel currently
+    process_t* uproc = prc_new(spc_new(), PrioNormal);
+    thread_t* thr = thr_create(uproc, test_thr2, IsolationUser);
+    thr->priority=PrioKernel; // tmp - scheduler only chooses kernel currently
     sched_add(thr);
 
     // TEST

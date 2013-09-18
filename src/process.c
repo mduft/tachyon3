@@ -21,7 +21,7 @@ process_t* const core;
 // TODO: just a workaround - need some manager for pids.
 static pid_t current = 0;
 
-process_t* prc_new(spc_t space, priority_t priority, uint8_t ring) {
+process_t* prc_new(spc_t space, priority_t priority) {
     process_t* prc = kheap_alloc(sizeof(process_t));
 
     if(!prc) {
@@ -59,29 +59,24 @@ process_t* prc_new(spc_t space, priority_t priority, uint8_t ring) {
         goto fail;
     }
 
-    if(ring == RING_KERNEL) {
-        prc->stka = kstack_allocator;
-    } else {
-        stack_allocator_desc_t desc = {
-            .top = SHEAP_END,
-            .bottom = SHEAP_START,
-            .space = prc->space,
-            // TODO: see above - swap to correct location.
-            // TODO: no execute on stack...?
-            .pg_fl = (PG_WRITABLE | PG_USER),
-            .fixed = false,
-            .global = false
-        };
+    stack_allocator_desc_t desc = {
+        .top = SHEAP_END,
+        .bottom = SHEAP_START,
+        .space = prc->space,
+        // TODO: see above - swap to correct location.
+        // TODO: no execute on stack...?
+        .pg_fl = (PG_WRITABLE | PG_USER),
+        .fixed = false,
+        .global = false
+    };
 
-        prc->stka = stka_new(&desc);
-    }
+    prc->stka = stka_new(&desc);
 
     if(!prc->stka) {
         goto fail;
     }
 
     prc->priority = priority;
-    prc->ring = ring;
     prc->id = current++;
 
     // switch back to the previous address space.

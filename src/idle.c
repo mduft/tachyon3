@@ -15,9 +15,9 @@ static void idle_thread() {
 }
 
 void idle_init() {
-    thread_t* idle_thr = thr_create(core, idle_thread);
+    thread_t* idle_thr = thr_create(core, idle_thread, IsolationKernel);
 
-    idle_thr->priority = Idle;
+    idle_thr->priority = PrioIdle;
 
     sched_add(idle_thr);
 }
