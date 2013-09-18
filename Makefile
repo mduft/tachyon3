@@ -1,7 +1,6 @@
 # Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
 # This file is part of the 'tachyon' operating system.
 
-#ARCH			:= x86
 ARCH			:= x86_64
 VERBOSE			:= 0
 

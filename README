@@ -1,16 +1,11 @@
 Getting started:
 ================
 
-ATTENTION: the x86 port is currently a little behind. The current
-           states went appart when i was starting to implement
-           threading and context switching.
+tachyon3 is a pure x86_64 kernel, no 32bit support (anymore)!
 
 to be able to build tachyon, you will at least need matching
 binutils and a compiler. any more or less resent (>4.0) gcc
 should do, and any binutils working with it.
-
-only a 64 bit toolchain is required, as this is used to build
-the 32 bit kernel too.
 
 A build script for the toolchain is provided, which builds the
 currently tested and used (by the developer(s)) versions of the
@@ -24,15 +19,9 @@ array variable near the top of the file).
 Now you can do this in the source tachyon root directory:
 
     make                    # build default arch (x86_64)
-    make all-archs          # build all supported ARCHs
-    make ARCH=x86           # build 32 bit. NOTE: all the following
-                              rules can take the ARCH switch too, to
-                              operate on the 32 bit kernel!
-
     make clean              # remove build directory (removes all
                               generated files, iso images, etc.
     make iso                # build iso image for the current ARCH
-    make all-archs-iso      # build iso image for all ARCHs
     
     make qemu               # run kernel directly in qemu (must be installed)
     make qemu-dbg           # same as above, but run GDB remote stub on :1234
