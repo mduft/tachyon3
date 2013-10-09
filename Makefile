@@ -315,7 +315,7 @@ $(GRUB2_PXE):
 	@mknet=$$(type -p grub-mknetdir); test -x "$${mknet}" || { echo "grub-mknetdir not found!"; exit 1; }; \
 	 $${mknet} --net-directory=$(BUILDDIR);
 
-$(GRUB2_ISO): $(GRUB2_CFG) all-kernel
+$(GRUB2_ISO): $(GRUB2_CFG) $(KERNEL)
 	@-rm -f "$@"
 	@mkresc=$$(type -p grub-mkrescue); test -x "$${mkresc}" || { echo "grub-mkrescue not found!"; exit 1; }; \
 	 $${mkresc} -o "$@" --modules="biosdisk iso9660 multiboot" $(BUILDDIR)
