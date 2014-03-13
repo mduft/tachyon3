@@ -39,23 +39,27 @@ init_state_t const boot_state;
 void test_thr(uapi_desc_t const* uapi) {
     thread_t* thr = thr_current();
 
-    while(true) {
+    uint64_t start = systime();
+    uint64_t stopAfter = 10 * 1000 * 1000;
+
+    while(systime() <= start + stopAfter) {
         uintptr_t x;
         asm volatile("mov %%rsp, %0" : "=m"(x));
         info("%d: hello thread %ld (%p)\n", thr->id, systime(), x);
         systime_stall(10000);
     }
+    info("quitting...\n");
 }
 
 ///// TEST /////
 
 void SECTION(SECT_USER_CODE) test_thr2(uapi_desc_t const* uapi) {
     for(int i = 0; i < 1000; ++i) {
-        uapi_sysc_call(SysLog, Info, (uintptr_t)"hello userspace\n");
+        uapi->syscall(SysLog, Info, (uintptr_t)"hello userspace\n");
     }
-    uapi_sysc_call(SysLog, Info, (uintptr_t)"quitting...\n");
-    uapi_sysc_call(SysThrExit, 0, 0);
-    uapi_sysc_call(SysLog, Error, (uintptr_t)"still here?!\n");
+    uapi->syscall(SysLog, Info, (uintptr_t)"quitting...\n");
+    uapi->syscall(SysThrExit, 0, 0);
+    uapi->syscall(SysLog, Error, (uintptr_t)"still here?!\n");
     return;
 }
 // -- TESTTEST
