@@ -153,3 +153,8 @@ void thr_ctx_set(thr_context_t* ctx);
  * Sets the state of the given thread to (normal) exited
  */
 void thr_exit(thread_t* thread);
+
+/**
+ * Sets the state of the current thread to (normal) exited
+ */
+void thr_exit_current();

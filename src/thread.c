@@ -22,7 +22,7 @@
 static bool thr_syscall_handler(interrupt_t* state) {
     switch(sysc_get_call(state)) {
     case SysThrExit:
-        sysc_call(state, (syscall_handler_t)thr_exit);
+        sysc_call(state, (syscall_handler_t)thr_exit_current);
         return true;
     default:
         return false;
@@ -135,4 +135,8 @@ void thr_exit(thread_t* thread) {
     thread->state = Exited;
 
     sched_schedule();
+}
+
+void thr_exit_current() {
+    thr_exit(thr_current());
 }
