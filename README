@@ -10,11 +10,18 @@ should do, and any binutils working with it.
 A build script for the toolchain is provided, which builds the
 currently tested and used (by the developer(s)) versions of the
 required packages. Take a look at ./tools/toolchain.sh --help
-for information on how to use it. Hint: you will have to download
-the source packages manually, and place them in ./tools/.source.
-if you have differing versions, either pass the --version param
-to toolchain.sh, or directly modify toolchain.sh (the "tools"
-array variable near the top of the file).
+for information on how to use it. 
+
+On ... some ... systems, you will have to make sure to install
+those before building will succeed (tested on ubuntu 13.10):
+
+    apt-get install ncurses-dev
+    apt-get install libreadline-dev
+    apt-get install libz-dev
+    apt-get install libsdl-dev
+    apt-get install autoconf
+    apt-get install libpixman-1-dev
+    apt-get install libxrandr-dev
 
 Now you can do this in the source tachyon root directory:
 

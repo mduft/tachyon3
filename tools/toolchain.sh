@@ -8,17 +8,31 @@
 # each entry has this format: <name>:<version>:<configure flags>:<all target>:<install target>
 
 tools=(
-    "binutils:2.23.1:--build=\${_tt_host} --target=x86_64-pc-elf"
+    "binutils:2.24:--build=\${_tt_host} --target=x86_64-pc-elf"
     "gmp:5.1.3:--build=\${_tt_host}"
     "mpfr:3.1.2:--build=\${_tt_host}"
     "mpc:1.0.2:--build=\${_tt_host} --with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
     "gcc:4.8.2:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable-languages=c,c++:all-gcc:install-gcc"
-    "gdb:7.6.2:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
+    "gdb:7.7:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
     "cgdb:0.6.7:--build=\${_tt_host}"
     "grub:2.00:--build=\${_tt_host} --disable-werror"
-    "xorriso:1.3.4:--build=\${_tt_host}"
-    "qemu:1.7.0:--python=/usr/bin/python2 --disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
+    "xorriso:1.3.6:--build=\${_tt_host}"
+    "qemu:1.3.0:--python=/usr/bin/python2 --disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
     "bochs:2.6.2:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-sb16=linux --enable-ne2000 --enable-pcidev --enable-pnic --enable-smp --enable-logging"
+)
+
+sites=(
+    "binutils|http://ftp.gnu.org/gnu/binutils/\${P}-\${V}.tar.gz"
+    "gmp|https://gmplib.org/download/gmp/\${P}-\${V}.tar.bz2"
+    "mpfr|http://www.mpfr.org/mpfr-current/\${P}-\${V}.tar.bz2"
+    "mpc|http://ftp.gnu.org/gnu/mpc/\${P}-\${V}.tar.gz"
+    "gcc|http://gd.tuwien.ac.at/gnu/gcc/releases/gcc-4.8.2/\${P}-\${V}.tar.bz2"
+    "gdb|http://ftp.gnu.org/gnu/gdb/\${P}-\${V}.tar.bz2"
+    "cgdb|http://cgdb.me/files/\${P}-\${V}.tar.gz"
+    "grub|http://ftp.gnu.org/gnu/grub/\${P}-\${V}.tar.gz"
+    "xorriso|http://ftp.gnu.org/gnu/xorriso/\${P}-\${V}.tar.gz"
+    "qemu|http://wiki.qemu-project.org/download/\${P}-\${V}.tar.bz2"
+    "bochs|http://downloads.sourceforge.net/project/bochs/bochs/2.6.2/\${P}-\${V}.tar.gz"
 )
 
 function info()  { [[ ${_tt_verbose} == true ]] && echo ">>> " "$@"; }
@@ -32,16 +46,6 @@ function tt_exit_help() {
     exit $1
 }
 
-function tt_split() {
-    local packed="$1"
-
-    save_IFS=$IFS
-    IFS=':'
-
-    local unpacked=( ${packed} )
-    echo "${unpacked[@]}"
-}
-
 _tt_home="$(cd "$(dirname "$0")"; pwd)"
 _tt_verbose=false
 _tt_source="${_tt_home}/.source"
@@ -49,6 +53,7 @@ _tt_bdir="${_tt_home}/.build"
 _tt_prefix="$(cd "${_tt_home}/.."; pwd)/.package"
 _tt_preflight=false
 _tt_clean=false
+_tt_download=false
 _tt_jobs=1
 _tt_env="${_tt_prefix}/env.sh"
 _tt_mkenv="${_tt_prefix}/env.mk"
@@ -60,6 +65,7 @@ help="$0 usage:
    --help                  print this message.
    -v | --verbose          verbose output.
    -j <j> | --jobs=<j>     use 'j' jobs during builds.
+   --download              download sources
    --clean                 remove existing build directories before building.
    --preflight             check package completeness (source availability) before
    --package=<p>           only build a single package 'p'.
@@ -92,6 +98,7 @@ function tt_parse_cl() {
         "--jobs=")          _tt_jobs="${1#--jobs=}"         ;;
         "--preflight")      _tt_preflight=true              ;;
         "--clean")          _tt_clean=true                  ;;
+        "--download")       _tt_download=true               ;;
         "--debug")          set -xv                         ;;
         "--package="*)      _tt_pkg="${1#--package=}"       ;;
         "--help")           tt_exit_help 0                  ;;
@@ -114,6 +121,40 @@ function tt_build_dir() {
 
     mkdir -p "${dir}"
     cd "${dir}"
+}
+
+function tt_download() {
+    [[ -d "${_tt_source}" ]] || mkdir -p "${_tt_source}"
+
+    for pkg in "${tools[@]}"; do
+        local sIFS=${IFS}
+        IFS=':'
+        local p=( ${pkg} )
+        IFS=${sIFS}
+
+        P="${p[0]}"
+        V="${p[1]}"
+
+        _tt_cur_name="${P}"
+        _tt_cur_version="${V}"
+
+        src="$(tt_find_source)"
+
+        [[ -n "${src}" ]] && { info "source for ${P} already present, not downloading"; continue; }
+
+        for site in "${sites[@]}"; do
+            local sIFS=${IFS}
+            IFS='|'
+            local s=( ${site} )
+            IFS=${sIFS}
+
+            sP="${s[0]}"
+            if [[ ${sP} == ${P} ]]; then
+                url="$(eval echo "${s[1]}")"
+                wget -O "${_tt_source}/${url##*/}" "${url}"
+            fi
+        done
+    done
 }
 
 # .--------------------------------------------.
@@ -257,6 +298,9 @@ function tt_use_package() {
 }
 
 tt_parse_cl "$@"
+if [[ ${_tt_download} == true ]]; then
+    tt_download
+fi
 
 if [[ ${_tt_preflight} == true ]]; then
     for package in "${tools[@]}"; do

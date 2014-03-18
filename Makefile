@@ -49,9 +49,12 @@ GRUB2_ISO		 = $(BUILDDIR)/$(notdir $(KERNEL))-grub2.iso
 #| The all target, keep it first!   |
 #'----------------------------------'
 
-all: all-kernel
+all: all-kernel all-tools
 
 .PHONY: all
+
+all-tools:
+	$(MAKE) -f $(SOURCEDIR)/tools/apps/Makefile all
 
 #.----------------------------------.
 #| Build internal/accumulated vars. |
