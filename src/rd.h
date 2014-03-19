@@ -18,7 +18,7 @@ typedef struct {
     uint32_t magic;     /**< magic number to verify format */
     uint32_t hdr_size;  /**< this headers size */
     uint32_t num_files; /**< number of following file headers */
-} rd_header_t;
+} PACKED rd_header_t;
 
 /**
  * Describes a single file that is contained in the image
@@ -27,6 +27,6 @@ typedef struct {
     uint32_t hdr_size;  /**< this headers size */
     uint32_t start;     /**< start offset from beginning of file */
     uint32_t size;      /**< size of the file in bytes */
-    char name[64];      /**< name of the file */
-} rd_file_t;
+    char name[64];      /**< name of the file, including trailing zero */
+} PACKED rd_file_t;
 

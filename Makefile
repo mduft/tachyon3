@@ -54,7 +54,7 @@ all: all-kernel all-tools
 .PHONY: all
 
 all-tools:
-	$(MAKE) -f $(SOURCEDIR)/tools/apps/Makefile all
+	@$(MAKE) -f $(SOURCEDIR)/tools/apps/Makefile
 
 #.----------------------------------.
 #| Build internal/accumulated vars. |

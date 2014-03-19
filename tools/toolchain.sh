@@ -348,8 +348,8 @@ if [[ ${_tt_clean} == true ]]; then
 fi
 
 info "generating environment to ${_tt_env}"
-echo "export PATH=${_tt_prefix}/bin:${_tt_prefix}/sbin:\${PATH}" > "${_tt_env}"
+echo "export PATH=${_tt_prefix}/bin:${_tt_prefix}/sbin:${_tt_home}/apps/bin:\${PATH}" > "${_tt_env}"
 
 info "generating environment to ${_tt_mkenv}"
-echo "export PATH := ${_tt_prefix}/bin:${_tt_prefix}/sbin:\$(PATH)" > "${_tt_mkenv}"
+echo "export PATH := ${_tt_prefix}/bin:${_tt_prefix}/sbin:${_tt_home}/apps/bin:\$(PATH)" > "${_tt_mkenv}"
 
