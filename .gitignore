@@ -3,6 +3,5 @@
 .build
 .package
 tools/.source
-tools/.build
 doc
 trace-*

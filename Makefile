@@ -1,28 +1,34 @@
 # Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
 # This file is part of the 'tachyon' operating system.
 
-ARCH			:= x86_64
-VERBOSE			:= 0
+#.----------------------------------.
+#| The all target, keep it first!   |
+#'----------------------------------'
 
-KERNEL_SILENT	:= 0
+all: all-kernel all-tools all-libs all-apps
 
-SHELL			:= bash
+.PHONY: all
 
-SOURCEDIR		:= $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
-BUILDDIR		:= $(SOURCEDIR)/.build/$(ARCH)
+all-tools:
 
-ARCH_MAKEFILE	:= $(SOURCEDIR)/config/$(ARCH).mk
-ARCH_LINKSCRIPT	:= $(SOURCEDIR)/config/$(ARCH).ld
-ARCH_PPLSCRIPT  := $(BUILDDIR)/$(ARCH).ld
+all-libs:
 
-ENV_MAKEFILE	:= $(SOURCEDIR)/.package/env.mk
+all-apps:
 
 #.----------------------------------.
 #| Include the platform config.     |
 #'----------------------------------'
 
-include $(ENV_MAKEFILE)
-include $(ARCH_MAKEFILE)
+include config/config.mk
+
+#.----------------------------------.
+#| Set kernel specific variables    |
+#'----------------------------------'
+
+KERNEL_SILENT	:= 0
+
+ARCH_LINKSCRIPT	:= $(CONFIGDIR)/$(ARCH).ld
+ARCH_PPLSCRIPT  := $(BUILDDIR)/$(ARCH).ld
 
 GDB				:= gdb
 
@@ -39,48 +45,17 @@ BASE_LDFLAGS	 = -T $(ARCH_PPLSCRIPT) -Map=$(KERNEL).map
 BASE_QFLAGS		:= -smp 2 -curses -serial file:$(BUILDDIR)/serial-qemu.log -serial file:$(BUILDDIR)/com2-serial-qemu.log
 BASE_GDBFLAGS	:= 
 
-MAKE			:= $(MAKE) --no-print-directory
-
 GRUB2_CFG		:= $(BUILDDIR)/boot/grub/grub.cfg
 GRUB2_PXE		 = $(BUILDDIR)/boot/grub/i386-pc/core.0
 GRUB2_ISO		 = $(BUILDDIR)/$(notdir $(KERNEL))-grub2.iso
 
 #.----------------------------------.
-#| The all target, keep it first!   |
-#'----------------------------------'
-
-all: all-kernel all-tools
-
-.PHONY: all
-
-all-tools:
-	@$(MAKE) -f $(SOURCEDIR)/tools/apps/Makefile
-
-#.----------------------------------.
 #| Build internal/accumulated vars. |
 #'----------------------------------'
-
-KERNEL_SOURCES	:= \
-	$(wildcard $(SOURCEDIR)/src/*.c) \
-	$(wildcard $(SOURCEDIR)/src/*.S) \
-	$(wildcard $(SOURCEDIR)/src/$(ARCH)/*.c) \
-	$(wildcard $(SOURCEDIR)/src/$(ARCH)/*.S) \
-    $(wildcard $(SOURCEDIR)/src/contrib/*/*.c) \
-	$(KERNEL_ADD)
-
-KERNEL_CSOURCES := $(filter %.c,$(KERNEL_SOURCES))
-KERNEL_SSOURCES := $(filter %.S,$(KERNEL_SOURCES))
-
-KERNEL_COBJECTS := $(subst $(SOURCEDIR),$(BUILDDIR),$(KERNEL_CSOURCES:.c=.o))
-KERNEL_SOBJECTS := $(subst $(SOURCEDIR),$(BUILDDIR),$(KERNEL_SSOURCES:.S=.o))
-
-KERNEL_OBJECTS  := $(KERNEL_COBJECTS) $(KERNEL_SOBJECTS)
 
 KCPPFLAGS	:= $(BASE_CPPFLAGS) $(CPPFLAGS) $(KERNEL_CPPFLAGS)
 KCFLAGS		:= $(BASE_CFLAGS) $(CFLAGS) $(KERNEL_CFLAGS)
 KLDFLAGS	:= $(BASE_LDFLAGS) $(LDFLAGS) $(KERNEL_LDFLAGS)
-
-MAKE_BDIR 	 = test -d "$(dir $@)" || mkdir -p "$(dir $@)"
 
 #.----------------------------------.
 #| Specialized Rules                |
@@ -100,9 +75,9 @@ $(KERNEL): $(KERNEL).sym.o
 	@if test $(VERBOSE) = 0; then \
 		echo "[LD  ] $(notdir $@)"; \
 	 else \
-	 	echo "$(LD) $(KLDFLAGS) -o \"$@\" $(KERNEL_OBJECTS)"; \
+	 	echo "$(LD) $(KLDFLAGS) -o \"$@\" $(OBJECTS)"; \
 	 fi
-	@$(LD) $(KLDFLAGS) -o "$@" $(filter-out %ksym_dummy.o,$(KERNEL_OBJECTS)) $(KERNEL).sym.o
+	@$(LD) $(KLDFLAGS) -o "$@" $(filter-out %ksym_dummy.o,$(OBJECTS)) $(KERNEL).sym.o
 
 $(KERNEL).dbg: $(KERNEL)
 	@if test $(VERBOSE) = 0; then \
@@ -122,17 +97,14 @@ all-kernel: $(KERNEL) $(KERNEL).dbg
 	@printf "kernel ready: " 
 	@(cd $(dir $(KERNEL)) && ls -hs $(notdir $(KERNEL)))
 
-clean:
-	@-rm -rf $(SOURCEDIR)/.build
-
 #.----------------------------------.
 #| Kernel Symbol Table dumping      |
 #'----------------------------------'
 
-$(KERNEL).sym.dmp: $(KERNEL_OBJECTS) $(ARCH_PPLSCRIPT)
+$(KERNEL).sym.dmp: $(OBJECTS) $(ARCH_PPLSCRIPT)
 	@-rm -f "$@"
 	@-rm -f "$@.bin"
-	@$(LD) $(KLDFLAGS) -o "$@.bin" $(KERNEL_OBJECTS)
+	@$(LD) $(KLDFLAGS) -o "$@.bin" $(OBJECTS)
 	@echo "declare -a names" >> "$@"
 	@echo "declare -a sizes" >> "$@"
 	@$(NM) -n -S --defined-only "$@.bin" | sed -e 's,\(^[0-9a-fA-F]*[ \t]*\)\([tT].*$$\),\10a \2,g' | grep -E '^[0-9a-fA-F]*[ \t]+[0-9a-fA-F]*[ \t]+[Tt]' | while read addr size type name; do \
@@ -205,40 +177,8 @@ $(KERNEL).sym.o: $(KERNEL).sym.S
 	@$(CC) $(KCFLAGS) -D__ASM__ -c -o "$@" "$<"
 
 #.----------------------------------.
-#| General Template Rules           |
-#'----------------------------------'
-
-include $(foreach mf,$(subst .o,.Po,$(KERNEL_OBJECTS)),$(wildcard $(mf)))
-
-$(KERNEL_COBJECTS): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.c
-	@-$(MAKE_BDIR)
-	@if test $(VERBOSE) = 0; then \
-		echo "[CC  ] $(subst $(SOURCEDIR)/,,$<)"; \
-	 else \
-	 	echo "$(CC) $(KCFLAGS) -c -o \"$@\" \"$<\""; \
-	 fi
-	@$(CC) -MMD -MF "$(subst .o,.Po,$@)" -dA -dP -save-temps=obj $(KCFLAGS) -c -o "$@" "$<"
-
-$(KERNEL_SOBJECTS): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.S
-	@-$(MAKE_BDIR)
-	@if test $(VERBOSE) = 0; then \
-		echo "[AS  ] $(subst $(SOURCEDIR)/,,$<)"; \
-	 else \
-	 	echo "$(CC) $(KCFLAGS) -D__ASM__ -c -o \"$@\" \"$<\""; \
-	 fi
-	@$(CC) -MMD -MF "$(subst .o,.Po,$@)" $(KCFLAGS) -D__ASM__ -c -o "$@" "$<"
-
-#.----------------------------------.
 #| Helper rules                     |
 #'----------------------------------'
-
-all-archs:
-	@for x in $(SOURCEDIR)/config/*.mk; do arch="$${x%.mk}"; arch=$${arch##*/}; echo "building $$arch ..."; \
-	 $(MAKE) -f $(SOURCEDIR)/Makefile ARCH=$${arch} all; done
-
-all-archs-iso:
-	@for x in $(SOURCEDIR)/config/*.mk; do arch="$${x%.mk}"; arch=$${arch##*/}; echo "building $$arch ..."; \
-	 $(MAKE) -f $(SOURCEDIR)/Makefile ARCH=$${arch} iso; done
 
 #
 # qemu direct kernel boot.

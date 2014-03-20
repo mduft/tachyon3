@@ -13,6 +13,6 @@ KERNEL_CFLAGS	:= -O0 -g -mcmodel=large -mno-red-zone -mno-sse $(KERNEL_CPPFLAGS)
 KERNEL_CXXFLAGS	:= $(KERNEL_CFLAGS)
 KERNEL_LDFLAGS	:= -z max-page-size=0x1000
 
-KERNEL			:= $(BUILDDIR)/$(ARCH)-tachyon
+KERNEL			= $(BUILDDIR)/$(ARCH)-tachyon
 
-KERNEL_ADD		:=
+KERNEL_ADD		=

@@ -1,0 +1,11 @@
+--- grub-2.00.weg/util/grub-mkfont.c	2014-03-20 09:58:50.716920070 +0100
++++ grub-2.00/util/grub-mkfont.c	2014-03-20 09:59:14.081921487 +0100
+@@ -39,7 +39,7 @@
+ #include FT_FREETYPE_H
+ #include FT_TRUETYPE_TAGS_H
+ #include FT_TRUETYPE_TABLES_H
+-#include <freetype/ftsynth.h>
++#include <ftsynth.h>
+ 
+ #undef __FTERRORS_H__
+ #define FT_ERROR_START_LIST   const char *ft_errmsgs[] = { 
