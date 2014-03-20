@@ -45,5 +45,5 @@ $(SOBJECTS): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.S
 	@$(CC) -MMD -MF "$(subst .o,.Po,$@)" $(KCFLAGS) -D__ASM__ -c -o "$@" "$<"
 
 clean:
-	@for bd in $$(find $(SOURCEDIR) -name '.build' -type d); do rm -rf $${bd}; done
+	@for mf in $$(find $(SOURCEDIR) -name 'Makefile' -type f); do bd=$$(dirname $${mf})/.build; test -d $${bd} && rm -rf $${bd}; done || exit 0
 
