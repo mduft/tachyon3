@@ -13,8 +13,10 @@ all-tools:
 	@for mf in $$(find $(SOURCEDIR)/tools/apps -name Makefile); do $(MAKE) -f $${mf}; done
 
 all-libs: all-tools
+	@for mf in $$(find $(SOURCEDIR)/apps -name Makefile); do $(MAKE) -f $${mf}; done
 
 all-apps: all-libs
+	@for mf in $$(find $(SOURCEDIR)/libs -name Makefile); do $(MAKE) -f $${mf}; done
 
 #.----------------------------------.
 #| Include the platform config.     |
