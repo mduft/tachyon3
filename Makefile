@@ -10,10 +10,11 @@ all: all-kernel all-tools all-libs all-apps
 .PHONY: all
 
 all-tools:
+	@for mf in $$(find $(SOURCEDIR)/tools/apps -name Makefile); do $(MAKE) -f $${mf}; done
 
-all-libs:
+all-libs: all-tools
 
-all-apps:
+all-apps: all-libs
 
 #.----------------------------------.
 #| Include the platform config.     |

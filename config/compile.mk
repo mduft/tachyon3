@@ -7,7 +7,8 @@ SOURCES	:= \
 	$(wildcard $(SOURCEDIR)/src/$(ARCH)/*.c) \
 	$(wildcard $(SOURCEDIR)/src/$(ARCH)/*.S) \
     $(wildcard $(SOURCEDIR)/src/contrib/*/*.c) \
-	$(KERNEL_ADD)
+	$(wildcard $(SOURCEDIR)/*.c) \
+	$(wildcard $(SOURCEDIR)/*.S)
 
 CSOURCES 	:= $(filter %.c,$(SOURCES))
 SSOURCES 	:= $(filter %.S,$(SOURCES))
@@ -44,5 +45,5 @@ $(SOBJECTS): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.S
 	@$(CC) -MMD -MF "$(subst .o,.Po,$@)" $(KCFLAGS) -D__ASM__ -c -o "$@" "$<"
 
 clean:
-	@-rm -rf $(SOURCEDIR)/.build
+	@for bd in $$(find $(SOURCEDIR) -name '.build' -type d); do rm -rf $${bd}; done
 
