@@ -100,6 +100,9 @@ void boot() {
     /* initialize the physical memory */
     pmem_init();
 
+    /* find and protect initial ram disc */
+    rd_header_t* mboot_find_rd();
+
     /* initialize the userspace api mappings */
     uapi_init();
 

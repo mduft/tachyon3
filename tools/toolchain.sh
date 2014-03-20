@@ -17,7 +17,7 @@ tools=(
     "cgdb:0.6.7:--build=\${_tt_host}"
     "grub:2.00:--build=\${_tt_host} --disable-werror"
     "xorriso:1.3.6:--build=\${_tt_host}"
-    "qemu:2.0.0-rc0:--python=/usr/bin/python2 --disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
+    "qemu:1.3.0:--python=/usr/bin/python2 --disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
     "bochs:2.6.2:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-sb16=linux --enable-ne2000 --enable-pcidev --enable-pnic --enable-smp --enable-logging"
 )
 

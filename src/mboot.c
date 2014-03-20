@@ -66,6 +66,13 @@ typedef struct {
     uint32_t    type;
 } PACKED mboot_mmap_t;
 
+typedef struct {
+    uint32_t    start;
+    uint32_t    end;
+    uint32_t    cmdline;
+    uint32_t    resvd;
+} PACKED mboot_mod_t;
+
 static void* mboot_find_free_page() {
     /* this is some arbitrary address to search for free room
      * for temporary mappings */
@@ -127,3 +134,24 @@ void mboot_pmem_init() {
     mboot_unmap(mbi);
 }
 
+rd_header_t* mboot_find_rd() {
+    if(boot_state.ax != MBOOT_MAGIC) {
+        return NULL;
+    }
+
+    register mboot_info_t* mbi = (mboot_info_t*)mboot_map(boot_state.bx);
+
+    rd_header_t* result = NULL;
+    if(mbi->flags & MBOOT_FL_MODS) {
+        if(mbi->mods_cnt > 1) {
+            uint32_t i;
+            register mboot_mod_t* mod = (mboot_mod_t*)mboot_map(mbi->mods_addr);
+            for(i = 0; i < mbi->mods_cnt; ++i, ++mod) {
+                info("module %d: %p - %p (%s)\n", i, mod->start, mod->end, mod->cmdline);
+            }
+        }
+    }
+
+    mboot_unmap(mbi);
+    return result;
+}

@@ -60,7 +60,7 @@ int create(char* name, int nfiles, char** filenames) {
     int i, pos = 0;
     rd_header_t hdr = { RD_MAGIC, sizeof(rd_header_t), nfiles };
 
-    LOG("creating archive (nfiles=%d)\n", nfiles);
+    LOG("creating image (nfiles=%d)\n", nfiles);
 
     int target = open(name, O_CREAT | O_WRONLY, 0664);
     CHECK_CALL(target, "open target file");
