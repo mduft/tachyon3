@@ -101,7 +101,7 @@ void boot() {
     pmem_init();
 
     /* find and protect initial ram disc */
-    rd_header_t* mboot_find_rd();
+    rd_header_t* rd = mboot_find_rd();
 
     /* initialize the userspace api mappings */
     uapi_init();
@@ -176,6 +176,7 @@ void boot() {
     sched_add(thr);
 
     // TEST
+    info("ramdisk at: %p, magic: 0x%x, num files: %d\n", rd, rd->magic, rd->num_files);
 
     // and start the scheduler.
     locals.init->state = Exited;

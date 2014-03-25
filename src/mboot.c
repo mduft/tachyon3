@@ -143,7 +143,7 @@ rd_header_t* mboot_find_rd() {
 
     rd_header_t* result = NULL;
     if(mbi->flags & MBOOT_FL_MODS) {
-        if(mbi->mods_cnt > 1) {
+        if(mbi->mods_cnt > 0) {
             uint32_t i;
             register mboot_mod_t* mod = (mboot_mod_t*)mboot_map(mbi->mods_addr);
             for(i = 0; i < mbi->mods_cnt; ++i, ++mod) {
