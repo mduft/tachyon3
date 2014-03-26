@@ -30,7 +30,11 @@
 #define MBOOT_VTEMP_REG_START   0xA0000000
 #define MBOOT_VTEMP_REG_END     0xA00F0000
 
+static void mboot_pmem_init();
+static void mboot_pmem_protect();
+
 INSTALL_EXTENSION(EXTP_PMEM_REGION, mboot_pmem_init, "multiboot")
+INSTALL_EXTENSION(EXTP_PMEM_RESERVE, mboot_pmem_protect, "multiboot")
 
 typedef struct {
     uint32_t    flags;
@@ -110,7 +114,34 @@ static void mboot_unmap(void* mapped) {
     vmem_unmap(spc_current(), mapped);
 }
 
-void mboot_pmem_init() {
+static void mboot_pmem_protect() {
+    if(boot_state.ax != MBOOT_MAGIC) {
+        return;
+    }
+
+    pmem_reserve(ALIGN_DN(boot_state.bx, PMEM_PAGESIZE), sizeof(mboot_info_t));
+    register mboot_info_t* mbi = (mboot_info_t*)mboot_map(boot_state.bx);
+
+    if(mbi->flags & MBOOT_FL_MEMMAP) {
+        pmem_reserve(ALIGN_DN(mbi->mmap_addr, PMEM_PAGESIZE), mbi->mmap_len);
+    }
+
+    if(mbi->flags & MBOOT_FL_MODS) {
+        if(mbi->mods_cnt > 0) {
+            pmem_reserve(ALIGN_DN(mbi->mods_addr, PMEM_PAGESIZE), mbi->mods_cnt * sizeof(mboot_mod_t));
+            register unsigned int i;
+            register mboot_mod_t* mod = (mboot_mod_t*)mboot_map(mbi->mods_addr);
+            for(i = 0; i < mbi->mods_cnt; ++i, ++mod) {
+                pmem_reserve(ALIGN_DN(mod->start, PMEM_PAGESIZE), mod->end - mod->start);
+            }
+            mboot_unmap(mod);
+        }
+    }
+
+    mboot_unmap(mbi);
+}
+
+static void mboot_pmem_init() {
     if(boot_state.ax != MBOOT_MAGIC) {
         return;
     }
@@ -148,7 +179,7 @@ rd_header_t* mboot_find_rd() {
             info("mods_addr: %p\n", mbi->mods_addr);
             register mboot_mod_t* mod = (mboot_mod_t*)mboot_map(mbi->mods_addr);
             for(i = 0; i < mbi->mods_cnt; ++i, ++mod) {
-                info("module %d: %p\n", i, mod);
+                // TODO: need mechanism to map multiple consecutive pages
             }
             mboot_unmap(mod);
         }

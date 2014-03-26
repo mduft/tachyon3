@@ -10,6 +10,7 @@
 #include "spl.h"
 #include "ldsym.h"
 
+#define PMEM_FIRST_PAGES_OFFSET (16 * 1024 * 1024) /**< need some room for kernel & modules & stuff */
 #define PMEM_FDEG       80
 #define PMEM_PAGES(len) (ALIGN_UP(len, PMEM_PAGESIZE) / PMEM_PAGESIZE)
 
@@ -70,7 +71,7 @@ static inline bool pmem_reg_contains(pmem_region_t* reg, phys_addr_t addr) {
  * can the in turn call pmem_add() to add more physical
  * memory regions.
  *
- * @param tag   always "pmem.region"
+ * @param tag   "pmem.region" or "pmem.reserve"
  * @param cb    the callback
  * @param desc  ignored
  */
@@ -82,7 +83,7 @@ void pmem_init() {
     bmap_init(&first_bmap, first_storage, (sizeof(first_storage) * 8));
 
     first_region.bmap = &first_bmap;
-    first_region.start = 0;
+    first_region.start = PMEM_FIRST_PAGES_OFFSET;
     first_region.length = ((first_bmap.bits - (1 /* savety zone */)) * PMEM_PAGESIZE);
     first_region.next = NULL;
 
@@ -105,6 +106,10 @@ void pmem_init() {
     if(!pmem_reserve(0xA0000, (((size_t)&_core_lma_ebss) - 0xA0000))) {
         error("failed to protect physical lower and kernel memory\n");
     }
+
+    /* generic reservation of pmem regions /before/ kheap tampers
+     * all of them (potentially) */
+    extp_iterate(EXTP_PMEM_RESERVE, pmem_iterate_extp);
 
     /* here we are sufficiently initialized, so virtual memory
      * can allocate physical memory for the initial mappings,

@@ -11,6 +11,7 @@
  * '----------------------------------' 
  */
 
+#define EXTP_PMEM_RESERVE   "pmem.reserve"
 #define EXTP_PMEM_REGION    "pmem.region"
 #define EXTP_TIMERGEN       "timer.gen"
 #define EXTP_SYSTIME        "sys.time"

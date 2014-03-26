@@ -8,12 +8,6 @@
 #include "rd.h"
 
 /**
- * Initializes physical memory from the regions advertised by
- * the multiboot header passed to the kernel upon boot
- */
-void mboot_pmem_init();
-
-/**
  * Tries to find an initial RAM disc from the multiboot header
  * passed to the kernel upon boot
  */
