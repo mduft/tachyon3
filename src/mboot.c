@@ -145,10 +145,12 @@ rd_header_t* mboot_find_rd() {
     if(mbi->flags & MBOOT_FL_MODS) {
         if(mbi->mods_cnt > 0) {
             uint32_t i;
+            info("mods_addr: %p\n", mbi->mods_addr);
             register mboot_mod_t* mod = (mboot_mod_t*)mboot_map(mbi->mods_addr);
             for(i = 0; i < mbi->mods_cnt; ++i, ++mod) {
-                info("module %d: %p - %p (%s)\n", i, mod->start, mod->end, mod->cmdline);
+                info("module %d: %p\n", i, mod);
             }
+            mboot_unmap(mod);
         }
     }
 

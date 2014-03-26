@@ -76,6 +76,7 @@ void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
  */
 static struct {
     thread_t* init;
+    rd_header_t* rd;
     pmem_info_t pmem;
 } locals;
 
@@ -97,11 +98,11 @@ void boot() {
     /* initialize dynamic GDT lock */
     dyngdt_init_spinlock();
 
-    /* initialize the physical memory */
+    /* initialize the physical memory. */
     pmem_init();
 
     /* find and protect initial ram disc */
-    rd_header_t* rd = mboot_find_rd();
+    locals.rd = mboot_find_rd();
 
     /* initialize the userspace api mappings */
     uapi_init();
@@ -176,7 +177,7 @@ void boot() {
     sched_add(thr);
 
     // TEST
-    info("ramdisk at: %p, magic: 0x%x, num files: %d\n", rd, rd->magic, rd->num_files);
+    info("ramdisk at: %p\n", locals.rd);
 
     // and start the scheduler.
     locals.init->state = Exited;
