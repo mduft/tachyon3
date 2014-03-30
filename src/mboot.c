@@ -7,6 +7,7 @@
 #include "spc.h"
 #include "log.h"
 #include "kheap.h"
+#include "vmem_mgmt.h"
 
 #include <paging.h>
 
@@ -180,10 +181,35 @@ rd_header_t* mboot_find_rd() {
             info("mods_addr: %p\n", mbi->mods_addr);
             register mboot_mod_t* mod = (mboot_mod_t*)mboot_map(mbi->mods_addr);
             for(i = 0; i < mbi->mods_cnt; ++i, ++mod) {
-                void* pg = mboot_map(mod->start);
-                if(((rd_header_t*)pg)->magic == RD_MAGIC) {
-                    info("found rd @%p\n", mod->start);
+                void* mapped = mboot_map(mod->start);
+                if(((rd_header_t*)mapped)->magic == RD_MAGIC) {
+                    info("found rd at %p\n", mod->start);
+                    size_t sz = mod->end - mod->start;
+                    if(sz > (RD_VSZ - PAGE_SIZE_4K)) {
+                        fatal("rd too large to be mapped: %d bytes!\n", sz);
+                    }
+
+                    // continously map until all is done
+                    phys_addr_t first_phys = ALIGN_DN(mod->start, PMEM_PAGESIZE);
+                    phys_addr_t last_phys = ALIGN_UP(mod->end, PMEM_PAGESIZE);
+                    
+                    info("mapping rd from %p to %p (%d bytes)\n", first_phys, last_phys, sz);
+
+                    uintptr_t virt = RD_VIRTUAL;
+                    while(first_phys < last_phys) {
+                        if(!vmem_map(spc_current(), first_phys, (void*)virt, PG_GLOBAL)) {
+                            fatal("cannot map %p to %p for rd\n", first_phys, virt);
+                        }
+
+                        vmem_mgmt_add_global_mapping(first_phys, (void*)virt, PG_GLOBAL);
+                        
+                        first_phys += PAGE_SIZE_4K;
+                        virt += PAGE_SIZE_4K;
+                    }
+
+                    return (rd_header_t*)(RD_VIRTUAL + ALIGN_RST(mod->start, PAGE_SIZE_4K));
                 }
+                mboot_unmap(mapped);
             }
             mboot_unmap(mod);
         }

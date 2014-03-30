@@ -284,7 +284,7 @@ next_pass:
                 if(checkPass) {
                     if(bmap_get(reg->bmap, idx)) {
                         spl_unlock(&pmem_lock);
-                        debug("failed to reserve region, %p already reserved\n", cur);
+                        trace("region at %p already reserved\n", cur);
                         return false;
                     }
                 } else {

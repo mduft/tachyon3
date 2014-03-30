@@ -15,11 +15,11 @@
  * | F | PHEAP    | UAPI | PSHEAP | ... resvd ... | KHEAP    | KSHEAP | CORE        ...
  * '-----------------------------------------------------------------------------------
  *
- *                0xFFFFFFFF81001000  0xFFFFFFFF81112000
+ *                0xFFFFFFFF81001000  0xFFFFFFFF81112000  0xFFFFFFFF89113000
  *      0xFFFFFFFF81000000  0xFFFFFFFF81002000  0xFFFFFFFF81113000
- * ---------------------------------------------.
- *  ... | APIC    | CGA     | RME-MEM | GDT-TMP |
- * ---------------------------------------------'
+ * -------------------------------------------------------.
+ *  ... | APIC    | CGA     | RME-MEM | GDT-TMP | RDISC   |
+ * -------------------------------------------------------'
  *
  * </pre>
  *
@@ -109,6 +109,11 @@
 #define GDT_VIRTUAL         (RM_VIRTUAL + RM_VSZ)
 /** size of the temporary GDT region */
 #define GDT_VSZ             0x1000
+
+/** virtual region reserved for mapping the initial rdisc */
+#define RD_VIRTUAL          (GDT_VIRTUAL + GDT_VSZ)
+/** size of the rdisc region - max 128MB */
+#define RD_VSZ              0x8000000
 
 /** ksym support: magic stack frame cookie */
 #define INTR_MAGIC_FRAME    0x00900d900dc0ffee
