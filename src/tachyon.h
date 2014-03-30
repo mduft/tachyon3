@@ -35,6 +35,7 @@ typedef __builtin_va_list va_list;
 #define SECTION(x)          __attribute__((section(x)))
 #define UNUSED              __attribute__((unused))
 #define NORETURN            __attribute__((noreturn))
+#define ALIGNED(x)          __attribute__((aligned(x)))
 
 /* 
  * .----------------------------------.

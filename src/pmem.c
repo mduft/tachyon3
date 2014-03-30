@@ -9,8 +9,9 @@
 #include "vmem.h"
 #include "spl.h"
 #include "ldsym.h"
+#include "spc.h"
+#include "paging.h"
 
-#define PMEM_FIRST_PAGES_OFFSET (16 * 1024 * 1024) /**< need some room for kernel & modules & stuff */
 #define PMEM_FDEG       80
 #define PMEM_PAGES(len) (ALIGN_UP(len, PMEM_PAGESIZE) / PMEM_PAGESIZE)
 
@@ -50,10 +51,19 @@ static bitmap_t first_bmap;
 
 /**
  * This represents the real storage for the bitmap above.
- * it can hold bits for up to 4MB of physical memory, which
- * is the bare minimum that must be available at boot.
+ * it can hold bits for up to 128K of physical memory, which
+ * is the size of the initial physical storage in kernel
+ *
+ * @see init_phys
  */
-static uint32_t first_storage[32];
+static uint32_t first_storage[1];
+
+/**
+ * This is reserved space for the initial storage of things to
+ * not tamper reserved physical space accidently. This is currently
+ * 32 * 4096K -> 128KB
+ */
+static char init_phys[PMEM_PAGESIZE * 32] ALIGNED(PMEM_PAGESIZE);
 
 /**
  * Checks whether a given adress lies within a region.
@@ -83,14 +93,27 @@ void pmem_init() {
     bmap_init(&first_bmap, first_storage, (sizeof(first_storage) * 8));
 
     first_region.bmap = &first_bmap;
-    first_region.start = PMEM_FIRST_PAGES_OFFSET;
-    first_region.length = ((first_bmap.bits - (1 /* savety zone */)) * PMEM_PAGESIZE);
+    first_region.start = vmem_resolve(spc_current(), &init_phys) + ALIGN_RST((uintptr_t)&init_phys, PAGE_SIZE_2M);
+    first_region.length = sizeof(init_phys);
     first_region.next = NULL;
 
     pmem_region_head = &first_region;
     pmem_region_tail = pmem_region_head;
 
     spl_init(&pmem_lock);
+
+    /* here we are sufficiently initialized, so virtual memory
+     * can allocate physical memory for the initial mappings,
+     * required to get the kernel heap working. this in turn
+     * enables us, to allocate more memory to add additional
+     * regions to the physical memory. */
+    kheap_init();
+
+    /* create regions apart from the initial region so that all
+     * available physical memory is know. This has to be done
+     * prior to reserving physical memory, as reservation "only"
+     * flips bits in available regions */
+    extp_iterate(EXTP_PMEM_REGION, pmem_iterate_extp);
 
     /* reserve the page at address zero, as most people don't
      * know how to handle it. rm_init() needs to spare this
@@ -110,15 +133,6 @@ void pmem_init() {
     /* generic reservation of pmem regions /before/ kheap tampers
      * all of them (potentially) */
     extp_iterate(EXTP_PMEM_RESERVE, pmem_iterate_extp);
-
-    /* here we are sufficiently initialized, so virtual memory
-     * can allocate physical memory for the initial mappings,
-     * required to get the kernel heap working. this in turn
-     * enables us, to allocate more memory to add additional
-     * regions to the physical memory. */
-    kheap_init();
-
-    extp_iterate(EXTP_PMEM_REGION, pmem_iterate_extp);
 
     /* some debugging information */
     pmem_region_t* current = pmem_region_head;
