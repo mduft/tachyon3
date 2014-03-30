@@ -6,6 +6,7 @@
 #include "vmem.h"
 #include "spc.h"
 #include "log.h"
+#include "kheap.h"
 
 #include <paging.h>
 
@@ -179,7 +180,10 @@ rd_header_t* mboot_find_rd() {
             info("mods_addr: %p\n", mbi->mods_addr);
             register mboot_mod_t* mod = (mboot_mod_t*)mboot_map(mbi->mods_addr);
             for(i = 0; i < mbi->mods_cnt; ++i, ++mod) {
-                // TODO: need mechanism to map multiple consecutive pages
+                void* pg = mboot_map(mod->start);
+                if(((rd_header_t*)pg)->magic == RD_MAGIC) {
+                    info("found rd @%p\n", mod->start);
+                }
             }
             mboot_unmap(mod);
         }
