@@ -18,6 +18,7 @@
 #define ERR_OSCALL   3
 #define ERR_NOIMAGE  4
 #define ERR_HDRSIZE  5
+#define ERR_ISDIR    6
 
 #define CHECK_CALL(x, func) if((int)x == -1) {           \
                                 perror(func);       \
@@ -81,6 +82,11 @@ int create(char* name, int nfiles, char** filenames) {
         // retrieve file size of source.
         int res = stat(filenames[i], &sbuf);
         CHECK_CALL(res, "retrieve file size");
+
+        if(S_ISDIR(sbuf.st_mode)) {
+            printf("error: directories not supported: %s\n", filenames[i]);
+            return ERR_ISDIR;
+        }
 
         // fill out all file header fields.
         fhdr.hdr_size = sizeof(rd_file_t);

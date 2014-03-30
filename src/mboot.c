@@ -183,8 +183,9 @@ rd_header_t* mboot_find_rd() {
             for(i = 0; i < mbi->mods_cnt; ++i, ++mod) {
                 void* mapped = mboot_map(mod->start);
                 if(((rd_header_t*)mapped)->magic == RD_MAGIC) {
-                    info("found rd at %p\n", mod->start);
                     size_t sz = mod->end - mod->start;
+                    info("found rd at %p, nfiles=%d, size=%d bytes\n", 
+                        mod->start, ((rd_header_t*)mapped)->num_files, sz);
                     if(sz > (RD_VSZ - PAGE_SIZE_4K)) {
                         fatal("rd too large to be mapped: %d bytes!\n", sz);
                     }

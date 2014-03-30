@@ -51,8 +51,6 @@ void test_thr(uapi_desc_t const* uapi) {
     info("quitting...\n");
 }
 
-///// TEST /////
-
 void SECTION(SECT_USER_CODE) test_thr2(uapi_desc_t const* uapi) {
     for(int i = 0; i < 1000; ++i) {
         uapi->syscall(SysLog, Info, (uintptr_t)"hello userspace\n");
