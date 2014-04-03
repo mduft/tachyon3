@@ -26,6 +26,7 @@
 #include "tmr.h"
 #include "idle.h"
 #include "uapi.h"
+#include "path.h"
 
 #include "vmem_mgmt.h"
 
@@ -176,6 +177,17 @@ void boot() {
 
     // TEST
     info("ramdisk at: %p\n", locals.rd);
+
+    path_t* p = path_create("/this/is/a/path", &kheap);
+
+    size_t i;
+    for(i = 0; i < p->count; ++i) {
+
+    }
+
+    info("path joined: %s\n", path_string(p));
+
+    // END TEST
 
     // and start the scheduler.
     locals.init->state = Exited;

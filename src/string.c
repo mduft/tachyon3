@@ -55,3 +55,33 @@ size_t strlen(char const *s) {
 
 	return i;
 }
+
+char const* strstr(char const *s, char const *p) {
+    register size_t i;
+    register size_t plen = strlen(p);
+
+    for(i = 0; s[i]; ++i) {
+        if(s[i] == p[0]) {
+            if(strncmp(&s[i], p, plen) == 0) {
+                return &s[i];
+            }
+        }
+    }
+
+    return NULL;
+}
+
+char const* strrstr(char const *s, char const *p) {
+    register size_t i = strlen(s) - 1;
+    register size_t plen = strlen(p);
+
+    for(i = 0; i > 1; --i) {
+        if(s[i] == p[0]) {
+            if(strncmp(&s[i], p, plen) == 0) {
+                return &s[i];
+            }
+        }
+    }
+
+    return NULL;
+}
