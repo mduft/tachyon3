@@ -36,6 +36,11 @@
  */
 init_state_t const boot_state;
 
+/**
+ * phase 2 of the boot. after stack switch, this will continue.
+ */
+static void boot_next();
+
 // -- TESTTEST
 void test_thr(uapi_desc_t const* uapi) {
     thread_t* thr = thr_current();
@@ -141,6 +146,11 @@ void boot() {
         "movq %0,%%rsp; movq %0, %%rbp; pushq $0; pushq $0" :: "d"(locals.init->stack->top - (sizeof(uintptr_t) * 2)) : "rsp"
     );
 
+    /* after stack switch, jump to another frame that is consistent */
+    boot_next();
+}
+
+static void boot_next() {
     /* initialize some more */
     ioapic_init();
     rm_init();
@@ -162,7 +172,6 @@ void boot() {
     idle_init();
 
     // TODO: kick off initial threads.
-    // FIXME: local variables are BAD in this method - this only works "by accident"
     // TEST
     for(size_t i = 0; i < 2; ++i) {
         thread_t* thr = thr_create(core, test_thr, IsolationKernel);
@@ -179,12 +188,6 @@ void boot() {
     info("ramdisk at: %p\n", locals.rd);
 
     path_t* p = path_create("/this/is/a/path", &kheap);
-
-    size_t i;
-    for(i = 0; i < p->count; ++i) {
-
-    }
-
     info("path joined: %s\n", path_string(p));
 
     // END TEST

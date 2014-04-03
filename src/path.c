@@ -37,6 +37,7 @@ path_t* path_create(char const* p, heap_t* heap) {
 
         char* buf = (char*)heap_alloc(heap, comp_len + 1);
         strncpy(buf, comp, comp_len);
+        buf[comp_len] = 0;
 
         path->components[count++] = buf;
     }
