@@ -8,12 +8,12 @@
 # each entry has this format: <name>:<version>:<configure flags>:<all target>:<install target>
 
 tools=(
-    "binutils:2.22:--build=\${_tt_host} --target=x86_64-pc-elf"
+    "binutils:2.21.1a:--build=\${_tt_host} --target=x86_64-pc-elf"
     "gmp:5.1.3:--build=\${_tt_host}"
     "mpfr:3.1.2:--build=\${_tt_host}"
     "mpc:1.0.2:--build=\${_tt_host} --with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
     "gcc:4.6.2:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable-languages=c,c++:all-gcc:install-gcc"
-    "gdb:7.4.1:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
+    "gdb:7.3.1:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
     "cgdb:0.6.7:--build=\${_tt_host}"
     "grub:2.00:--build=\${_tt_host} --disable-werror"
     "xorriso:1.3.6:--build=\${_tt_host}"
@@ -22,7 +22,7 @@ tools=(
 )
 
 sites=(
-    "binutils|http://ftp.gnu.org/gnu/binutils/\${P}-\${V}.tar.gz"
+    "binutils|http://ftp.gnu.org/gnu/binutils/\${P}-\${V}.tar.bz2"
     "gmp|https://gmplib.org/download/gmp/\${P}-\${V}.tar.bz2"
     "mpfr|http://www.mpfr.org/mpfr-current/\${P}-\${V}.tar.bz2"
     "mpc|http://ftp.gnu.org/gnu/mpc/\${P}-\${V}.tar.gz"
@@ -151,7 +151,7 @@ function tt_download() {
             sP="${s[0]}"
             if [[ ${sP} == ${P} ]]; then
                 url="$(eval echo "${s[1]}")"
-                wget -O "${_tt_source}/${url##*/}" "${url}"
+                wget -O "${_tt_source}/${url##*/}" "${url}" || rm "${_tt_source}/${url##*/}"
             fi
         done
     done

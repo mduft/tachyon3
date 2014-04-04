@@ -1,0 +1,253 @@
+diff -ru gdb-7.3.1.orig/gdb/amd64-linux-nat.c gdb-7.3.1/gdb/amd64-linux-nat.c
+--- gdb-7.3.1.orig/gdb/amd64-linux-nat.c	2014-04-04 14:51:34.572315470 +0200
++++ gdb-7.3.1/gdb/amd64-linux-nat.c	2014-04-04 14:51:30.939322719 +0200
+@@ -684,13 +684,13 @@
+    INF.  */
+ 
+ static int
+-amd64_linux_siginfo_fixup (struct siginfo *native, gdb_byte *inf, int direction)
++amd64_linux_siginfo_fixup (siginfo_t *native, gdb_byte *inf, int direction)
+ {
+   /* Is the inferior 32-bit?  If so, then do fixup the siginfo
+      object.  */
+   if (gdbarch_addr_bit (get_frame_arch (get_current_frame ())) == 32)
+     {
+-      gdb_assert (sizeof (struct siginfo) == sizeof (compat_siginfo_t));
++      gdb_assert (sizeof (siginfo_t) == sizeof (compat_siginfo_t));
+ 
+       if (direction == 0)
+ 	compat_siginfo_from_siginfo ((struct compat_siginfo *) inf, native);
+diff -ru gdb-7.3.1.orig/gdb/arm-linux-nat.c gdb-7.3.1/gdb/arm-linux-nat.c
+--- gdb-7.3.1.orig/gdb/arm-linux-nat.c	2014-04-04 14:51:34.572315470 +0200
++++ gdb-7.3.1/gdb/arm-linux-nat.c	2014-04-04 14:51:30.939322719 +0200
+@@ -1203,7 +1203,7 @@
+ static int
+ arm_linux_stopped_data_address (struct target_ops *target, CORE_ADDR *addr_p)
+ {
+-  struct siginfo *siginfo_p = linux_nat_get_siginfo (inferior_ptid);
++  siginfo_t *siginfo_p = linux_nat_get_siginfo (inferior_ptid);
+   int slot = siginfo_p->si_errno;
+ 
+   /* This must be a hardware breakpoint.  */
+Only in gdb-7.3.1/gdb/data-directory: python
+Only in gdb-7.3.1/gdb/data-directory: stamp-python
+Only in gdb-7.3.1/gdb/data-directory: stamp-syscalls
+Only in gdb-7.3.1/gdb/data-directory: syscalls
+Only in gdb-7.3.1/gdb/gdbserver: amd64-linux-ipa.o
+Only in gdb-7.3.1/gdb/gdbserver: gdbreplay
+Only in gdb-7.3.1/gdb/gdbserver: gdbreplay.o
+Only in gdb-7.3.1/gdb/gdbserver: gdbserver
+Only in gdb-7.3.1/gdb/gdbserver: hostio-errno.o
+Only in gdb-7.3.1/gdb/gdbserver: i386-low.o
+Only in gdb-7.3.1/gdb/gdbserver: i387-fp.o
+Only in gdb-7.3.1/gdb/gdbserver: libinproctrace.so
+Only in gdb-7.3.1/gdb/gdbserver: linux-amd64-ipa.o
+diff -ru gdb-7.3.1.orig/gdb/gdbserver/linux-low.c gdb-7.3.1/gdb/gdbserver/linux-low.c
+--- gdb-7.3.1.orig/gdb/gdbserver/linux-low.c	2014-04-04 14:51:34.573315468 +0200
++++ gdb-7.3.1/gdb/gdbserver/linux-low.c	2014-04-04 14:53:01.218142603 +0200
+@@ -4693,7 +4693,7 @@
+    layout of the inferiors' architecture.  */
+ 
+ static void
+-siginfo_fixup (struct siginfo *siginfo, void *inf_siginfo, int direction)
++siginfo_fixup (siginfo_t *siginfo, void *inf_siginfo, int direction)
+ {
+   int done = 0;
+ 
+@@ -4705,9 +4705,9 @@
+   if (!done)
+     {
+       if (direction == 1)
+-	memcpy (siginfo, inf_siginfo, sizeof (struct siginfo));
++	memcpy (siginfo, inf_siginfo, sizeof (siginfo_t));
+       else
+-	memcpy (inf_siginfo, siginfo, sizeof (struct siginfo));
++	memcpy (inf_siginfo, siginfo, sizeof (siginfo_t));
+     }
+ }
+ 
+@@ -4716,8 +4716,8 @@
+ 		    unsigned const char *writebuf, CORE_ADDR offset, int len)
+ {
+   int pid;
+-  struct siginfo siginfo;
+-  char inf_siginfo[sizeof (struct siginfo)];
++  siginfo_t siginfo;
++  char inf_siginfo[sizeof (siginfo_t)];
+ 
+   if (current_inferior == NULL)
+     return -1;
+diff -ru gdb-7.3.1.orig/gdb/gdbserver/linux-low.h gdb-7.3.1/gdb/gdbserver/linux-low.h
+--- gdb-7.3.1.orig/gdb/gdbserver/linux-low.h	2014-04-04 14:51:34.573315468 +0200
++++ gdb-7.3.1/gdb/gdbserver/linux-low.h	2014-04-04 14:54:24.152977175 +0200
+@@ -21,6 +21,7 @@
+ #include <thread_db.h>
+ #endif
+ 
++#include <signal.h>
+ #include "gdb_proc_service.h"
+ 
+ #ifdef HAVE_LINUX_REGSETS
+@@ -46,8 +47,6 @@
+ extern struct regset_info target_regsets[];
+ #endif
+ 
+-struct siginfo;
+-
+ struct process_info_private
+ {
+   /* Arch-specific additions.  */
+@@ -100,7 +99,7 @@
+      Returns true if any conversion was done; false otherwise.
+      If DIRECTION is 1, then copy from INF to NATIVE.
+      If DIRECTION is 0, copy from NATIVE to INF.  */
+-  int (*siginfo_fixup) (struct siginfo *native, void *inf, int direction);
++  int (*siginfo_fixup) (siginfo_t *native, void *inf, int direction);
+ 
+   /* Hook to call when a new process is created or attached to.
+      If extra per-process architecture-specific data is needed,
+Only in gdb-7.3.1/gdb/gdbserver: linux-low.o
+diff -ru gdb-7.3.1.orig/gdb/gdbserver/linux-x86-low.c gdb-7.3.1/gdb/gdbserver/linux-x86-low.c
+--- gdb-7.3.1.orig/gdb/gdbserver/linux-x86-low.c	2014-04-04 14:51:34.574315466 +0200
++++ gdb-7.3.1/gdb/gdbserver/linux-x86-low.c	2014-04-04 14:51:30.941322715 +0200
+@@ -906,13 +906,13 @@
+    INF.  */
+ 
+ static int
+-x86_siginfo_fixup (struct siginfo *native, void *inf, int direction)
++x86_siginfo_fixup (siginfo_t *native, void *inf, int direction)
+ {
+ #ifdef __x86_64__
+   /* Is the inferior 32-bit?  If so, then fixup the siginfo object.  */
+   if (register_size (0) == 4)
+     {
+-      if (sizeof (struct siginfo) != sizeof (compat_siginfo_t))
++      if (sizeof (siginfo_t) != sizeof (compat_siginfo_t))
+ 	fatal ("unexpected difference in siginfo");
+ 
+       if (direction == 0)
+Only in gdb-7.3.1/gdb/gdbserver: linux-x86-low.o
+Only in gdb-7.3.1/gdb/gdbserver: proc-service.o
+Only in gdb-7.3.1/gdb/gdbserver: regcache-ipa.o
+Only in gdb-7.3.1/gdb/gdbserver: remote-utils-ipa.o
+Only in gdb-7.3.1/gdb/gdbserver: thread-db.o
+Only in gdb-7.3.1/gdb/gdbserver: tracepoint-ipa.o
+Only in gdb-7.3.1/gdb/gdbserver: utils-ipa.o
+Only in gdb-7.3.1/gdb/gdbserver: xx.i
+Binary files gdb-7.3.1.orig/gdb/libgdb.a and gdb-7.3.1/gdb/libgdb.a differ
+diff -ru gdb-7.3.1.orig/gdb/linux-nat.c gdb-7.3.1/gdb/linux-nat.c
+--- gdb-7.3.1.orig/gdb/linux-nat.c	2014-04-04 14:51:34.575315464 +0200
++++ gdb-7.3.1/gdb/linux-nat.c	2014-04-04 14:51:30.942322713 +0200
+@@ -214,7 +214,7 @@
+ /* The method to call, if any, when the siginfo object needs to be
+    converted between the layout returned by ptrace, and the layout in
+    the architecture of the inferior.  */
+-static int (*linux_nat_siginfo_fixup) (struct siginfo *,
++static int (*linux_nat_siginfo_fixup) (siginfo_t *,
+ 				       gdb_byte *,
+ 				       int);
+ 
+@@ -3945,7 +3945,7 @@
+    layout of the inferiors' architecture.  */
+ 
+ static void
+-siginfo_fixup (struct siginfo *siginfo, gdb_byte *inf_siginfo, int direction)
++siginfo_fixup (siginfo_t *siginfo, gdb_byte *inf_siginfo, int direction)
+ {
+   int done = 0;
+ 
+@@ -3957,9 +3957,9 @@
+   if (!done)
+     {
+       if (direction == 1)
+-	memcpy (siginfo, inf_siginfo, sizeof (struct siginfo));
++	memcpy (siginfo, inf_siginfo, sizeof (siginfo_t));
+       else
+-	memcpy (inf_siginfo, siginfo, sizeof (struct siginfo));
++	memcpy (inf_siginfo, siginfo, sizeof (siginfo_t));
+     }
+ }
+ 
+@@ -3969,8 +3969,8 @@
+ 		    const gdb_byte *writebuf, ULONGEST offset, LONGEST len)
+ {
+   int pid;
+-  struct siginfo siginfo;
+-  gdb_byte inf_siginfo[sizeof (struct siginfo)];
++  siginfo_t siginfo;
++  gdb_byte inf_siginfo[sizeof (siginfo_t)];
+ 
+   gdb_assert (object == TARGET_OBJECT_SIGNAL_INFO);
+   gdb_assert (readbuf || writebuf);
+@@ -5784,7 +5784,7 @@
+    inferior.  */
+ void
+ linux_nat_set_siginfo_fixup (struct target_ops *t,
+-			     int (*siginfo_fixup) (struct siginfo *,
++			     int (*siginfo_fixup) (siginfo_t *,
+ 						   gdb_byte *,
+ 						   int))
+ {
+@@ -5793,7 +5793,7 @@
+ }
+ 
+ /* Return the saved siginfo associated with PTID.  */
+-struct siginfo *
++siginfo_t *
+ linux_nat_get_siginfo (ptid_t ptid)
+ {
+   struct lwp_info *lp = find_lwp_pid (ptid);
+diff -ru gdb-7.3.1.orig/gdb/linux-nat.h gdb-7.3.1/gdb/linux-nat.h
+--- gdb-7.3.1.orig/gdb/linux-nat.h	2014-04-04 14:51:34.575315464 +0200
++++ gdb-7.3.1/gdb/linux-nat.h	2014-04-04 14:51:30.942322713 +0200
+@@ -60,7 +60,7 @@
+ 
+   /* Non-zero si_signo if this LWP stopped with a trap.  si_addr may
+      be the address of a hardware watchpoint.  */
+-  struct siginfo siginfo;
++  siginfo_t siginfo;
+ 
+   /* STOPPED_BY_WATCHPOINT is non-zero if this LWP stopped with a data
+      watchpoint trap.  */
+@@ -160,7 +160,7 @@
+    that ptrace returns, and the layout in the architecture of the
+    inferior.  */
+ void linux_nat_set_siginfo_fixup (struct target_ops *,
+-				  int (*) (struct siginfo *,
++				  int (*) (siginfo_t *,
+ 					   gdb_byte *,
+ 					   int));
+ 
+@@ -169,7 +169,7 @@
+ void linux_nat_switch_fork (ptid_t new_ptid);
+ 
+ /* Return the saved siginfo associated with PTID.  */
+-struct siginfo *linux_nat_get_siginfo (ptid_t ptid);
++siginfo_t *linux_nat_get_siginfo (ptid_t ptid);
+ 
+ /* Compute and return the processor core of a given thread.  */
+ int linux_nat_core_of_thread_1 (ptid_t ptid);
+diff -ru gdb-7.3.1.orig/gdb/ppc-linux-nat.c gdb-7.3.1/gdb/ppc-linux-nat.c
+--- gdb-7.3.1.orig/gdb/ppc-linux-nat.c	2014-04-04 14:51:34.576315462 +0200
++++ gdb-7.3.1/gdb/ppc-linux-nat.c	2014-04-04 14:51:30.942322713 +0200
+@@ -2161,7 +2161,7 @@
+ static int
+ ppc_linux_stopped_data_address (struct target_ops *target, CORE_ADDR *addr_p)
+ {
+-  struct siginfo *siginfo_p;
++  siginfo_t *siginfo_p;
+ 
+   siginfo_p = linux_nat_get_siginfo (inferior_ptid);
+ 
+diff -ru gdb-7.3.1.orig/gdb/procfs.c gdb-7.3.1/gdb/procfs.c
+--- gdb-7.3.1.orig/gdb/procfs.c	2014-04-04 14:51:34.577315460 +0200
++++ gdb-7.3.1/gdb/procfs.c	2014-04-04 14:51:30.943322711 +0200
+@@ -263,7 +263,7 @@
+ #ifdef HAVE_PR_SIGINFO64_T
+ typedef pr_siginfo64_t gdb_siginfo_t;
+ #else
+-typedef struct siginfo gdb_siginfo_t;
++typedef siginfo_t gdb_siginfo_t;
+ #endif
+ 
+ /* On mips-irix, praddset and prdelset are defined in such a way that
