@@ -142,6 +142,9 @@ vmem_split_res_t vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd,
 
     uintptr_t* pdpt = NULL;
     uintptr_t* pml4 = vmem_mgmt_map(space);
+
+    // TODO: tweak flags to only contain allowed values for real CPUs on PDPTE PDE PTE
+
     VM_CHECK_MAPPING(pml4);
     VM_CHECK_ENTRY(pml4, idx_pml4, pgflags);
 
