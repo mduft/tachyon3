@@ -26,6 +26,18 @@ typedef struct {
 
 static list_t* vmem_glob_map = 0; 
 
+#define TRACE_FLAGS 1
+
+#ifdef TRACE_FLAGS
+# define VM_TRACE_FLAGS(space, x, u) {                                      \
+        char buf[8];                                                        \
+        vmem_mgmt_gen_flag_string(buf, u);                                  \
+        trace("pg-flags for " #x ", spc=%p: 0x%x (%s)\n", space, u, buf);   \
+    }
+#else
+# define VM_TRACE_FLAGS(space, x, u)
+#endif
+
 #define VM_CHECK_MAPPING(x) \
     { if(!(x)) { error("cannot map " #x " for %p\n", virt); } }
 
@@ -38,6 +50,7 @@ static list_t* vmem_glob_map = 0;
         }                                                           \
     }                                                               \
     if(flags & VM_SPLIT_ALLOC) {                                    \
+        VM_TRACE_FLAGS(space, x, u);                                \
         (x)[i] |= u;                                                \
     }
 
@@ -79,6 +92,17 @@ static list_t* vmem_glob_map = 0;
  * Calculates the actual interesting flags for a complete page table entry
  */
 #define VM_FLAGS(x)         (((x) & ~VM_ENTRY_FLAG_MASK) & VM_FL_MASK)
+
+static void vmem_mgmt_gen_flag_string(char buf[8], uintptr_t flags) {
+    buf[0] = (flags & PG_WRITABLE) ? 'w' : '-';
+    buf[1] = (flags & PG_USER) ? 'u' : '-';
+    buf[2] = (flags & PG_WRITETHROUGH) ? 't' : '-';
+    buf[3] = (flags & PG_NONCACHABLE) ? 'n' : '-';
+    buf[4] = (flags & PG_GLOBAL) ? 'g' : '-';
+    buf[5] = (flags & PG_PRESENT) ? 'p' : '-';
+    buf[6] = (flags & ~(PG_GLOBAL | PG_WRITABLE | PG_USER | PG_WRITETHROUGH | PG_NONCACHABLE | PG_PRESENT)) != 0 ? '?' : '-';
+    buf[7] = 0;
+}
 
 void* vmem_mgmt_map(phys_addr_t phys) {
     register phys_addr_t page = VM_PS_PAGE(phys);
@@ -193,15 +217,6 @@ error:
     return result;
 }
 
-static void vmem_mgmt_gen_flag_string(char buf[6], uintptr_t flags) {
-    buf[0] = (flags & PG_WRITABLE) ? 'w' : '-';
-    buf[1] = (flags & PG_USER) ? 'u' : '-';
-    buf[2] = (flags & PG_WRITETHROUGH) ? 't' : '-';
-    buf[3] = (flags & PG_NONCACHABLE) ? 'n' : '-';
-    buf[4] = (flags & PG_GLOBAL) ? 'g' : '-';
-    buf[5] = 0;
-}
-
 bool vmem_mgmt_make_glob_spc(spc_t space) {
     uintptr_t* pml4 = (uintptr_t*)vmem_mgmt_map(space);
 
@@ -252,7 +267,7 @@ bool vmem_mgmt_make_glob_spc(spc_t space) {
         vmem_glob_mapping_t* map = (vmem_glob_mapping_t*)node->data;
 
         if(map) {
-            char buf[6];
+            char buf[8];
             vmem_mgmt_gen_flag_string(buf, map->flags);
             trace("trying to map: %p -> %p (%s); old = %p\n", map->from, map->to, buf, vmem_resolve(space, map->to));
 
