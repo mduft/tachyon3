@@ -26,6 +26,7 @@
 #include "tmr.h"
 #include "idle.h"
 #include "uapi.h"
+#include "vfs.h"
 #include "path.h"
 
 #include "vmem_mgmt.h"
@@ -170,6 +171,9 @@ static void boot_next() {
         locals.pmem.free_pages, (locals.pmem.free_pages * PMEM_PAGESIZE) / 1024);
 
     idle_init();
+
+    /* initialize virtual filesystem support */
+    vfs_init();
 
     // TODO: kick off initial threads.
     // TEST
