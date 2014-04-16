@@ -88,13 +88,16 @@ int create(char* name, int nfiles, char** filenames) {
             return ERR_ISDIR;
         }
 
+        // poor mans basename
+        char * basename = strrchr(filenames[i], '/') + 1;
+
         // fill out all file header fields.
         fhdr.hdr_size = sizeof(rd_file_t);
         fhdr.start = pos + sizeof(fhdr);
         fhdr.size = sbuf.st_size;
-        strncpy(fhdr.name, filenames[i], sizeof(fhdr.name));
+        strncpy(fhdr.name, basename, sizeof(fhdr.name));
 
-        LOG("adding: %s (%d bytes @ 0x%x)\n", filenames[i], fhdr.size, fhdr.start);
+        LOG("adding: %s (%d bytes @ 0x%x)\n", basename, fhdr.size, fhdr.start);
 
         // write file header to target
         bw = write(target, &fhdr, sizeof(fhdr));

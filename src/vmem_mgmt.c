@@ -26,7 +26,7 @@ typedef struct {
 
 static list_t* vmem_glob_map = 0; 
 
-#define TRACE_FLAGS 1
+//#define TRACE_FLAGS 1
 
 #ifdef TRACE_FLAGS
 # define VM_TRACE_FLAGS(space, x, u) {                                      \

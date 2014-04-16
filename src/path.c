@@ -73,5 +73,6 @@ char* path_string(path_t* path) {
         pos += comp_len;
     }
 
+    result[pos] = 0;
     return result;
 }

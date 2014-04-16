@@ -81,7 +81,6 @@ void init_subsys(char const* tag, extp_func_t cb, char const* descr) {
  */
 static struct {
     thread_t* init;
-    rd_header_t* rd;
     pmem_info_t pmem;
 } locals;
 
@@ -105,9 +104,6 @@ void boot() {
 
     /* initialize the physical memory. */
     pmem_init();
-
-    /* find and protect initial ram disc */
-    locals.rd = mboot_find_rd();
 
     /* initialize the userspace api mappings */
     uapi_init();
@@ -187,9 +183,6 @@ static void boot_next() {
     thread_t* thr = thr_create(uproc, test_thr2, IsolationUser);
     thr->priority=PrioKernel; // tmp - scheduler only chooses kernel currently
     sched_add(thr);
-
-    // TEST
-    info("ramdisk at: %p\n", locals.rd);
 
     path_t* p = path_create("/this/is/a/path", &kheap);
     info("path joined: %s\n", path_string(p));

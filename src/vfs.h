@@ -38,7 +38,7 @@ void vfs_init();
  *             exist yet.
  * @return true on success, false otherwise.
  */
-bool vfs_mkvirtual(path_t* path);
+//bool vfs_mkvirtual(path_t* path); TODO: need this?
 
 /**
  * Mounts the given filesystem to the given path. The given path node must

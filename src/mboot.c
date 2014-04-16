@@ -178,13 +178,13 @@ rd_header_t* mboot_find_rd() {
     if(mbi->flags & MBOOT_FL_MODS) {
         if(mbi->mods_cnt > 0) {
             uint32_t i;
-            info("mods_addr: %p\n", mbi->mods_addr);
+            trace("mods_addr: %p\n", mbi->mods_addr);
             register mboot_mod_t* mod = (mboot_mod_t*)mboot_map(mbi->mods_addr);
             for(i = 0; i < mbi->mods_cnt; ++i, ++mod) {
                 void* mapped = mboot_map(mod->start);
                 if(((rd_header_t*)mapped)->magic == RD_MAGIC) {
                     size_t sz = mod->end - mod->start;
-                    info("found rd at %p, nfiles=%d, size=%d bytes\n", 
+                    trace("found rd at %p, nfiles=%d, size=%d bytes\n", 
                         mod->start, ((rd_header_t*)mapped)->num_files, sz);
                     if(sz > (RD_VSZ - PAGE_SIZE_4K)) {
                         fatal("rd too large to be mapped: %d bytes!\n", sz);
@@ -194,7 +194,7 @@ rd_header_t* mboot_find_rd() {
                     phys_addr_t first_phys = ALIGN_DN(mod->start, PMEM_PAGESIZE);
                     phys_addr_t last_phys = ALIGN_UP(mod->end, PMEM_PAGESIZE);
                     
-                    info("mapping rd from %p to %p (%d bytes)\n", first_phys, last_phys, sz);
+                    trace("mapping rd from %p to %p (%d bytes)\n", first_phys, last_phys, sz);
 
                     uintptr_t virt = RD_VIRTUAL;
                     while(first_phys < last_phys) {

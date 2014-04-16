@@ -15,6 +15,7 @@
 #define EXTP_PMEM_REGION    "pmem.region"
 #define EXTP_TIMERGEN       "timer.gen"
 #define EXTP_SYSTIME        "sys.time"
+#define EXTP_VFS_INIT       "vfs.init"
 
 /**
  * Dummy extension point callback type. The real type depends
