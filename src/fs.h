@@ -7,6 +7,10 @@
 
 #define NO_HANDLE ((uintptr_t)-1)
 
+#define ERR_UNKNOWN     -1
+#define ERR_EOF         -2
+#define ERR_READONLY    -3
+
 /**
  * Defines the mode that a filesystem object is to be opened with
  */
@@ -30,6 +34,11 @@ typedef enum {
     Link
 } fs_objtype_t;
 
+typedef struct {
+    char* id;
+    char* type;
+} fs_desc_t;
+
 /**
  * Describes a filesystem object on the filesystem
  */
@@ -46,16 +55,19 @@ typedef ssize_t (*fs_read)(fs_handle_t, void*, size_t);         /**< reads conte
 typedef ssize_t (*fs_write)(fs_handle_t, void*, size_t);        /**< writes contents to a file */
 typedef off_t (*fs_seek)(fs_handle_t, off_t, fs_whence_t);      /**< repositions the cursor in a file */
 typedef path_t** (*fs_list)(fs_handle_t);                       /**< lists all available children */
+typedef bool (*fs_mkdir)(path_t*);                              /**< creates the given path in the filesystem */
 
 /**
  * Defines all operations that can be applied to FS objects
  */
 typedef struct __fs_ops_t {
+    fs_desc_t* fs;
     fs_open open;
     fs_close close;
     fs_read read;
     fs_write write;
     fs_seek seek;
     fs_list list;
+    fs_mkdir mkdir;
 } fs_ops_t;
 
