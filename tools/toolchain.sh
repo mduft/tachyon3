@@ -8,17 +8,17 @@
 # each entry has this format: <name>:<version>:<configure flags>:<all target>:<install target>
 
 tools=(
-    "binutils:2.21.1a:--build=\${_tt_host} --target=x86_64-pc-elf"
+    "binutils:2.25.1:--build=\${_tt_host} --target=x86_64-pc-elf"
     "gmp:5.1.3:--build=\${_tt_host}"
-    "mpfr:3.1.2:--build=\${_tt_host}"
+    "mpfr:3.1.3:--build=\${_tt_host}"
     "mpc:1.0.2:--build=\${_tt_host} --with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
-    "gcc:4.6.2:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable-languages=c,c++:all-gcc:install-gcc"
-    "gdb:7.3.1:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
-    "cgdb:0.6.7:--build=\${_tt_host}"
+    "gcc:4.9.3:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable-languages=c,c++:all-gcc:install-gcc"
+    "gdb:7.10:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
+    "cgdb:0.6.8:--build=\${_tt_host}"
     "grub:2.00:--build=\${_tt_host} --disable-werror"
     "xorriso:1.3.6:--build=\${_tt_host}"
-    "qemu:1.3.0:--python=/usr/bin/python2 --disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
-    "bochs:2.6.2:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-sb16=linux --enable-ne2000 --enable-pcidev --enable-pnic --enable-smp --enable-logging"
+    "qemu:2.4.0.1:--python=/usr/bin/python2 --disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
+    "bochs:2.6.8:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-sb16=linux --enable-ne2000 --enable-pnic --enable-smp --enable-logging"
 )
 
 sites=(
@@ -27,12 +27,12 @@ sites=(
     "mpfr|http://www.mpfr.org/mpfr-current/\${P}-\${V}.tar.bz2"
     "mpc|http://ftp.gnu.org/gnu/mpc/\${P}-\${V}.tar.gz"
     "gcc|http://gd.tuwien.ac.at/gnu/gcc/releases/\${P}-\${V}/\${P}-\${V}.tar.bz2"
-    "gdb|http://ftp.gnu.org/gnu/gdb/\${P}-\${V}.tar.bz2"
+    "gdb|http://ftp.gnu.org/gnu/gdb/\${P}-\${V}.tar.gz"
     "cgdb|http://cgdb.me/files/\${P}-\${V}.tar.gz"
     "grub|http://ftp.gnu.org/gnu/grub/\${P}-\${V}.tar.gz"
     "xorriso|http://ftp.gnu.org/gnu/xorriso/\${P}-\${V}.tar.gz"
     "qemu|http://wiki.qemu-project.org/download/\${P}-\${V}.tar.bz2"
-    "bochs|http://downloads.sourceforge.net/project/bochs/bochs/2.6.2/\${P}-\${V}.tar.gz"
+    "bochs|http://downloads.sourceforge.net/project/bochs/bochs/\${V}/\${P}-\${V}.tar.gz"
 )
 
 function info()  { [[ ${_tt_verbose} == true ]] && echo ">>> " "$@"; }
