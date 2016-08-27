@@ -8,11 +8,11 @@
 # each entry has this format: <name>:<version>:<configure flags>:<all target>:<install target>
 
 tools=(
-    "binutils:2.25.1:--build=\${_tt_host} --target=x86_64-pc-elf"
+    "binutils:2.27:--build=\${_tt_host} --target=x86_64-pc-elf"
     "gmp:5.1.3:--build=\${_tt_host}"
-    "mpfr:3.1.3:--build=\${_tt_host}"
+    "mpfr:3.1.4:--build=\${_tt_host}"
     "mpc:1.0.2:--build=\${_tt_host} --with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
-    "gcc:4.9.3:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable-languages=c,c++:all-gcc:install-gcc"
+    "gcc:4.9.4:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable-languages=c,c++:all-gcc:install-gcc"
     "gdb:7.10:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
     "cgdb:0.6.8:--build=\${_tt_host}"
     "grub:2.00:--build=\${_tt_host} --disable-werror"

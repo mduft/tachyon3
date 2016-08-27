@@ -6,7 +6,9 @@
 #include <inttypes.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/sendfile.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #define PACKED __attribute__((__packed__))
 #include "../../../src/rd.h"

@@ -23,6 +23,12 @@ those before building will succeed (tested on ubuntu 13.10):
     apt-get install libpixman-1-dev
     apt-get install libxrandr-dev
 
+On Fedora, etc.:
+
+    dnf install ncurses-devel readline-devel zlib-devel \
+        SDL-devel autoconf pixman-devel libXrandr-devel \
+        gcc gcc-c++ texinfo flex bison help2man glib2-devel
+
 Now you can do this in the source tachyon root directory:
 
     make                    # build default arch (x86_64)
