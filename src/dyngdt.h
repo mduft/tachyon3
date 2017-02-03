@@ -1,4 +1,4 @@
-/* copyright (c) 2011 by markus duft <mduft@gentoo.org>
+/* copyright (c) 2011 by markus duft <markus.duft@ssi-schaefer.com>
  * this file is part of the 'tachyon' operating system. */
 
 #pragma once

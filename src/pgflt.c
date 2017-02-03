@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 by Markus Duft <mduft@gentoo.org>
+/* Copyright (c) 2011 by Markus Duft <markus.duft@ssi-schaefer.com>
  * This file is part of the 'tachyon' operating system. */
 
 #include "intr.h"
