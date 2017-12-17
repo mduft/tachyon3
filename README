@@ -22,12 +22,17 @@ those before building will succeed (tested on ubuntu 13.10):
     apt-get install autoconf
     apt-get install libpixman-1-dev
     apt-get install libxrandr-dev
+    apt-get install bison flex texinfo help2man bc
 
 On Fedora, etc.:
 
     dnf install ncurses-devel readline-devel zlib-devel \
         SDL-devel autoconf pixman-devel libXrandr-devel \
         gcc gcc-c++ texinfo flex bison help2man glib2-devel
+
+Prepare the toolchain by running:
+
+    ./tools/toolchain.sh -v -j 3 --preflight --download
 
 Now you can do this in the source tachyon root directory:
 
