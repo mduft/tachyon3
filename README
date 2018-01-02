@@ -22,7 +22,7 @@ those before building will succeed (tested on ubuntu 13.10):
     apt-get install autoconf
     apt-get install libpixman-1-dev
     apt-get install libxrandr-dev
-    apt-get install bison flex texinfo help2man bc
+    apt-get install bison flex texinfo help2man bc gettext
 
 On Fedora, etc.:
 
