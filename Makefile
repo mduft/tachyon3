@@ -29,6 +29,7 @@ include config/config.mk
 #'----------------------------------'
 
 KERNEL_SILENT	:= 0
+KERNEL_CMD		:= -deflog=trace
 
 ARCH_LINKSCRIPT	:= $(CONFIGDIR)/$(ARCH).ld
 ARCH_PPLSCRIPT  := $(BUILDDIR)/$(ARCH).ld
@@ -191,7 +192,7 @@ KQFLAGS := $(BASE_QFLAGS) $(QFLAGS)
 
 qemu: all-kernel
 	@arch=$(ARCH); arch=$${arch%%-*}; qe=$$(type -p qemu-system-$${arch}); test -z "$${qe}" && qe=qemu; \
-	 echo "using $${qe}..."; $${qe} $(KQFLAGS) -kernel $(KERNEL);
+	 echo "using $${qe}..."; $${qe} $(KQFLAGS) -kernel $(KERNEL) -append "$(KERNEL_CMD)";
 
 qemu-dbg:
 	@$(MAKE) -f $(SOURCEDIR)/Makefile qemu QFLAGS="$(QFLAGS) -s -S"

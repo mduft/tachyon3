@@ -34,9 +34,11 @@
 
 static void mboot_pmem_init();
 static void mboot_pmem_protect();
+static void mboot_cmd_init();
 
 INSTALL_EXTENSION(EXTP_PMEM_REGION, mboot_pmem_init, "multiboot")
 INSTALL_EXTENSION(EXTP_PMEM_RESERVE, mboot_pmem_protect, "multiboot")
+INSTALL_EXTENSION(EXTP_CMD_LINE, mboot_cmd_init, "multiboot")
 
 typedef struct {
     uint32_t    flags;
@@ -219,3 +221,25 @@ rd_header_t* mboot_find_rd() {
     mboot_unmap(mbi);
     return result;
 }
+
+static void mboot_cmd_init() {
+    if(boot_state.ax != MBOOT_MAGIC) {
+        return;
+    }
+
+    register mboot_info_t* mbi = (mboot_info_t*)mboot_map(boot_state.bx);
+
+    if(mbi->flags & MBOOT_FL_CMDLINE) {
+        debug("multiboot cmd at phys %p\n", mbi->cmdline);
+
+        char* mc = (char*)mboot_map(mbi->cmdline);
+        debug("multiboot cmd: %s\n", mc);
+
+        // TODO: split command line and add arguments 1 by 1 (skip [0]) using cmd_add();
+
+        mboot_unmap(mc);
+    }
+
+    mboot_unmap(mbi);
+}
+

@@ -16,6 +16,7 @@
 #define EXTP_TIMERGEN       "timer.gen"
 #define EXTP_SYSTIME        "sys.time"
 #define EXTP_VFS_INIT       "vfs.init"
+#define EXTP_CMD_LINE       "cmd.init"
 
 /**
  * Dummy extension point callback type. The real type depends

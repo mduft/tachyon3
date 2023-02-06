@@ -28,6 +28,7 @@
 #include "uapi.h"
 #include "vfs.h"
 #include "path.h"
+#include "cmd.h"
 
 #include "vmem_mgmt.h"
 
@@ -104,6 +105,9 @@ void boot() {
 
     /* initialize the physical memory. */
     pmem_init();
+
+    /* initialize the command line right after we can allocate memory */
+    cmd_init();
 
     /* initialize the userspace api mappings */
     uapi_init();
