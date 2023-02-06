@@ -140,7 +140,7 @@ void boot() {
 
     /* need to set up a save stack for the kernel level. */
     asm volatile (
-        "movq %0,%%rsp; movq %0, %%rbp; pushq $0; pushq $0" :: "d"(locals.init->stack->top - (sizeof(uintptr_t) * 2)) : "rsp"
+        "movq %0,%%rsp; movq %0, %%rbp; pushq $0; pushq $0" :: "d"(locals.init->stack->top - (sizeof(uintptr_t) * 2)) :
     );
 
     /* after stack switch, jump to another frame that is consistent */

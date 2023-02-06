@@ -8,17 +8,17 @@
 # each entry has this format: <name>:<version>:<configure flags>:<all target>:<install target>
 
 tools=(
-    "binutils:2.27:--build=\${_tt_host} --target=x86_64-pc-elf"
-    "gmp:5.1.3:--build=\${_tt_host}"
-    "mpfr:3.1.6:--build=\${_tt_host}"
-    "mpc:1.0.2:--build=\${_tt_host} --with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
-    "gcc:4.9.4:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable-languages=c,c++:all-gcc:install-gcc"
-    "gdb:7.10:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
-    "cgdb:0.7.0:--build=\${_tt_host}"
-    "grub:2.02:--build=\${_tt_host} --disable-werror"
-    "xorriso:1.3.6:--build=\${_tt_host}"
-    "qemu:1.3.0:--python=/usr/bin/python2 --disable-docs --disable-user --enable-system --enable-curses --enable-sdl --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
-    "bochs:2.6.8:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-sb16=linux --enable-ne2000 --enable-pnic --enable-smp --enable-logging"
+    "binutils:2.40:--build=\${_tt_host} --target=x86_64-pc-elf"
+    "gmp:6.2.1:--build=\${_tt_host}"
+    "mpfr:4.2.0:--build=\${_tt_host}"
+    "mpc:1.3.1:--build=\${_tt_host} --with-gmp=\${_tt_prefix} --with-mpfr=\${_tt_prefix}"
+    "gcc:12.2.0:--build=\${_tt_host} --with-gnu-ld --with-gnu-as --with-mpfr=\${_tt_prefix} --with-gmp=\${_tt_prefix} --with-mpc=\${_tt_prefix} --target=x86_64-pc-elf --enable-languages=c,c++:all-gcc:install-gcc"
+    "gdb:12.1:--build=\${_tt_host} --target=x86_64-pc-linux-gnu --disable-werror"
+    "cgdb:0.8.0:--build=\${_tt_host}"
+    "grub:2.06:--build=\${_tt_host} --disable-werror"
+    "xorriso:1.5.4:--build=\${_tt_host}"
+    "qemu:7.2.0:--disable-docs --disable-user --enable-system --enable-curses --enable-gtk --target-list=i386-softmmu,x86_64-softmmu --enable-debug"
+    "bochs:2.6.10:--with-x11 --with-x --with-term --disable-docbook --enable-cdrom --enable-pci --enable-usb --enable-usb-ohci --enable-a20-pin --enable-cpu-level=6 --enable-x86-64 --enable-fpu --enable-disasm --enable-idle-hack --enable-all-optimizations --enable-repeat-speedups --enable-plugins --enable-sb16=linux --enable-ne2000 --enable-pnic --enable-smp --enable-logging"
 )
 
 sites=(
@@ -26,7 +26,7 @@ sites=(
     "gmp|https://gmplib.org/download/gmp/\${P}-\${V}.tar.bz2"
     "mpfr|http://www.mpfr.org/mpfr-current/\${P}-\${V}.tar.bz2"
     "mpc|http://ftp.gnu.org/gnu/mpc/\${P}-\${V}.tar.gz"
-    "gcc|http://gd.tuwien.ac.at/gnu/gcc/releases/\${P}-\${V}/\${P}-\${V}.tar.bz2"
+    "gcc|http://ftp.gnu.org/gnu/gcc/\${P}-\${V}/\${P}-\${V}.tar.gz"
     "gdb|http://ftp.gnu.org/gnu/gdb/\${P}-\${V}.tar.gz"
     "cgdb|http://cgdb.me/files/\${P}-\${V}.tar.gz"
     "grub|http://ftp.gnu.org/gnu/grub/\${P}-\${V}.tar.gz"

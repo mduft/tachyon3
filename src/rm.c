@@ -36,14 +36,19 @@
 #define SWITCH_LOGERR           \
     case RME_ERR_INVAL:         \
         warn("rm: invalid parameters\n");   \
+        break;                              \
     case RME_ERR_BADMEM:        \
         warn("rm: bad memory access\n");    \
+        break;                              \
     case RME_ERR_UNDEFOPCODE:   \
         warn("rm: undefined opcode\n");     \
+        break;                              \
     case RME_ERR_DIVERR:        \
         warn("rm: division fault\n");       \
+        break;                              \
     default:                    \
         warn("rm: unknown error\n");        \
+        break;                              \
 
 /** emit RME normal call */
 #define RME_FUNC_Call       RME_Call(&rme_state)

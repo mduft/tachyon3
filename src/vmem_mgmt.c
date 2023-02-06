@@ -155,7 +155,7 @@ void vmem_mgmt_free(phys_addr_t addr) {
 vmem_split_res_t vmem_mgmt_split(spc_t space, uintptr_t virt, uintptr_t** pd, 
                     uintptr_t** pt, size_t* ipd, size_t* ipt, uint32_t flags, uint32_t pgflags) {
     if(!pd || !pt) {
-        return Error;
+        return SplitError;
     }
 
     vmem_split_res_t result = SplitError;
@@ -420,7 +420,7 @@ static void vmem_mgmt_dump_pt(uintptr_t virt_addr, uintptr_t pt_ptr) {
     for(uintptr_t pte = 0; pte < 512; ++pte) {
         uintptr_t page = pt[pte];
         if(page & PG_PRESENT) {
-            char buf[6];
+            char buf[8];
             vmem_mgmt_gen_flag_string(buf, VM_FLAGS(page));
             trace("\t\t\tPAGE 4K %4d: %p -> %p (%s)\n", pte, virt_addr | (pte << 12), page & VM_ENTRY_FLAG_MASK, buf);
         }
@@ -441,7 +441,7 @@ static void vmem_mgmt_dump_pd(uintptr_t parent_virt_addr, uintptr_t pd_ptr) {
         uintptr_t pt_ptr = pd[pde];
         if(pt_ptr & PG_PRESENT) {
             uintptr_t virt_addr = parent_virt_addr | (pde << 21);
-            char buf[6];
+            char buf[8];
             vmem_mgmt_gen_flag_string(buf, VM_FLAGS(pt_ptr));
             if(pt_ptr & PG_LARGE) {
                 trace("\t\tPAGE 2M %4d: %p -> %p (%s)\n", pde, virt_addr, pt_ptr & VM_ENTRY_FLAG_MASK, buf);
@@ -467,7 +467,7 @@ static void vmem_mgmt_dump_pdpt(uintptr_t parent_virt_addr, uintptr_t pdpt_ptr) 
         uintptr_t pd_ptr = pdpt[pdpte];
         if(pd_ptr & PG_PRESENT) {
             uintptr_t virt_addr = parent_virt_addr | (pdpte << 30);
-            char buf[6];
+            char buf[8];
             vmem_mgmt_gen_flag_string(buf, VM_FLAGS(pd_ptr));
             if(pd_ptr & PG_LARGE) {
                 trace("\tPAGE 1G %4d: %p -> %p (%s)\n", pdpte, virt_addr, pd_ptr & VM_ENTRY_FLAG_MASK, buf);
@@ -493,7 +493,7 @@ void vmem_mgmt_dump_spc(spc_t space) {
         uintptr_t pdpt_ptr = pml4[pml4e];
         if(pdpt_ptr & PG_PRESENT) {
             uintptr_t virt_addr = pml4e << 39;
-            char buf[6];
+            char buf[8];
             vmem_mgmt_gen_flag_string(buf, VM_FLAGS(pdpt_ptr));
             if((virt_addr >> 47) & 1)
                 virt_addr |= 0xffff000000000000;

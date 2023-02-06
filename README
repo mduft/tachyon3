@@ -18,17 +18,19 @@ those before building will succeed (tested on ubuntu 13.10):
     apt-get install ncurses-dev
     apt-get install libreadline-dev
     apt-get install libz-dev
-    apt-get install libsdl-dev
     apt-get install autoconf
     apt-get install libpixman-1-dev
     apt-get install libxrandr-dev
+    apt-get install libgtk-3-dev
     apt-get install bison flex texinfo help2man bc gettext
+    apt-get install ninja-build
 
 On Fedora, etc.:
 
     dnf install ncurses-devel readline-devel zlib-devel \
-        SDL-devel autoconf pixman-devel libXrandr-devel \
-        gcc gcc-c++ texinfo flex bison help2man glib2-devel
+        autoconf pixman-devel libXrandr-devel \
+        gcc gcc-c++ texinfo flex bison help2man glib2-devel \
+        ninja-build gtk3-devel
 
 Prepare the toolchain by running:
 

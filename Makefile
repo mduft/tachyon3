@@ -41,11 +41,11 @@ ifeq ($(KERNEL_SILENT),1)
 BASE_CPPFLAGS	+= -DLOG_SILENT -Wno-error=unused-but-set-variable -Wno-error=unused-variable
 endif
 
-BASE_CFLAGS		:= $(BASE_CPPFLAGS) -Werror -ffreestanding -nostartfiles -nostdlib -Wno-unused-parameter -std=gnu99
+BASE_CFLAGS		:= $(BASE_CPPFLAGS) -Werror -ffreestanding -nostartfiles -nostdlib -Wno-unused-parameter -std=gnu99 -Wno-cast-function-type
 BASE_CXXFLAGS	:= $(BASE_CFLAGS) -fno-rtti -fno-exceptions -Wold-style-cast
 BASE_LDFLAGS	 = -T $(ARCH_PPLSCRIPT) -Map=$(KERNEL).map
 
-BASE_QFLAGS		:= -smp 2 -serial file:$(BUILDDIR)/serial-qemu.log -serial file:$(BUILDDIR)/com2-serial-qemu.log -curses
+BASE_QFLAGS		:= -smp 2 -serial file:$(BUILDDIR)/serial-qemu.log -serial file:$(BUILDDIR)/com2-serial-qemu.log
 BASE_GDBFLAGS	:= 
 
 GRUB2_CFG		:= $(BUILDDIR)/boot/grub/grub.cfg
