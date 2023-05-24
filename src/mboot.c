@@ -8,6 +8,10 @@
 #include "log.h"
 #include "kheap.h"
 #include "vmem_mgmt.h"
+#include "string.h"
+#include "cmd.h"
+#include "char.h"
+#include "trim.h"
 
 #include <paging.h>
 
@@ -222,6 +226,14 @@ rd_header_t* mboot_find_rd() {
     return result;
 }
 
+static void mboot_cmd_alloc(char* base, size_t len) {
+    char* tmp = kheap_alloc(len + 1);
+    strncpy(tmp, base, len);
+    tmp[len + 1] = '\0';
+
+    cmd_add(trim(tmp));
+}
+
 static void mboot_cmd_init() {
     if(boot_state.ax != MBOOT_MAGIC) {
         return;
@@ -235,7 +247,30 @@ static void mboot_cmd_init() {
         char* mc = (char*)mboot_map(mbi->cmdline);
         debug("multiboot cmd: %s\n", mc);
 
-        // TODO: split command line and add arguments 1 by 1 (skip [0]) using cmd_add();
+        if(mc && *mc) {
+            bool inQuotes = false;
+            char* base = mc;
+            char* walk = mc;
+            while(*walk) {
+                if(*walk == '"') {
+                    inQuotes = true;
+                } else if(isspace(*walk)) {
+                    if(!inQuotes) {
+                        // found a break, split up until here.
+                        mboot_cmd_alloc(base, (walk - base));
+                        base = walk;
+                    }
+                }
+
+                ++walk;
+            }
+
+            // command ended, add the last argument as well;
+            size_t len = (walk - base);
+            if(len) {
+                mboot_cmd_alloc(base, len);
+            }
+        }
 
         mboot_unmap(mc);
     }

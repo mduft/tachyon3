@@ -29,11 +29,13 @@ void cmd_add(char const* argument) {
         return;
     }
 
+    debug("adding kernel cmd: '%s'\n", argument);
+
     char * target = kheap_alloc(strlen(argument) * sizeof(char));
 
     // skip to the first null element in the command line, and set it.
     char const** current = _cmdline;
-    while(current != NULL) {
+    while(*current) {
         current++;
     }
 
