@@ -13,10 +13,10 @@ all-tools:
 	@for mf in $$(find $(SOURCEDIR)/tools/apps -name Makefile); do $(MAKE) -f $${mf}; done
 
 all-libs: all-tools
-	@for mf in $$(find $(SOURCEDIR)/apps -name Makefile); do $(MAKE) -f $${mf}; done
+	@for mf in $$(find $(SOURCEDIR)/libs -name Makefile); do $(MAKE) -f $${mf}; done
 
 all-apps: all-libs
-	@for mf in $$(find $(SOURCEDIR)/libs -name Makefile); do $(MAKE) -f $${mf}; done
+	@for mf in $$(find $(SOURCEDIR)/apps -name Makefile); do $(MAKE) -f $${mf}; done
 
 #.----------------------------------.
 #| Include the platform config.     |
@@ -97,7 +97,12 @@ $(KERNEL).dbg: $(KERNEL)
 	@$(OBJCOPY) --add-gnu-debuglink="$@" "$<"
 	@touch "$@"
 
-all-kernel: $(KERNEL) $(KERNEL).dbg
+$(KERNEL).rd: all-tools all-apps
+	@$(RD) c $(KERNEL).rd README LICENSE
+	@printf "ramdisk ready:\n"
+	@$(RD) t $(KERNEL).rd | while read line; do echo "  $$line"; done
+
+all-kernel: $(KERNEL) $(KERNEL).dbg $(KERNEL).rd
 	@printf "kernel ready: " 
 	@(cd $(dir $(KERNEL)) && ls -hs $(notdir $(KERNEL)))
 
@@ -192,7 +197,7 @@ KQFLAGS := $(BASE_QFLAGS) $(QFLAGS)
 
 qemu: all-kernel
 	@arch=$(ARCH); arch=$${arch%%-*}; qe=$$(type -p qemu-system-$${arch}); test -z "$${qe}" && qe=qemu; \
-	 echo "using $${qe}..."; $${qe} $(KQFLAGS) -kernel $(KERNEL) -append "$(KERNEL_CMD)";
+	 echo "using $${qe}..."; $${qe} $(KQFLAGS) -kernel $(KERNEL) -append "$(KERNEL_CMD)" -initrd "$(KERNEL).rd";
 
 qemu-dbg:
 	@$(MAKE) -f $(SOURCEDIR)/Makefile qemu QFLAGS="$(QFLAGS) -s -S"

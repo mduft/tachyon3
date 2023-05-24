@@ -4,6 +4,8 @@
 TOPSRC	:= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../../../)
 TARGET	 = $(BUILDDIR)/rd
 
+KCFLAGS := $(CFLAGS)
+
 include $(TOPSRC)/config/app.mk
 
 # override compiler to system compiler and linker

@@ -16,7 +16,7 @@ $(TARGET): $(OBJECTS)
 	@if test $(VERBOSE) = 0; then \
 		echo "[LD  ] $(notdir $@)"; \
 	 else \
-	 	echo "$(LD) $(LDFLAGS) -o \"$@\" $(OBJECTS)"; \
+	 	echo "$(CC) $(CFLAGS) $(LDFLAGS) -o \"$@\" $(OBJECTS)"; \
 	 fi
 	@$(CC) $(CFLAGS) $(LDFLAGS) -o "$@" $^
 

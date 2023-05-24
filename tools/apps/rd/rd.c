@@ -91,7 +91,11 @@ int create(char* name, int nfiles, char** filenames) {
         }
 
         // poor mans basename
-        char * basename = strrchr(filenames[i], '/') + 1;
+        char * basename = filenames[i];
+        char * slash = strrchr(filenames[i], '/');
+        if(slash) {
+            basename = slash + 1;
+        }
 
         // fill out all file header fields.
         fhdr.hdr_size = sizeof(rd_file_t);
