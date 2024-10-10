@@ -24,14 +24,14 @@ tools=(
 sites=(
     "binutils|http://ftp.gnu.org/gnu/binutils/\${P}-\${V}.tar.bz2"
     "gmp|https://gmplib.org/download/gmp/\${P}-\${V}.tar.bz2"
-    "mpfr|http://www.mpfr.org/mpfr-current/\${P}-\${V}.tar.bz2"
+    "mpfr|http://www.mpfr.org/\${P}-\${V}/\${P}-\${V}.tar.bz2"
     "mpc|http://ftp.gnu.org/gnu/mpc/\${P}-\${V}.tar.gz"
     "gcc|http://ftp.gnu.org/gnu/gcc/\${P}-\${V}/\${P}-\${V}.tar.gz"
     "gdb|http://ftp.gnu.org/gnu/gdb/\${P}-\${V}.tar.gz"
     "cgdb|http://cgdb.me/files/\${P}-\${V}.tar.gz"
     "grub|http://ftp.gnu.org/gnu/grub/\${P}-\${V}.tar.gz"
     "xorriso|http://ftp.gnu.org/gnu/xorriso/\${P}-\${V}.tar.gz"
-    "qemu|http://wiki.qemu-project.org/download/\${P}-\${V}.tar.bz2"
+    "qemu|https://download.qemu.org/\${P}-\${V}.tar.bz2"
     "bochs|http://downloads.sourceforge.net/project/bochs/bochs/\${V}/\${P}-\${V}.tar.gz"
 )
 
